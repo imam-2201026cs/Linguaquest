@@ -18,7 +18,13 @@ dotenv.config();
 const app = express();
 
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://linguaquest.vercel.app',
+    'https://linguaquest-imam-2201026cs.vercel.app',
+    /\.vercel\.app$/
+  ],
   credentials: true
 }));
 app.use(express.json());
