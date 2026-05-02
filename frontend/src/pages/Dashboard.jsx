@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -282,6 +282,7 @@ function SmartRec({ stats, history }) {
 /* ─────────────────── Dashboard ─────────────────── */
 export default function Dashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const milestoneShown = useRef(false);
@@ -390,7 +391,7 @@ export default function Dashboard() {
       </div>
 
       {/* Daily Challenge Banner */}
-      <div className="glass-card p-6 md:p-8 bg-gradient-to-br from-red-500/10 to-orange-500/10 border-red-500/20 text-center relative overflow-hidden group cursor-pointer" onClick={() => window.location.href='/challenge'}>
+      <div className="glass-card p-6 md:p-8 bg-gradient-to-br from-red-500/10 to-orange-500/10 border-red-500/20 text-center relative overflow-hidden group cursor-pointer" onClick={() => navigate('/challenge')}>
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-red-500/20 rounded-full blur-3xl group-hover:bg-red-500/30 transition-all"></div>
         <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-orange-500/20 rounded-full blur-3xl group-hover:bg-orange-500/30 transition-all"></div>
         
