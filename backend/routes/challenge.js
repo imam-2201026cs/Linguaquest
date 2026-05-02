@@ -3,20 +3,22 @@ import auth from '../middleware/auth.js';
 import { DailyChallenge, ChallengeSubmission } from '../models/DailyChallenge.js';
 import User from '../models/User.js';
 import Activity from '../models/Activity.js';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 
 const router = express.Router();
 
 const getTodayString = () => {
-  // Use Asia/Kolkata timezone to ensure it rolls over at the user's midnight (IST)
-  const d = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  // Reliable IST offset calculation (UTC + 5:30)
+  const utc = new Date();
+  const ist = new Date(utc.getTime() + (5.5 * 60 * 60 * 1000));
+  return `${ist.getUTCFullYear()}-${String(ist.getUTCMonth() + 1).padStart(2, '0')}-${String(ist.getUTCDate()).padStart(2, '0')}`;
 };
 
 // GET today's challenge
 router.get('/daily', auth, async (req, res) => {
   try {
     const today = getTodayString();
+    console.log('Fetching Daily Challenge for:', today);
     
     // Check if user already submitted
     const submission = await ChallengeSubmission.findOne({ userId: req.user._id, dateString: today });
@@ -26,33 +28,41 @@ router.get('/daily', auth, async (req, res) => {
     
     // If no challenge exists for today, GENERATE IT!
     if (!challenge) {
-      console.log('Generating new Daily Challenge for', today);
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      // Ensure we use the stable model to avoid rate limits
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      console.log('Generating new Daily Challenge for', today, 'using Groq');
+      const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
       
       const prompt = `
-        You are an expert English teacher. Create a 10-question Daily Challenge Quiz.
+        Create a 10-question Daily Challenge Quiz for English learners.
         The quiz should mix Grammar, Vocabulary, and Idioms.
         Difficulty should be intermediate (B1-B2 level).
-        Return ONLY a JSON array of 10 question objects.
+        Return ONLY a JSON array of 10 question objects. No extra text.
         Format:
         [
           {
             "question": "What is the correct past tense of 'go'?",
             "options": ["goed", "went", "gone", "going"],
-            "correct": 1, // index of correct option
+            "correct": 1,
             "explanation": "'Went' is the irregular past tense of the verb 'to go'."
           }
         ]
       `;
       
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      let text = response.text();
-      text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      const completion = await groq.chat.completions.create({
+        messages: [{ role: 'user', content: prompt }],
+        model: 'llama3-70b-8192',
+        temperature: 0.7,
+      });
+
+      const text = completion.choices[0]?.message?.content || '';
       
-      const questions = JSON.parse(text);
+      // Robust JSON Extraction
+      const start = text.indexOf('[');
+      const end = text.lastIndexOf(']');
+      if (start === -1 || end === -1) {
+        throw new Error('Groq failed to return valid JSON array');
+      }
+      const jsonStr = text.substring(start, end + 1);
+      const questions = JSON.parse(jsonStr);
       
       challenge = new DailyChallenge({
         dateString: today,
