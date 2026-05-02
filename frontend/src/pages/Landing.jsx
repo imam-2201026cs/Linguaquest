@@ -367,7 +367,7 @@ export default function Landing() {
       {/* Features */}
       <section className="relative z-10 max-w-7xl mx-auto px-6 pb-20">
         <h2 className="text-3xl md:text-4xl font-display font-bold text-white text-center mb-12">Everything You Need to Excel</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map(({ icon: Icon, title, desc, color }) => (
             <div key={title} className="glass-card p-6 hover:border-white/10 hover:scale-[1.02] transition-all duration-300 group">
               <div className={`w-12 h-12 bg-gradient-to-br ${color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>

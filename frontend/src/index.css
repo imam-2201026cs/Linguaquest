@@ -109,3 +109,22 @@
 .animate-voice-bar {
   animation: voice-bar 0.5s ease-in-out infinite;
 }
+
+/* Global Mobile Fixes */
+@media (max-width: 640px) {
+  h1 { @apply text-2xl; }
+  h2 { @apply text-xl; }
+  .glass-card { @apply p-4; }
+}
+
+/* Custom Scrollbar for premium feel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+}

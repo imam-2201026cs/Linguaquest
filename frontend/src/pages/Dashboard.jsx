@@ -391,28 +391,31 @@ export default function Dashboard() {
       </div>
 
       {/* Daily Challenge Banner */}
-      <div className="glass-card p-6 md:p-8 bg-gradient-to-br from-red-500/10 to-orange-500/10 border-red-500/20 text-center relative overflow-hidden group cursor-pointer" onClick={() => navigate('/challenge')}>
-        <div className="absolute -top-10 -right-10 w-40 h-40 bg-red-500/20 rounded-full blur-3xl group-hover:bg-red-500/30 transition-all"></div>
-        <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-orange-500/20 rounded-full blur-3xl group-hover:bg-orange-500/30 transition-all"></div>
-        
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 text-left">
-          <div className="flex items-center gap-6">
-            <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl flex items-center justify-center shrink-0 shadow-xl shadow-red-500/20 group-hover:scale-110 transition-transform">
-              <Target size={32} className="text-white" />
-            </div>
-            <div>
-              <h2 className="text-2xl font-display font-bold text-white mb-1">Global Daily Challenge</h2>
-              <p className="text-slate-300 text-sm max-w-md">Compete with everyone in a fast 10-question quiz. Earn <strong className="text-accent-yellow">Double XP</strong>!</p>
-            </div>
+      <div 
+        onClick={() => navigate('/challenge')}
+        className="glass-card p-6 md:p-8 bg-gradient-to-br from-red-500/10 to-orange-500/10 border-red-500/20 cursor-pointer hover:border-red-500/40 transition-all group overflow-hidden relative"
+      >
+        <div className="absolute -top-10 -right-10 w-40 h-40 bg-red-500/10 rounded-full blur-3xl group-hover:bg-red-500/20 transition-all"></div>
+        <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 relative z-10 text-center md:text-left">
+          <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-xl shadow-red-500/20 group-hover:scale-110 transition-transform">
+            <Target size={32} className="text-white" />
           </div>
-          <Link to="/challenge" className="btn-primary shrink-0 flex items-center gap-2 whitespace-nowrap">
-            Play Now <ArrowRight size={16} />
-          </Link>
+          <div className="flex-1">
+            <div className="flex flex-col md:flex-row items-center gap-2 mb-2 justify-center md:justify-start">
+              <h2 className="text-xl md:text-2xl font-display font-bold text-white">Daily Global Challenge</h2>
+              <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">LIVE</span>
+            </div>
+            <p className="text-sm text-slate-400 max-w-lg mx-auto md:mx-0">Everyone gets the exact same quiz today. Compete globally, earn <strong className="text-accent-yellow">Double XP</strong>, and climb the leaderboard!</p>
+          </div>
+          <div className="flex flex-row md:flex-col items-center gap-2 md:gap-1">
+            <span className="text-xs text-slate-500 font-bold uppercase tracking-wider">Time Left</span>
+            <span className="text-lg md:text-xl font-mono font-bold text-red-400">{timeLeft}</span>
+          </div>
         </div>
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         {[
           { icon: Zap,    label: 'Total XP',   value: currentXP,                    color: 'text-accent-yellow',  bg: 'bg-accent-yellow/10'  },
           { icon: Target, label: 'Activities', value: totalActivities,               color: 'text-primary-400',    bg: 'bg-primary-500/10'    },
@@ -458,7 +461,7 @@ export default function Dashboard() {
         <h2 className="text-xl font-display font-bold text-white mb-4 flex items-center gap-2">
           <TrendingUp size={20} className="text-primary-400" /> Practice Modules
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {modules.map(({ to, icon: Icon, label, desc, gradient, glow, stat, xp }) => (
             <Link key={to} to={to}
               className={`glass-card p-5 hover:scale-[1.03] transition-all duration-300 hover:shadow-xl ${glow} group cursor-pointer`}>

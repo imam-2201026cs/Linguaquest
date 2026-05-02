@@ -312,12 +312,12 @@ function ChatInterface({ conversationId, scenario, difficulty, mode, openingMess
   const formatTime = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
   return (
-    <div className="flex gap-4 h-[calc(100vh-140px)] max-h-[850px]" onClick={handleWordClick}>
+    <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-140px)] lg:h-[calc(100vh-140px)] max-h-[850px]" onClick={handleWordClick}>
       {popupWord && <WordPopup word={popupWord} onClose={() => setPopupWord(null)} source="conversation" />}
       
-      <div className="flex-1 flex flex-col glass-card overflow-hidden">
+      <div className="flex-1 flex flex-col glass-card overflow-hidden min-h-[400px]">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/5">
+        <div className="flex items-center justify-between p-3 md:p-4 border-b border-white/5">
           <div className="flex items-center gap-3">
             <div className="text-2xl">{scenario.emoji || scenario.icon}</div>
             <div>
@@ -326,14 +326,14 @@ function ChatInterface({ conversationId, scenario, difficulty, mode, openingMess
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="text-sm font-mono text-slate-300 bg-dark-600 px-3 py-1 rounded-lg flex items-center gap-2">
+            <div className="hidden sm:flex text-sm font-mono text-slate-300 bg-dark-600 px-3 py-1 rounded-lg items-center gap-2">
               <Clock size={12}/> {formatTime(elapsed)}
             </div>
             <button onClick={() => setTtsEnabled(p => !p)} className={`p-2 rounded-lg ${ttsEnabled ? 'text-primary-400 bg-primary-500/10' : 'text-slate-500'}`}>
               {ttsEnabled ? <Volume2 size={16}/> : <VolumeX size={16}/>}
             </button>
-            <button onClick={() => setShowEndConfirm(true)} className="btn-primary py-1.5 px-3 text-xs bg-red-500/20 hover:bg-red-500/30 text-red-400 border-none">
-              End Session
+            <button onClick={() => setShowEndConfirm(true)} className="btn-primary py-1.5 px-3 text-[10px] sm:text-xs bg-red-500/20 hover:bg-red-500/30 text-red-400 border-none">
+              End
             </button>
           </div>
         </div>
@@ -382,8 +382,8 @@ function ChatInterface({ conversationId, scenario, difficulty, mode, openingMess
         </div>
       </div>
 
-      {/* Side Panel */}
-      <div className="w-64 shrink-0 flex flex-col gap-3 overflow-y-auto custom-scrollbar">
+      {/* Side Panel - Hidden on mobile, shown on large screens */}
+      <div className="hidden lg:flex w-64 shrink-0 flex-col gap-3 overflow-y-auto custom-scrollbar">
         <div className="glass-card pt-12 pb-4 px-4 flex flex-col items-center justify-center gap-4 bg-gradient-to-b from-dark-800 to-dark-900 border-primary-500/10">
           <AIAvatar isThinking={loading} isSpeaking={speaking} avatarUrl={aiAvatarImg} />
           <div className="text-center">
@@ -534,7 +534,7 @@ function ProfessionalSetupModal({ role, onStart, onClose }) {
           {/* Rounds */}
           <div>
             <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 block">Select Round <span className="text-red-500">*</span></label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {rounds.map(r => (
                 <button key={r.id} onClick={() => setRound(r.id)}
                   className={`p-3 rounded-2xl border text-center transition-all ${round === r.id ? 'bg-primary-50 border-primary-500 ring-2 ring-primary-500/20' : 'bg-slate-50 border-slate-100 hover:border-slate-200'}`}>
@@ -562,7 +562,7 @@ function ProfessionalSetupModal({ role, onStart, onClose }) {
           {/* Interviewer */}
           <div>
             <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 block">Select Your Interviewer <span className="text-red-500">*</span></label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {INTERVIEWERS.map(i => (
                 <button key={i.id} onClick={() => setInterviewer(i)}
                   className={`p-2 rounded-2xl border transition-all ${interviewer.id === i.id ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500' : 'border-slate-100 hover:border-slate-200'}`}>
