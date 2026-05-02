@@ -459,7 +459,23 @@ router.post('/end', auth, async (req, res) => {
 
     if (!conversation) return res.status(404).json({ message: 'Conversation not found' });
 
-    const scenario = getScenarioById(conversation.scenarioId);
+    let scenario = getScenarioById(conversation.scenarioId);
+    
+    // Fallback for professional interviews which have dynamic IDs not in SCENARIOS data
+    if (!scenario && conversation.metadata?.isProfessional) {
+      scenario = {
+        title: conversation.scenarioTitle || 'Professional Interview',
+        userRole: 'Candidate',
+        outcomes: {
+          good: "Outstanding performance! You've demonstrated all the key qualities we're looking for.",
+          average: "Good effort. You have the right foundation, but could refine some of your answers.",
+          bad: "We appreciate your time, but we've decided to move forward with other candidates at this stage."
+        }
+      };
+    }
+
+    if (!scenario) return res.status(404).json({ message: 'Scenario details not found' });
+
     const userMessages = conversation.messages.filter(m => m.role === 'user');
 
     if (userMessages.length < 2) {
