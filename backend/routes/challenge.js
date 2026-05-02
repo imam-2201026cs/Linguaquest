@@ -34,21 +34,21 @@ router.get('/daily', auth, async (req, res) => {
         Create a 10-question Daily Challenge Quiz for English learners.
         Mix Grammar (tenses, prepositions), Vocabulary (synonyms, definitions), and Idioms.
         Difficulty: Intermediate (B1-B2).
-        Return ONLY a JSON array of 10 objects. 
-        Format:
-        [
-          {
-            "question": "Which sentence is correct?",
-            "options": ["He go to school", "He goes to school", "He going to school", "He gone to school"],
-            "correct": 1,
-            "explanation": "Third person singular 'he' requires 'goes'."
-          }
-        ]
+        Return a JSON object with a "questions" key containing an array of 10 objects.
+        Each question object format:
+        {
+          "question": "Which sentence is correct?",
+          "options": ["He go to school", "He goes to school", "He going to school", "He gone to school"],
+          "correct": 1,
+          "explanation": "Third person singular 'he' requires 'goes'."
+        }
       `;
       
-      const questions = await generateJSON(prompt);
+      const result = await generateJSON(prompt);
+      const questions = Array.isArray(result) ? result : (result.questions || []);
       
       if (!Array.isArray(questions) || questions.length < 5) {
+        console.error('Invalid result from AI:', result);
         throw new Error('AI failed to generate a valid question array');
       }
 
