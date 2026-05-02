@@ -8,7 +8,8 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 const router = express.Router();
 
 const getTodayString = () => {
-  const d = new Date();
+  // Use Asia/Kolkata timezone to ensure it rolls over at the user's midnight (IST)
+  const d = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
@@ -28,7 +29,7 @@ router.get('/daily', auth, async (req, res) => {
       console.log('Generating new Daily Challenge for', today);
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
       // Ensure we use the stable model to avoid rate limits
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
       
       const prompt = `
         You are an expert English teacher. Create a 10-question Daily Challenge Quiz.
