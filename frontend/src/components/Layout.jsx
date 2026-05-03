@@ -11,6 +11,7 @@ const navItems = [
   { to: '/challenge', icon: Target, label: 'Daily Challenge' },
   { to: '/conversation', icon: MessageCircle, label: 'AI Conversation', badge: 'NEW' },
   { to: '/vocabulary', icon: Brain, label: 'Vocabulary' },
+  { to: '/verbal-test', icon: CheckSquare, label: 'Verbal Ability', badge: 'PRO' },
   { to: '/writing', icon: PenTool, label: 'Writing' },
   { to: '/listening', icon: Headphones, label: 'Listening' },
   { to: '/reading', icon: BookOpen, label: 'Reading' },

@@ -16,6 +16,7 @@ import PublicProfile from './pages/PublicProfile';
 import Vocabulary from './pages/Vocabulary';
 import DailyChallenge from './pages/DailyChallenge';
 import Conversation from './pages/Conversation';
+import VerbalAbilityTest from './pages/VerbalAbilityTest';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -65,6 +66,7 @@ export default function App() {
             <Route path="/grammar" element={<Grammar />} />
             <Route path="/vocabulary" element={<Vocabulary />} />
             <Route path="/challenge" element={<DailyChallenge />} />
+            <Route path="/verbal-test" element={<VerbalAbilityTest />} />
             <Route path="/conversation" element={<Conversation />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
             <Route path="/profile" element={<Profile />} />

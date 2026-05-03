@@ -12,6 +12,7 @@ import leaderboardRoutes from './routes/leaderboard.js';
 import vocabularyRoutes from './routes/vocabulary.js';
 import challengeRoutes from './routes/challenge.js';
 import conversationRoutes from './routes/conversation.js';
+import verbalTestRoutes from './routes/verbalTest.js';
 
 dotenv.config();
 
@@ -40,6 +41,7 @@ app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/vocabulary', vocabularyRoutes);
 app.use('/api/challenge', challengeRoutes);
 app.use('/api/conversation', conversationRoutes);
+app.use('/api/verbal-test', verbalTestRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'English Learning API is running!' });

@@ -15,6 +15,7 @@ const modules = [
   { to: '/listening', icon: Headphones,   label: 'Listening', desc: 'Train comprehension skills',           gradient: 'from-purple-600 to-pink-500',  glow: 'shadow-purple-500/20', stat: 'listeningCompleted', xp: '8-40 XP',  radarKey: 'listening' },
   { to: '/reading',   icon: BookOpen,     label: 'Reading',   desc: 'Build vocabulary & inference',         gradient: 'from-green-600 to-emerald-500', glow: 'shadow-green-500/20',  stat: 'readingCompleted',   xp: '10-50 XP', radarKey: 'reading'   },
   { to: '/grammar',   icon: CheckSquare,  label: 'Grammar',   desc: 'Fix mistakes with AI explanations',   gradient: 'from-orange-500 to-amber-400', glow: 'shadow-orange-500/20', stat: 'grammarChecked',     xp: '5-15 XP',  radarKey: 'grammar'   },
+  { to: '/verbal-test', icon: Zap,          label: 'Verbal Test', desc: '30-question targeted practice tests', gradient: 'from-amber-500 to-orange-600', glow: 'shadow-orange-500/20', stat: 'verbalTestCompleted', xp: '150 XP', radarKey: 'verbal' },
   { to: '/conversation', icon: MessageCircle, label: 'AI Chat',  desc: 'Role-play real scenarios with AI',     gradient: 'from-violet-600 to-pink-600',  glow: 'shadow-violet-500/20', stat: 'conversationsCompleted', xp: '20-80 XP', radarKey: 'conversation' },
 ];
 
