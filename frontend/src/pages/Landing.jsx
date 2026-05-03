@@ -8,6 +8,7 @@ const features = [
   { icon: Brain,        title: 'Vocabulary Builder',  desc: 'Master new words with our spaced-repetition flashcard system tailored to your interactions.', color: 'from-pink-500 to-rose-400' },
   { icon: Target,       title: 'Daily Challenge',     desc: 'Test your knowledge daily with 10-question AI generated quizzes across all difficulty levels.', color: 'from-yellow-500 to-orange-400' },
   { icon: PenTool,      title: 'AI Writing Coach',    desc: 'Get instant AI feedback with detailed scoring, corrections, and sentence-level highlights.', color: 'from-blue-500 to-cyan-400'     },
+  { icon: CheckSquare,  title: 'Verbal Ability',      desc: 'Master grammar, idioms, and vocabulary with 30-question targeted practice tests.', color: 'from-amber-500 to-orange-400' },
   { icon: Headphones,   title: 'Listening Practice',  desc: 'Train your ear with AI-generated passages and comprehension questions.',                      color: 'from-purple-500 to-pink-400'   },
   { icon: BookOpen,     title: 'Smart Reading',       desc: 'Build comprehension with adaptive reading exercises across all levels.',                       color: 'from-green-500 to-emerald-400' },
 ];
@@ -40,6 +41,7 @@ const MODULE_PREVIEW = [
   { label: 'Writing', icon: '✍️', score: 87, badge: '+40 XP', color: 'from-blue-600 to-cyan-500' },
   { label: 'Vocabulary', icon: '🧠', score: 98, badge: '+25 XP', color: 'from-pink-600 to-rose-500' },
   { label: 'Daily Quiz', icon: '🎯', score: 100, badge: '+200 XP', color: 'from-yellow-500 to-orange-400' },
+  { label: 'Verbal Test', icon: '⚡', score: 85, badge: '+150 XP', color: 'from-amber-600 to-orange-500' },
   { label: 'Reading', icon: '📖', score: 95, badge: '+50 XP', color: 'from-green-600 to-emerald-500' },
 ];
 
