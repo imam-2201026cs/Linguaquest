@@ -3,8 +3,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { 
   Target, Timer, CheckCircle, XCircle, ChevronRight, Zap, Trophy, 
-  Globe, Flame, ArrowLeft, Volume2, Languages, Lightbulb, RefreshCw,
-  ChevronUp
+  Globe, Flame, ArrowLeft, Volume2, Languages, Lightbulb, RefreshCw
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import XPReward from '../components/XPReward';
@@ -270,20 +269,7 @@ export default function DailyChallenge() {
           )}
         </div>
 
-        {/* Bottom Interaction */}
-        {isAnswered && !showStageBreak && (
-          <div className="fixed bottom-10 left-0 right-0 px-6 animate-bounce-subtle">
-            <button 
-              onClick={handleNext}
-              className="w-full flex flex-col items-center gap-1 group"
-            >
-              <ChevronUp size={32} className="text-primary-400 group-hover:text-primary-300" />
-              <span className="text-xs font-bold uppercase tracking-widest text-primary-400">Swipe Up</span>
-            </button>
-          </div>
-        )}
-
-        {/* Floating next button for non-swipe users */}
+        {/* Floating next button */}
         {isAnswered && !showStageBreak && (
           <div className="p-6">
              <button 
