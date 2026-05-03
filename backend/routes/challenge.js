@@ -60,15 +60,9 @@ router.get('/daily', auth, async (req, res) => {
       console.log('Successfully saved new challenge for', today);
     }
     
-    // Strip correct answers if user hasn't submitted yet
+    // We now return the full question data (including correct and explanation) 
+    // to support immediate feedback in the frontend.
     let responseData = challenge.toObject();
-    if (!submission) {
-      responseData.questions = responseData.questions.map(q => {
-        delete q.correct;
-        delete q.explanation;
-        return q;
-      });
-    }
 
     res.json({
       challenge: responseData,
@@ -87,7 +81,7 @@ router.post('/submit', auth, async (req, res) => {
     const today = getTodayString();
     
     const existing = await ChallengeSubmission.findOne({ userId: req.user._id, dateString: today });
-    if (existing) return res.status(400).json({ message: 'Already completed today.' });
+    const isFirstTime = !existing;
 
     const challenge = await DailyChallenge.findOne({ dateString: today });
     if (!challenge) return res.status(404).json({ message: 'Challenge not found.' });
@@ -105,47 +99,54 @@ router.post('/submit', auth, async (req, res) => {
     const scorePercentage = Math.round((correctCount / questionsAnswered) * 100);
     const xpEarned = correctCount * 10 * 2; // DOUBLE XP: 10 XP per correct * 2
 
-    // Save submission
-    const submission = new ChallengeSubmission({
-      userId: req.user._id,
-      challengeId: challenge._id,
-      dateString: today,
-      score: scorePercentage,
-      questionsAnswered
-    });
-    await submission.save();
-
-    // Update Global Challenge Stats
-    challenge.totalCompletions += 1;
-    if (questionsAnswered === 10) challenge.totalStage2Completions += 1;
+    // Save submission (only if first time, or we could update it. 
+    // Let's create a new one for each attempt or just overwrite? 
+    // The user wants to "attempt more than one". Let's save each as a new entry or just update the old one.
+    // Actually, let's only save/update the first one for stats, but allow the user to see their result.
     
-    // Recalculate average score
-    const totalScorePool = (challenge.averageScore * (challenge.totalCompletions - 1)) + scorePercentage;
-    challenge.averageScore = totalScorePool / challenge.totalCompletions;
-    await challenge.save();
+    if (isFirstTime) {
+      const submission = new ChallengeSubmission({
+        userId: req.user._id,
+        challengeId: challenge._id,
+        dateString: today,
+        score: scorePercentage,
+        questionsAnswered
+      });
+      await submission.save();
 
-    // Give rewards to user
-    const user = await User.findById(req.user._id);
-    user.xp += xpEarned;
-    user.coins += Math.floor(xpEarned / 5);
-    await user.save();
+      // Update Global Challenge Stats
+      challenge.totalCompletions += 1;
+      if (questionsAnswered === 10) challenge.totalStage2Completions += 1;
+      
+      // Recalculate average score
+      const totalScorePool = (challenge.averageScore * (challenge.totalCompletions - 1)) + scorePercentage;
+      challenge.averageScore = totalScorePool / challenge.totalCompletions;
+      await challenge.save();
 
-    // Log Activity
-    const activity = new Activity({
-      userId: req.user._id,
-      type: 'grammar', // Challenge falls under grammar/general
-      topic: `Daily Challenge (${questionsAnswered} Qs)`,
-      score: scorePercentage,
-      xpEarned
-    });
-    await activity.save();
+      // Give rewards to user
+      const user = await User.findById(req.user._id);
+      user.xp += xpEarned;
+      user.coins += Math.floor(xpEarned / 5);
+      await user.save();
+
+      // Log Activity
+      const activity = new Activity({
+        userId: req.user._id,
+        type: 'grammar', // Challenge falls under grammar/general
+        topic: `Daily Challenge (${questionsAnswered} Qs)`,
+        score: scorePercentage,
+        xpEarned
+      });
+      await activity.save();
+    }
 
     res.json({
       score: scorePercentage,
       correct: correctCount,
       total: questionsAnswered,
-      xpEarned,
-      coinsEarned: Math.floor(xpEarned / 5),
+      xpEarned: isFirstTime ? xpEarned : 0,
+      coinsEarned: isFirstTime ? Math.floor(xpEarned / 5) : 0,
+      isFirstTime,
       globalStats: {
         totalCompletions: challenge.totalCompletions,
         totalStage2Completions: challenge.totalStage2Completions,
