@@ -25,7 +25,7 @@ function ReadingRoadmap({ library, onSelectBook, completedCount }) {
             <Map size={28} className="text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-display font-bold text-white">Reading Roadmap</h1>
+            <h1 className="text-3xl font-display font-bold text-white">Reading Roadmap <span className="text-green-500 text-xs">v2.0</span></h1>
             <p className="text-slate-400 text-sm">180 Progressive Cartoon Stories</p>
           </div>
         </div>

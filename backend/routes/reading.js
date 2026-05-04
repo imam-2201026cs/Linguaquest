@@ -138,7 +138,7 @@ router.get('/books', auth, async (req, res) => {
       };
     });
 
-    res.json({ library, userLevel, completedCount: completed.length });
+    res.json({ library, userLevel, completedCount: completed.length, version: '2.0-roadmap' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
