@@ -8,7 +8,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Writing from './pages/Writing';
 import Listening from './pages/Listening';
-import Reading from './pages/Reading';
+import Reading from './pages/Reading'; // v2.0 Roadmap Ready
 import Grammar from './pages/Grammar';
 import Leaderboard from './pages/Leaderboard';
 import Profile from './pages/Profile';
