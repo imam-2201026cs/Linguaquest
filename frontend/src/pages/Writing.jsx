@@ -94,10 +94,26 @@ function WritingEditor({ mode, prompt, onSubmit, onBack }) {
   const [museLoading, setMuseLoading] = useState(false);
   const [museSuggestions, setMuseSuggestions] = useState(null);
   const [milestones, setMilestones] = useState(new Set());
+  const [mission, setMission] = useState(null);
+  const [isMissionComplete, setIsMissionComplete] = useState(false);
+
+  useEffect(() => {
+    axios.get('/api/writing/daily-mission').then(res => setMission(res.data));
+  }, []);
 
   useEffect(() => { 
     const currentWordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
     setWordCount(currentWordCount); 
+
+    // Check Mission
+    if (mission && text.toLowerCase().includes(mission.word.toLowerCase())) {
+      if (!isMissionComplete) {
+        setIsMissionComplete(true);
+        toast.success(`🎯 Mission Accomplished! Included "${mission.word}"`, { icon: '🎯' });
+      }
+    } else {
+      setIsMissionComplete(false);
+    }
 
     // Milestones
     const checkMilestone = (count, emoji, msg) => {
@@ -182,6 +198,21 @@ function WritingEditor({ mode, prompt, onSubmit, onBack }) {
       </div>
       <div className={`grid grid-cols-1 ${focusMode ? 'lg:grid-cols-1' : 'lg:grid-cols-3'} gap-4 transition-all duration-500`}>
         <div className={focusMode ? 'max-w-2xl mx-auto w-full space-y-6' : 'lg:col-span-2 space-y-4'}>
+          {mission && (
+            <div className={`p-3 rounded-xl border transition-all duration-500 flex items-center justify-between ${isMissionComplete ? 'bg-green-500/20 border-green-500/40 text-green-400' : 'bg-blue-500/10 border-blue-500/20 text-blue-400'}`}>
+              <div className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isMissionComplete ? 'bg-green-500 text-white' : 'bg-blue-500 text-white animate-pulse'}`}>
+                  <Zap size={16} />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest">Daily Mission</p>
+                  <p className="text-sm font-semibold">Include the word: <span className="underline decoration-2 underline-offset-4">{mission.word}</span> <span className="text-[10px] opacity-70 font-normal italic">({mission.hint})</span></p>
+                </div>
+              </div>
+              {isMissionComplete && <div className="flex items-center gap-2 text-xs font-bold bg-green-500/20 px-2 py-1 rounded-lg"><CheckCircle size={14} /> +{mission.bonus} XP</div>}
+            </div>
+          )}
+
           {/* Prompt */}
           <div className="glass-card p-5 border-primary-500/20 bg-primary-500/5">
             {mode.id === 'story_continuation' && (<div><p className="text-xs text-primary-400 font-semibold mb-2">📖 STORY STARTER</p><p className="text-slate-200 italic leading-relaxed">"{prompt.starter}"</p><p className="text-xs text-slate-500 mt-2">Topic: {prompt.topic}</p></div>)}

@@ -60,54 +60,61 @@ function ReadingRoadmap({ library, onSelectBook, completedCount }) {
               </div>
 
               {/* Roadmap Path */}
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {section.books.map((book, idx) => {
-                  // Safety: Level 1 Lesson 1 is ALWAYS unlocked regardless of backend response
-                  const isUnlockedByForce = (lvl === 'beginner' && idx === 0);
-                  const isLocked = !book.isUnlocked && !isUnlockedByForce;
-                  const isCompleted = book.isCompleted;
+              <div className="space-y-8">
+                {['beginner', 'intermediate', 'advanced'].map(tier => {
+                  const tierBooks = section.books.filter(b => b.tier === tier);
+                  if (!tierBooks.length) return null;
                   
                   return (
-                    <button
-                      key={book.id}
-                      disabled={isLocked}
-                      onClick={() => onSelectBook(book)}
-                      className={`relative group p-4 rounded-2xl border transition-all duration-300 flex flex-col items-center text-center ${
-                        isCompleted 
-                        ? 'bg-green-500/10 border-green-500/30 shadow-lg shadow-green-500/5' 
-                        : isLocked 
-                        ? 'bg-dark-800/50 border-white/5 opacity-40 cursor-not-allowed'
-                        : 'bg-dark-700 border-white/10 hover:border-green-500/50 hover:scale-105 hover:shadow-xl hover:shadow-green-500/10 cursor-pointer'
-                      }`}
-                    >
-                      {/* Badge */}
-                      <div className="absolute -top-2 -right-2 z-20">
-                        {isCompleted ? (
-                          <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-lg"><CheckCircle size={14} className="text-white" /></div>
-                        ) : isLocked ? (
-                          <div className="w-6 h-6 bg-dark-800 border border-white/10 rounded-full flex items-center justify-center"><Lock size={12} className="text-slate-500" /></div>
-                        ) : (
-                          <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center animate-pulse shadow-lg"><Zap size={12} className="text-white" /></div>
-                        )}
+                    <div key={tier} className="space-y-3">
+                      <div className="flex items-center gap-2 opacity-50">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{tier} Phase</span>
+                        <div className="h-[1px] flex-1 bg-white/5" />
                       </div>
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                        {tierBooks.map((book) => {
+                          const idx = section.books.indexOf(book);
+                          const isUnlockedByForce = (lvl === 'beginner' && idx === 0);
+                          const isLocked = !book.isUnlocked && !isUnlockedByForce;
+                          const isCompleted = book.isCompleted;
+                          
+                          return (
+                            <button
+                              key={book.id}
+                              disabled={isLocked}
+                              onClick={() => onSelectBook(book)}
+                              className={`relative group p-4 rounded-2xl border transition-all duration-300 flex flex-col items-center text-center ${
+                                isCompleted 
+                                ? 'bg-green-500/10 border-green-500/30 shadow-lg shadow-green-500/5' 
+                                : isLocked 
+                                ? 'bg-dark-800/50 border-white/5 opacity-40 cursor-not-allowed'
+                                : 'bg-dark-700 border-white/10 hover:border-green-500/50 hover:scale-105 hover:shadow-xl hover:shadow-green-500/10 cursor-pointer'
+                              }`}
+                            >
+                              {/* Badge */}
+                              <div className="absolute -top-2 -right-2 z-20">
+                                {isCompleted ? (
+                                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-lg"><CheckCircle size={14} className="text-white" /></div>
+                                ) : isLocked ? (
+                                  <div className="w-6 h-6 bg-dark-800 border border-white/10 rounded-full flex items-center justify-center"><Lock size={12} className="text-slate-500" /></div>
+                                ) : (
+                                  <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center animate-pulse shadow-lg"><Zap size={12} className="text-white" /></div>
+                                )}
+                              </div>
 
-                      <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">
-                        {book.emoji}
+                              <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">
+                                {book.emoji}
+                              </div>
+                              
+                              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1">Module {idx + 1}</div>
+                              <h3 className="text-xs font-bold text-white leading-tight line-clamp-2 min-h-[32px]">
+                                {book.title}
+                              </h3>
+                            </button>
+                          );
+                        })}
                       </div>
-                      
-                      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1">Lesson {idx + 1}</div>
-                      <h3 className="text-xs font-bold text-white leading-tight line-clamp-2 min-h-[32px]">
-                        {book.title}
-                      </h3>
-                      
-                      <div className={`mt-3 text-[10px] px-2 py-0.5 rounded-full border ${
-                        book.tier === 'beginner' ? 'border-green-500/30 text-green-400 bg-green-500/5' :
-                        book.tier === 'intermediate' ? 'border-blue-500/30 text-blue-400 bg-blue-500/5' :
-                        'border-purple-500/30 text-purple-400 bg-purple-500/5'
-                      }`}>
-                        {book.tier}
-                      </div>
-                    </button>
+                    </div>
                   );
                 })}
               </div>

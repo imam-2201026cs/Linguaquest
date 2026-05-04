@@ -7,6 +7,21 @@ import { updateStreak } from '../middleware/streak.js';
 
 const router = express.Router();
 
+const MISSIONS = [
+  { word: 'nevertheless', bonus: 50, hint: 'Use it to show contrast.' },
+  { word: 'exponentially', bonus: 60, hint: 'Use it to describe rapid growth.' },
+  { word: 'serendipity', bonus: 80, hint: 'Use it to describe a happy accident.' },
+  { word: 'collaborate', bonus: 40, hint: 'Use it when talking about working together.' },
+  { word: 'sustainable', bonus: 50, hint: 'Use it when talking about the environment.' },
+  { word: 'perspectives', bonus: 50, hint: 'Use it when discussing different opinions.' }
+];
+
+router.get('/daily-mission', auth, (req, res) => {
+  const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
+  const mission = MISSIONS[dayOfYear % MISSIONS.length];
+  res.json(mission);
+});
+
 const getLevelTier = (level) => {
   if (level <= 2)  return 'beginner';
   if (level <= 4)  return 'elementary';
@@ -214,6 +229,16 @@ Return ONLY JSON:
     }
 
     let xpEarned = Math.floor(evaluation.overallScore / 10) * 5 + 10;
+    
+    // Check for Mission Word
+    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
+    const mission = MISSIONS[dayOfYear % MISSIONS.length];
+    let missionBonus = 0;
+    if (text.toLowerCase().includes(mission.word.toLowerCase())) {
+      missionBonus = mission.bonus;
+      xpEarned += missionBonus;
+    }
+
     if (mode === 'timed_challenge') xpEarned += 15;
     if (mode === 'creative_scene')  xpEarned += 10;
     if (evaluation.overallScore >= 90) xpEarned += 20;
