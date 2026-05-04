@@ -4,7 +4,8 @@ import toast from 'react-hot-toast';
 import {
   PenTool, Send, RotateCcw, Zap, BookOpen, Star, Timer,
   ChevronRight, Lock, Lightbulb, CheckCircle, AlertTriangle,
-  Newspaper, Mail, Image, BarChart2, RefreshCw, Eye, Wand2, FileText
+  Newspaper, Mail, Image, BarChart2, RefreshCw, Eye, Wand2, FileText,
+  Maximize2, Minimize2, Sparkles, MessageSquarePlus
 } from 'lucide-react';
 import XPReward from '../components/XPReward';
 import { useAuth } from '../context/AuthContext';
@@ -88,13 +89,28 @@ function ModeSelector({ modes, onSelect, userLevel }) {
 }
 
 function WritingEditor({ mode, prompt, onSubmit, onBack }) {
-  const [text, setText] = useState('');
-  const [wordCount, setWordCount] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [startTime] = useState(Date.now());
-  const [improving, setImproving] = useState(false);
-  const [improveResult, setImproveResult] = useState(null);
   const [selectedSentence, setSelectedSentence] = useState('');
+  const [focusMode, setFocusMode] = useState(false);
+  const [museLoading, setMuseLoading] = useState(false);
+  const [museSuggestions, setMuseSuggestions] = useState(null);
+  const [milestones, setMilestones] = useState(new Set());
+
+  useEffect(() => { 
+    const currentWordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
+    setWordCount(currentWordCount); 
+
+    // Milestones
+    const checkMilestone = (count, emoji, msg) => {
+      if (currentWordCount >= count && !milestones.has(count)) {
+        toast.success(`${emoji} ${count} words! ${msg}`, { duration: 3000 });
+        setMilestones(prev => new Set([...prev, count]));
+      }
+    };
+    checkMilestone(50, '🌱', 'Great start!');
+    checkMilestone(100, '🌿', 'You are on a roll!');
+    checkMilestone(200, '🌳', 'Writing Master!');
+    checkMilestone(500, '🏆', 'Incredible stamina!');
+  }, [text]);
 
   useEffect(() => { setWordCount(text.trim() ? text.trim().split(/\s+/).length : 0); }, [text]);
 
@@ -128,6 +144,25 @@ function WritingEditor({ mode, prompt, onSubmit, onBack }) {
     toast.success('Improvement applied!');
   };
 
+  const handleSuggestIdea = async () => {
+    setMuseLoading(true);
+    try {
+      const { data } = await axios.post('/api/writing/suggest-idea', {
+        text,
+        prompt: prompt.starter || prompt.headline || prompt.topic || prompt.task,
+        mode: mode.label
+      });
+      setMuseSuggestions(data);
+    } catch { toast.error('AI Muse is taking a break...'); }
+    finally { setMuseLoading(false); }
+  };
+
+  const applySuggestion = (s) => {
+    setText(prev => prev + (prev.endsWith(' ') || !prev ? '' : ' ') + s);
+    setMuseSuggestions(null);
+    toast.success('Idea added!');
+  };
+
   const pct = Math.min(100, (wordCount / (prompt.minWords || 100)) * 100);
   const barColor = pct >= 100 ? 'bg-green-500' : pct >= 60 ? 'bg-yellow-500' : 'bg-primary-500';
   const connectors = ['Furthermore,', 'However,', 'In contrast,', 'As a result,', 'To conclude,', 'Additionally,', 'Nevertheless,', 'In particular,'];
@@ -135,13 +170,18 @@ function WritingEditor({ mode, prompt, onSubmit, onBack }) {
 
   return (
     <div className="max-w-4xl mx-auto animate-slide-up">
-      <div className="flex items-center gap-3 mb-6">
-        <button onClick={onBack} className="btn-ghost text-sm py-2 px-3 flex items-center gap-1"><RotateCcw size={14} /> Back</button>
-        <span className="text-xl">{mode.emoji}</span>
-        <h2 className="text-xl font-display font-bold text-white">{mode.label}</h2>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <button onClick={onBack} className="btn-ghost text-sm py-2 px-3 flex items-center gap-1"><RotateCcw size={14} /> Back</button>
+          <span className="text-xl">{mode.emoji}</span>
+          <h2 className="text-xl font-display font-bold text-white">{mode.label}</h2>
+        </div>
+        <button onClick={() => setFocusMode(!focusMode)} className="btn-ghost text-xs flex items-center gap-2">
+          {focusMode ? <><Minimize2 size={14} /> Exit Focus</> : <><Maximize2 size={14} /> Focus Mode</>}
+        </button>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 space-y-4">
+      <div className={`grid grid-cols-1 ${focusMode ? 'lg:grid-cols-1' : 'lg:grid-cols-3'} gap-4 transition-all duration-500`}>
+        <div className={focusMode ? 'max-w-2xl mx-auto w-full space-y-6' : 'lg:col-span-2 space-y-4'}>
           {/* Prompt */}
           <div className="glass-card p-5 border-primary-500/20 bg-primary-500/5">
             {mode.id === 'story_continuation' && (<div><p className="text-xs text-primary-400 font-semibold mb-2">📖 STORY STARTER</p><p className="text-slate-200 italic leading-relaxed">"{prompt.starter}"</p><p className="text-xs text-slate-500 mt-2">Topic: {prompt.topic}</p></div>)}
@@ -181,18 +221,36 @@ function WritingEditor({ mode, prompt, onSubmit, onBack }) {
             </div>
           )}
 
+          {museSuggestions && (
+            <div className="glass-card p-4 border-primary-500/20 bg-primary-500/5 animate-slide-up">
+              <p className="text-xs text-primary-400 font-semibold mb-3 flex items-center gap-1"><Sparkles size={12} /> AI MUSE SUGGESTIONS</p>
+              <div className="space-y-2 mb-4">
+                {museSuggestions.suggestions.map((s, i) => (
+                  <button key={i} onClick={() => applySuggestion(s)} className="w-full text-left p-3 rounded-lg bg-dark-600/50 hover:bg-primary-500/20 border border-white/5 text-sm text-slate-300 transition-all">
+                    "{s}"
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-slate-500 italic mb-2">Tip: {museSuggestions.tip}</p>
+              <button onClick={() => setMuseSuggestions(null)} className="text-xs text-slate-400 hover:text-white">Dismiss</button>
+            </div>
+          )}
+
           <div className="flex flex-wrap gap-2">
             <button onClick={handleImprove} disabled={improving || !text.trim()} className="btn-ghost flex items-center gap-2 text-sm disabled:opacity-50">
-              {improving ? <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" /> : <Wand2 size={14} />} Improve Selected
+              {improving ? <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" /> : <Wand2 size={14} />} Improve
+            </button>
+            <button onClick={handleSuggestIdea} disabled={museLoading || !text.trim()} className="btn-ghost flex items-center gap-2 text-sm disabled:opacity-50 text-primary-400 border-primary-500/20">
+              {museLoading ? <div className="w-4 h-4 border-2 border-primary-400 border-t-transparent rounded-full animate-spin" /> : <Sparkles size={14} />} Suggest Idea
             </button>
             <button onClick={handleSubmit} disabled={loading || wordCount < (prompt.minWords || 30)} className="btn-primary flex items-center gap-2 flex-1 justify-center disabled:opacity-50">
-              {loading ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Analysing...</> : <><Send size={16} /> Submit for Review</>}
+              {loading ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Analysing...</> : <><Send size={16} /> Submit Writing</>}
             </button>
           </div>
         </div>
 
-        {/* Side Panel */}
-        <div className="space-y-4">
+        {!focusMode && (
+          <div className="space-y-4 animate-fade-in">
           <div className="glass-card p-4">
             <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1"><Lightbulb size={12} /> Writing Buddy</h3>
             <p className="text-xs text-slate-500 mb-1.5">Useful connectors:</p>
@@ -379,10 +437,31 @@ export default function Writing() {
 
       {phase === 'prompts' && selectedMode && (
         <div className="max-w-3xl mx-auto animate-slide-up">
-          <div className="flex items-center gap-3 mb-6">
-            <button onClick={() => setPhase('modes')} className="btn-ghost text-sm py-2 px-3 flex items-center gap-1"><RotateCcw size={14} /> Back</button>
-            <span className="text-xl">{selectedMode.emoji}</span>
-            <h2 className="text-xl font-display font-bold text-white">{selectedMode.label} — Choose a Prompt</h2>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <button onClick={() => setPhase('modes')} className="btn-ghost text-sm py-2 px-3 flex items-center gap-1"><RotateCcw size={14} /> Back</button>
+              <span className="text-xl">{selectedMode.emoji}</span>
+              <h2 className="text-xl font-display font-bold text-white">{selectedMode.label} — Choose a Prompt</h2>
+            </div>
+            <button 
+              onClick={async () => {
+                const topic = prompt("Enter a topic you want to write about (e.g., 'Space exploration', 'My childhood'):");
+                if (!topic) return;
+                toast.loading("Magical prompt generating...");
+                try {
+                  const { data } = await axios.post('/api/writing/generate-custom-prompt', { topic, mode: selectedMode.id });
+                  setSelectedPrompt(data);
+                  setPhase('editor');
+                  toast.dismiss();
+                } catch { 
+                  toast.error("Failed to generate custom prompt"); 
+                  toast.dismiss();
+                }
+              }}
+              className="btn-ghost text-xs flex items-center gap-2 text-primary-400 border-primary-500/20"
+            >
+              <Sparkles size={14} /> Custom Topic
+            </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {prompts.map((prompt, i) => (

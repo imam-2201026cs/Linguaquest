@@ -111,6 +111,59 @@ router.post('/vocab-suggest', auth, async (req, res) => {
   }
 });
 
+// ── NEW: Generate custom AI prompt ───────────────────────────────────────────
+router.post('/generate-custom-prompt', auth, async (req, res) => {
+  try {
+    const { topic, mode } = req.body;
+    const user = await User.findById(req.user._id).select('level');
+    const tier = getLevelTier(user?.level || 1);
+
+    const prompt = `Create a unique writing prompt for an English learner at ${tier} level.
+Topic: "${topic}"
+Writing Mode: "${mode.replace('_', ' ')}"
+
+Return ONLY valid JSON:
+{
+  "title": "<short engaging title>",
+  "topic": "${topic}",
+  "starter": "<first sentence if story, or headline if news, or situation if letter>",
+  "task": "<clear instruction for the student>",
+  "minWords": 80,
+  "context": "<additional background info if needed>"
+}`;
+
+    const result = await generateJSON(prompt);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to generate custom prompt' });
+  }
+});
+
+// ── NEW: Suggest next idea (AI Muse) ─────────────────────────────────────────
+router.post('/suggest-idea', auth, async (req, res) => {
+  try {
+    const { text, prompt, mode } = req.body;
+    const user = await User.findById(req.user._id).select('level');
+    const tier = getLevelTier(user?.level || 1);
+
+    const aiPrompt = `The student is writing a ${mode} about "${prompt}".
+Current text: "${text}"
+The student is stuck. Give 3 creative ideas or the next possible sentence to help them continue.
+Level: ${tier} English.
+
+Return ONLY valid JSON:
+{
+  "suggestions": ["<idea/sentence 1>", "<idea/sentence 2>", "<idea/sentence 3>"],
+  "tip": "<short tip on how to expand the writing>"
+}`;
+
+    const result = await generateJSON(aiPrompt);
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ message: 'The AI Muse is sleeping, try again!' });
+  }
+});
+
 router.post('/submit', auth, async (req, res) => {
   try {
     const { text, topicId, mode, promptData, timeSpent } = req.body;
