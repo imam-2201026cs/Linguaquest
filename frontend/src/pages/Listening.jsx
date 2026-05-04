@@ -238,11 +238,11 @@ export default function Listening() {
         <div>
           <button
             onClick={() => { setSelectedVideo(null); setQuestions([]); setAnswers({}); setResult(null); }}
-            style={{ background: "none", border: "1px solid #e5e7eb", borderRadius: 8, padding: "6px 14px", cursor: "pointer", fontSize: 13, marginBottom: 16, color: "#374151" }}>
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, marginBottom: 16, color: "#fff", display: "flex", alignItems: "center", gap: 6 }}>
             ← Back to Library
           </button>
 
-          <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>▶️ {selectedVideo.title}</h3>
+          <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 20, color: "#fff" }}>▶️ {selectedVideo.title}</h3>
 
           <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, borderRadius: 12, overflow: "hidden", marginBottom: 20 }}>
             <iframe
@@ -263,11 +263,16 @@ export default function Listening() {
           ) : (
             <div>
               {vocabulary.length > 0 && (
-                <div style={{ marginBottom: 18 }}>
-                  <div style={{ fontWeight: 600, marginBottom: 8, fontSize: 14 }}>📚 Key Vocabulary</div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                    {vocabulary.map((w, i) => (
-                      <span key={i} style={{ background: "#ede9fe", color: "#5b21b6", borderRadius: 8, padding: "4px 10px", fontSize: 13 }}>{w}</span>
+                <div style={{ marginBottom: 24, padding: 16, background: "rgba(99,102,241,0.05)", borderRadius: 12, border: "1px solid rgba(99,102,241,0.1)" }}>
+                  <div style={{ fontWeight: 700, marginBottom: 12, fontSize: 15, color: "#818cf8", display: "flex", alignItems: "center", gap: 8 }}>
+                    <span>📚</span> Key Vocabulary
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                    {vocabulary.map((v, i) => (
+                      <div key={i} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "8px 12px" }}>
+                        <span style={{ fontWeight: 700, color: "#fff", fontSize: 13 }}>{typeof v === 'string' ? v : v.word}:</span>
+                        <span style={{ color: "#94a3b8", fontSize: 12, marginLeft: 6 }}>{typeof v === 'string' ? '' : v.definition}</span>
+                      </div>
                     ))}
                   </div>
                 </div>
