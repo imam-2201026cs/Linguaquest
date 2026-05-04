@@ -89,6 +89,13 @@ function ModeSelector({ modes, onSelect, userLevel }) {
 }
 
 function WritingEditor({ mode, prompt, onSubmit, onBack }) {
+  // ✅ FIX 1: All missing state declarations added
+  const [text, setText] = useState('');
+  const [wordCount, setWordCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [improving, setImproving] = useState(false);
+  const [improveResult, setImproveResult] = useState(null);
+  const [startTime] = useState(Date.now());
   const [selectedSentence, setSelectedSentence] = useState('');
   const [focusMode, setFocusMode] = useState(false);
   const [museLoading, setMuseLoading] = useState(false);
@@ -105,7 +112,6 @@ function WritingEditor({ mode, prompt, onSubmit, onBack }) {
     const currentWordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
     setWordCount(currentWordCount);
 
-    // Check Mission
     if (mission && text.toLowerCase().includes(mission.word.toLowerCase())) {
       if (!isMissionComplete) {
         setIsMissionComplete(true);
@@ -115,7 +121,6 @@ function WritingEditor({ mode, prompt, onSubmit, onBack }) {
       setIsMissionComplete(false);
     }
 
-    // Milestones
     const checkMilestone = (count, emoji, msg) => {
       if (currentWordCount >= count && !milestones.has(count)) {
         toast.success(`${emoji} ${count} words! ${msg}`, { duration: 3000 });
@@ -127,8 +132,6 @@ function WritingEditor({ mode, prompt, onSubmit, onBack }) {
     checkMilestone(200, '🌳', 'Writing Master!');
     checkMilestone(500, '🏆', 'Incredible stamina!');
   }, [text]);
-
-  useEffect(() => { setWordCount(text.trim() ? text.trim().split(/\s+/).length : 0); }, [text]);
 
   const handleSubmit = async () => {
     if (!text.trim()) return toast.error('Write something first!');
@@ -280,6 +283,7 @@ function WritingEditor({ mode, prompt, onSubmit, onBack }) {
           </div>
         </div>
 
+        {/* ✅ FIX 2: Added missing closing </div> for the sidebar column */}
         {!focusMode && (
           <div className="space-y-4 animate-fade-in">
             <div className="glass-card p-4">
@@ -313,6 +317,7 @@ function WritingEditor({ mode, prompt, onSubmit, onBack }) {
               </div>
             </div>
           </div>
+        )}
       </div>
     </div>
   );
