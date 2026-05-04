@@ -107,10 +107,16 @@ router.get('/books', auth, async (req, res) => {
         const isCompleted = completed.includes(b.id);
         let isUnlocked = false;
         
-        if (lvl === 'beginner' && index === 0) isUnlocked = true;
+        // 1. The very first book of the whole curriculum is ALWAYS unlocked
+        if (lvl === 'beginner' && index === 0) {
+          isUnlocked = true;
+        } 
+        // 2. Any book is unlocked if the one immediately before it is completed
         else if (index > 0) {
           isUnlocked = completed.includes(books[index - 1].id);
-        } else {
+        } 
+        // 3. First book of a new level is unlocked if the last book of the previous level is completed
+        else {
           const prevLvlIndex = levels.indexOf(lvl) - 1;
           if (prevLvlIndex >= 0) {
             const prevLvlBooks = READING_ROADMAP[levels[prevLvlIndex]];
