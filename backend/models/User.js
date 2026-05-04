@@ -31,6 +31,7 @@ const userSchema = new mongoose.Schema({
     totalScore: { type: Number, default: 0 },
     avgAccuracy: { type: Number, default: 0 },
   },
+  completedListeningVideos: [{ type: String }], // Array of YouTube IDs
   createdAt: { type: Date, default: Date.now }
 });
 

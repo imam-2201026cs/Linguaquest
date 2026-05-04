@@ -117,6 +117,11 @@
   .glass-card { @apply p-4; }
 }
 
+.video-card-mobile:active {
+  transform: scale(0.98);
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
 /* Custom Scrollbar for premium feel */
 ::-webkit-scrollbar {
   width: 6px;

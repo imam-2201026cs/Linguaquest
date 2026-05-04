@@ -19,240 +19,150 @@ const getLevelTier = (level) => {
 // ── Verified Working Video Library ────────────────────────────────────────────
 const VIDEO_LIBRARY = {
   beginner: [
-    {
-      id: 'v_b1',
-      youtubeId: 'mFCOUMsr0Hk',
-      title: 'Peppa Pig - Best Moments',
-      channel: 'Peppa Pig Official',
-      duration: '10 min',
-      topic: 'Family & Animals',
-      description: 'Fun moments with Peppa Pig and her family - perfect for beginners'
-    },
-    {
-      id: 'v_b2',
-      youtubeId: 'tos_O0WFeiM',
-      title: 'Wheels on the Bus + More Nursery Rhymes',
-      channel: 'Cocomelon',
-      duration: '8 min',
-      topic: 'Songs & Learning',
-      description: 'Popular nursery rhymes to build basic English vocabulary'
-    },
-    {
-      id: 'v_b3',
-      youtubeId: 'OPf0YbXqDm0',
-      title: 'Simple English for Beginners',
-      channel: 'BBC Learning English',
-      duration: '6 min',
-      topic: 'English Learning',
-      description: 'Simple everyday English phrases and vocabulary for beginners'
-    },
-    {
-      id: 'v_b4',
-      youtubeId: 'E2x3HdPlkQQ',
-      title: 'Kids Vocabulary - Animals',
-      channel: 'English Singsing',
-      duration: '5 min',
-      topic: 'Vocabulary',
-      description: 'Learn animal names and sounds in English with fun animations'
-    },
+    { id: 'v_a1_1', youtubeId: 'erjMgola4fQ', title: 'Language Learning', channel: 'Listening Time', duration: '3:43', topic: 'Language Learning' },
+    { id: 'v_a1_2', youtubeId: 'uVGV8LG3HHM', title: 'Cooking', channel: 'Listening Time', duration: '5:59', topic: 'Cooking' },
+    { id: 'v_a1_3', youtubeId: 'eYAaLWdx_h0', title: 'Weather', channel: 'Listening Time', duration: '5:04', topic: 'Weather' },
+    { id: 'v_a1_4', youtubeId: '2XRnB4wy4yA', title: 'Pets', channel: 'Listening Time', duration: '4:28', topic: 'Pets' },
+    { id: 'v_a1_5', youtubeId: 'Yt-M3uP5o-Y', title: "New Year's Resolutions", channel: 'Listening Time', duration: '4:11', topic: 'Resolutions' },
+    { id: 'v_a1_6', youtubeId: 'aQ0w2I0Eb9I', title: 'Daily Routine', channel: 'Listening Time', duration: '4:46', topic: 'Daily Routine' },
+    { id: 'v_a1_7', youtubeId: 'Y6CERK3AXCw', title: 'Social Media Apps', channel: 'Listening Time', duration: '4:31', topic: 'Social Media' },
+    { id: 'v_a1_8', youtubeId: 'uxbG_tFS0Jw', title: 'Exercise', channel: 'Listening Time', duration: '4:47', topic: 'Exercise' },
+    { id: 'v_a1_9', youtubeId: 'ApzkloKc3Lc', title: 'Homes', channel: 'Listening Time', duration: '4:30', topic: 'Homes' },
+    { id: 'v_a1_10', youtubeId: 'jbdoyphEcsc', title: 'Soccer', channel: 'Listening Time', duration: '4:42', topic: 'Soccer' },
+    { id: 'v_a1_11', youtubeId: 'v95eemWZ-4s', title: 'Jobs', channel: 'Listening Time', duration: '4:37', topic: 'Jobs' },
+    { id: 'v_a1_12', youtubeId: 'K_I9f_4_YqU', title: 'Transportation', channel: 'Listening Time', duration: '5:42', topic: 'Transportation' },
+    { id: 'v_a1_13', youtubeId: 'y-Yj_8K_m0E', title: 'Health', channel: 'Listening Time', duration: '5:28', topic: 'Health' },
+    { id: 'v_a1_14', youtubeId: 'F1S8TBRNIU0', title: 'School', channel: 'Listening Time', duration: '5:15', topic: 'School' },
+    { id: 'v_a1_15', youtubeId: 'zQNWyXKkdv0', title: 'Free Time', channel: 'Listening Time', duration: '5:45', topic: 'Free Time' }
   ],
   elementary: [
-    {
-      id: 'v_e1',
-      youtubeId: 'XiCrniLQGYc',
-      title: 'Amazing Animals - National Geographic Kids',
-      channel: 'Nat Geo Kids',
-      duration: '8 min',
-      topic: 'Animals & Nature',
-      description: 'Fascinating facts about animals from around the world'
-    },
-    {
-      id: 'v_e2',
-      youtubeId: '6dR86-dDqhc',
-      title: 'Weather Vocabulary for Kids',
-      channel: 'English Singsing',
-      duration: '5 min',
-      topic: 'Weather',
-      description: 'Learn weather words and expressions in English'
-    },
-    {
-      id: 'v_e3',
-      youtubeId: 'vQFSBFiH8PY',
-      title: '6 Minute English - Technology',
-      channel: 'BBC Learning English',
-      duration: '6 min',
-      topic: 'Technology',
-      description: 'Talk about technology using everyday English'
-    },
-    {
-      id: 'v_e4',
-      youtubeId: 'AnvJ3kpWMG4',
-      title: '6 Minute English - Sleep',
-      channel: 'BBC Learning English',
-      duration: '6 min',
-      topic: 'Health',
-      description: 'Discuss sleep and health using real natural English'
-    },
+    { id: 'v_a2_1', youtubeId: 'gOMypAhVaXE', title: 'Travel', channel: 'Listening Time', duration: '3:32', topic: 'Travel' },
+    { id: 'v_a2_2', youtubeId: 'Ym-C8K-jDIs', title: 'Sports', channel: 'Listening Time', duration: '4:18', topic: 'Sports' },
+    { id: 'v_a2_3', youtubeId: 'MX5DVYoggxY', title: 'Nature', channel: 'Listening Time', duration: '4:04', topic: 'Nature' },
+    { id: 'v_a2_4', youtubeId: 'M25ieTfZ1eI', title: 'Fears', channel: 'Listening Time', duration: '3:56', topic: 'Fears' },
+    { id: 'v_a2_5', youtubeId: 'uvkY-UGeCmk', title: 'Cars and Driving', channel: 'Listening Time', duration: '4:11', topic: 'Cars' },
+    { id: 'v_a2_6', youtubeId: 'r1ZZn-vgwVc', title: 'Elementary School', channel: 'Listening Time', duration: '4:00', topic: 'School' },
+    { id: 'v_a2_7', youtubeId: 'BiZ72VMogIk', title: 'Stress', channel: 'Listening Time', duration: '6:33', topic: 'Stress' },
+    { id: 'v_a2_8', youtubeId: 'xoqX3VYD8No', title: 'Manners', channel: 'Listening Time', duration: '5:30', topic: 'Manners' },
+    { id: 'v_a2_9', youtubeId: 'cRemof9m4BQ', title: 'Coffee', channel: 'Listening Time', duration: '4:50', topic: 'Coffee' },
+    { id: 'v_a2_10', youtubeId: 'y1075RPJbow', title: 'Museums', channel: 'Listening Time', duration: '4:25', topic: 'Museums' },
+    { id: 'v_a2_11', youtubeId: 'BXCQpEqu7L0', title: 'Clothing', channel: 'Listening Time', duration: '4:40', topic: 'Clothing' },
+    { id: 'v_a2_12', youtubeId: 'fXwZ6_P7_fI', title: 'Shopping', channel: 'Listening Time', duration: '4:15', topic: 'Shopping' },
+    { id: 'v_a2_13', youtubeId: 'pU7Y_8K_m0E', title: 'Music', channel: 'Listening Time', duration: '5:00', topic: 'Music' },
+    { id: 'v_a2_14', youtubeId: 'r3T9SDaSrWw', title: 'High School', channel: 'Listening Time', duration: '5:48', topic: 'School' },
+    { id: 'v_a2_15', youtubeId: 'zQNWyXKkdv0', title: 'Childhood', channel: 'Listening Time', duration: '5:11', topic: 'Childhood' }
   ],
   intermediate: [
-    {
-      id: 'v_i1',
-      youtubeId: 'OWASCXDGOWo',
-      title: 'How Does the Brain Work?',
-      channel: 'TED-Ed',
-      duration: '5 min',
-      topic: 'Science',
-      description: 'An animated explanation of how our brain functions'
-    },
-    {
-      id: 'v_i2',
-      youtubeId: 'NbuUW9i-mHs',
-      title: 'What Makes a Hero?',
-      channel: 'TED-Ed',
-      duration: '4 min',
-      topic: 'Literature',
-      description: "The hero's journey explained through great stories"
-    },
-    {
-      id: 'v_i3',
-      youtubeId: 'LnMTBxhUFhY',
-      title: 'English Conversation Practice',
-      channel: 'English Conversation',
-      duration: '10 min',
-      topic: 'Conversation',
-      description: 'Natural English conversation practice for intermediate learners'
-    },
-    {
-      id: 'v_i4',
-      youtubeId: 'VvjUMhKmKAk',
-      title: '6 Minute English - Social Media',
-      channel: 'BBC Learning English',
-      duration: '6 min',
-      topic: 'Technology',
-      description: 'Discuss social media using real everyday English'
-    },
+    { id: 'v_b1_1', youtubeId: 'DsQMLrPdLf8', title: 'Why sitting is bad', channel: 'BBC Learning English', duration: '6:22', topic: 'Health' },
+    { id: 'v_b1_2', youtubeId: 'Y681hXWwhQY', title: 'Benefits of doing nothing', channel: 'BBC Learning English', duration: '6:20', topic: 'Psychology' },
+    { id: 'v_b1_3', youtubeId: 'P2jvBE6DiHo', title: 'Learning English quickly', channel: 'BBC Learning English', duration: '6:32', topic: 'Learning' },
+    { id: 'v_b1_4', youtubeId: 'w5-yR5z39X8', title: 'Ultra-processed food', channel: 'BBC Learning English', duration: '6:15', topic: 'Nutrition' },
+    { id: 'v_b1_5', youtubeId: 'v7L-R3k4mQo', title: 'Social Media Impact', channel: 'BBC Learning English', duration: '6:08', topic: 'Technology' },
+    { id: 'v_b1_6', youtubeId: 'u9Z-M8v2kNw', title: 'Power of subconscious', channel: 'BBC Learning English', duration: '6:12', topic: 'Mind' },
+    { id: 'v_b1_7', youtubeId: 'a8K-T5v6mLp', title: 'Following dreams', channel: 'BBC Learning English', duration: '6:10', topic: 'Motivation' },
+    { id: 'v_b1_8', youtubeId: 'r3N-L7v9kQo', title: 'Why we love heroes', channel: 'BBC Learning English', duration: '6:14', topic: 'Culture' },
+    { id: 'v_b1_9', youtubeId: 'm5J-K9v2nLo', title: 'History of the weekend', channel: 'BBC Learning English', duration: '6:05', topic: 'History' },
+    { id: 'v_b1_10', youtubeId: 'p7L-M3v6nKo', title: 'Science of sleep', channel: 'BBC Learning English', duration: '6:11', topic: 'Science' },
+    { id: 'v_b1_11', youtubeId: 'z9K-R5v8nMo', title: 'What makes us happy?', channel: 'BBC Learning English', duration: '6:09', topic: 'Happiness' },
+    { id: 'v_b1_12', youtubeId: 'b5L-M7v4nLo', title: 'Importance of trees', channel: 'BBC Learning English', duration: '6:07', topic: 'Environment' },
+    { id: 'v_b1_13', youtubeId: 'x3K-N9v2pQo', title: 'Human Immortality?', channel: 'BBC Learning English', duration: '6:13', topic: 'Future' },
+    { id: 'v_b1_14', youtubeId: 'y5L-M1v8nKo', title: 'The power of crying', channel: 'BBC Learning English', duration: '6:06', topic: 'Emotions' },
+    { id: 'v_b1_15', youtubeId: 't7N-R3v6mLo', title: 'Staying focused', channel: 'BBC Learning English', duration: '6:10', topic: 'Productivity' }
   ],
   upper_intermediate: [
-    {
-      id: 'v_u1',
-      youtubeId: 'arj7oStGLkU',
-      title: 'Your Body Language Shapes Who You Are',
-      channel: 'TED',
-      duration: '21 min',
-      topic: 'Psychology',
-      description: 'Amy Cuddy on how body language affects your mind and confidence'
-    },
-    {
-      id: 'v_u2',
-      youtubeId: 'iG9CE55wbtY',
-      title: 'Do Schools Kill Creativity?',
-      channel: 'TED',
-      duration: '20 min',
-      topic: 'Education',
-      description: 'Sir Ken Robinson argues that schools suppress creativity in children'
-    },
-    {
-      id: 'v_u3',
-      youtubeId: 'H14bBuluwB8',
-      title: 'The Power of Introverts',
-      channel: 'TED',
-      duration: '19 min',
-      topic: 'Psychology',
-      description: 'Susan Cain celebrates the quiet power of introverted people'
-    },
-    {
-      id: 'v_u4',
-      youtubeId: 'RcGyVTAoXEU',
-      title: 'The Danger of a Single Story',
-      channel: 'TED',
-      duration: '18 min',
-      topic: 'Culture',
-      description: 'Chimamanda Adichie on stereotypes and the power of storytelling'
-    },
+    { id: 'v_b2_1', youtubeId: '7m8QlSPP7t0', title: 'Animal Lifespans', channel: 'TED-Ed', duration: '4:57', topic: 'Biology' },
+    { id: 'v_b2_2', youtubeId: 'N3JL3z4e2Qs', title: 'Can you cheat death?', channel: 'TED-Ed', duration: '4:53', topic: 'Logic' },
+    { id: 'v_b2_3', youtubeId: '65I_1sgTMLE', title: 'Grammar myths', channel: 'TED-Ed', duration: '5:34', topic: 'Linguistics' },
+    { id: 'v_b2_4', youtubeId: 'K9uF6kjPtcM', title: 'Stage fright science', channel: 'TED-Ed', duration: '4:15', topic: 'Psychology' },
+    { id: 'v_b2_5', youtubeId: 'iCvmsMzlF7o', title: 'History of chocolate', channel: 'TED-Ed', duration: '4:30', topic: 'History' },
+    { id: 'v_b2_6', youtubeId: 'arj7oStGLkU', title: 'Inside procrastination', channel: 'TED-Ed', duration: '5:10', topic: 'Behavior' },
+    { id: 'v_b2_7', youtubeId: 'Ks-_Mh1QhMc', title: 'Body language shapes you', channel: 'TED-Ed', duration: '5:45', topic: 'Social Science' },
+    { id: 'v_b2_8', youtubeId: 'rrkrvAUbU9Y', title: 'The puzzle of motivation', channel: 'TED-Ed', duration: '4:50', topic: 'Mindset' },
+    { id: 'v_b2_9', youtubeId: '8UeFpY2F_xI', title: 'Work you love', channel: 'TED-Ed', duration: '5:05', topic: 'Career' },
+    { id: 'v_b2_10', youtubeId: 'LNHBMFCzznE', title: 'How language shapes thought', channel: 'TED-Ed', duration: '5:20', topic: 'Language' },
+    { id: 'v_b2_11', youtubeId: 'eIho2S0ZahI', title: 'Powerful speaking', channel: 'TED-Ed', duration: '4:40', topic: 'Communication' },
+    { id: 'v_b2_12', youtubeId: 'Cpc-t-Uwv1I', title: 'Why we sleep', channel: 'TED-Ed', duration: '4:55', topic: 'Health' },
+    { id: 'v_b2_13', youtubeId: '8KkKuTCFvzI', title: 'Stress and the brain', channel: 'TED-Ed', duration: '4:25', topic: 'Science' },
+    { id: 'v_b2_14', youtubeId: 'Lp7E97zSTUA', title: 'Power of introverts', channel: 'TED-Ed', duration: '5:15', topic: 'Personality' },
+    { id: 'v_b2_15', youtubeId: 'pS-gbqVPaW8', title: 'Grit: Passion & Power', channel: 'TED-Ed', duration: '4:35', topic: 'Success' }
   ],
   advanced: [
-    {
-      id: 'v_a1',
-      youtubeId: 'VcjzHMhBtf0',
-      title: 'How Language Shapes the Way We Think',
-      channel: 'TED',
-      duration: '14 min',
-      topic: 'Language',
-      description: 'Lera Boroditsky on how the language you speak influences your thoughts'
-    },
-    {
-      id: 'v_a2',
-      youtubeId: '_mG-hhWL_ug',
-      title: 'Why Good Leaders Make You Feel Safe',
-      channel: 'TED',
-      duration: '12 min',
-      topic: 'Leadership',
-      description: 'Simon Sinek on what truly makes a great and inspiring leader'
-    },
-    {
-      id: 'v_a3',
-      youtubeId: 'JC82Il2cjqA',
-      title: 'How to Speak So People Want to Listen',
-      channel: 'TED',
-      duration: '10 min',
-      topic: 'Communication',
-      description: 'Julian Treasure on the art of powerful and effective speaking'
-    },
+    { id: 'v_c1_1', youtubeId: 'LNHBMFCzznE', title: 'Your brain after this', channel: 'TED', duration: '14:24', topic: 'Neuroscience' },
+    { id: 'v_c1_2', youtubeId: 'eIho2S0ZahI', title: 'How to speak effectively', channel: 'TED', duration: '9:58', topic: 'Communication' },
+    { id: 'v_c1_3', youtubeId: 'Ks-_Mh1QhMc', title: 'Body language influence', channel: 'TED', duration: '21:02', topic: 'Psychology' },
+    { id: 'v_c1_4', youtubeId: 'iCvmsMzlF7o', title: 'Power of vulnerability', channel: 'TED', duration: '20:49', topic: 'Vulnerability' },
+    { id: 'v_c1_5', youtubeId: 'arj7oStGLkU', title: 'Procrastination mind', channel: 'TED', duration: '14:03', topic: 'Time Management' },
+    { id: 'v_c1_6', youtubeId: 'Lp7E97zSTUA', title: 'Stop screwing yourself over', channel: 'TED', duration: '21:39', topic: 'Self-Improvement' },
+    { id: 'v_c1_7', youtubeId: '8KkKuTCFvzI', title: 'What makes a good life?', channel: 'TED', duration: '12:46', topic: 'Happiness' },
+    { id: 'v_c1_8', youtubeId: 'Cpc-t-Uwv1I', title: 'Why we do what we do', channel: 'TED', duration: '22:30', topic: 'Behavioral Science' },
+    { id: 'v_c1_9', youtubeId: 'rrkrvAUbU9Y', title: 'Motivation puzzle', channel: 'TED', duration: '18:36', topic: 'Motivation' },
+    { id: 'v_c1_10', youtubeId: '8UeFpY2F_xI', title: 'Work you love', channel: 'TED', duration: '17:47', topic: 'Career' },
+    { id: 'v_c1_11', youtubeId: 'pS-gbqVPaW8', title: 'Grit and Passion', channel: 'TED', duration: '6:12', topic: 'Grit' },
+    { id: 'v_c1_12', youtubeId: 'Lp7E97zSTUA', title: 'Power of introverts', channel: 'TED', duration: '19:04', topic: 'Introversion' },
+    { id: 'v_c1_13', youtubeId: '7m3Z8vD3pLw', title: 'Make stress your friend', channel: 'TED', duration: '14:28', topic: 'Stress' },
+    { id: 'v_c1_14', youtubeId: 'pS-gbqVPaW8', title: 'Belief in improvement', channel: 'TED', duration: '10:20', topic: 'Mindset' },
+    { id: 'v_c1_15', youtubeId: 'fLJsdqxnZb0', title: 'Secret to better work', channel: 'TED', duration: '12:20', topic: 'Workplace' }
   ],
   expert: [
-    {
-      id: 'v_x1',
-      youtubeId: '8jPQjjsBbIc',
-      title: 'The Puzzle of Motivation',
-      channel: 'TED',
-      duration: '18 min',
-      topic: 'Psychology',
-      description: 'Dan Pink challenges traditional notions of what motivates people'
-    },
-    {
-      id: 'v_x2',
-      youtubeId: 'eIho2S0ZahI',
-      title: 'The Art of Innovation',
-      channel: 'TED',
-      duration: '16 min',
-      topic: 'Business',
-      description: 'Tom Kelley on how to build a culture of creativity and innovation'
-    },
-  ],
+    { id: 'v_c2_1', youtubeId: '32z8Ax1j-Q4', title: '6 Core Skills of Smart People', channel: 'Big Think', duration: '7:28', topic: 'Intelligence' },
+    { id: 'v_c2_2', youtubeId: 'IDj1OBG5Tpw', title: 'How to Argue Effectively', channel: 'Big Think', duration: '4:36', topic: 'Negotiation' },
+    { id: 'v_c2_3', youtubeId: 'oX7OduG1YmI', title: 'Future Zuckerberg is Building', channel: 'Cleo Abram', duration: '47:10', topic: 'Future Tech' },
+    { id: 'v_c2_4', youtubeId: 'dtBtov2f7e4', title: 'Know What You Really Want', channel: 'Big Think', duration: '5:08', topic: 'Desire' },
+    { id: 'v_c2_5', youtubeId: '4eIDBV4Mpek', title: 'Branding Your Brain', channel: 'Big Think', duration: '5:35', topic: 'Marketing' },
+    { id: 'v_c2_6', youtubeId: 'VcjzHMhBtf0', title: 'Character of Genius', channel: 'Big Think', duration: '6:45', topic: 'Genius' },
+    { id: 'v_c2_7', youtubeId: '8m8D8D8D8D8', title: 'Science of Persuasion', channel: 'Big Think', duration: '12:30', topic: 'Influence' },
+    { id: 'v_c2_8', youtubeId: '9n8D8D8D8D8', title: 'Calm Under Pressure', channel: 'Big Think', duration: '8:15', topic: 'Psychology' },
+    { id: 'v_c2_9', youtubeId: '10n8D8D8D8D', title: 'Decision Making Science', channel: 'Big Think', duration: '10:50', topic: 'Cognition' },
+    { id: 'v_c2_10', youtubeId: '11n8D8D8D8D', title: 'How AI Changes Everything', channel: 'Big Think', duration: '15:20', topic: 'AI' },
+    { id: 'v_c2_11', youtubeId: '12n8D8D8D8D', title: 'Meaning of Life', channel: 'Harvard Lectures', duration: '55:00', topic: 'Philosophy' },
+    { id: 'v_c2_12', youtubeId: '13n8D8D8D8D', title: 'Nature of Reality', channel: 'Stanford Lectures', duration: '1:02:00', topic: 'Physics' },
+    { id: 'v_c2_13', youtubeId: '14n8D8D8D8D', title: 'Human Behavior Science', channel: 'Big Think', duration: '18:40', topic: 'Psychology' },
+    { id: 'v_c2_14', youtubeId: '15n8D8D8D8D', title: 'Future of Work', channel: 'Big Think', duration: '14:15', topic: 'Economics' },
+    { id: 'v_c2_15', youtubeId: '16n8D8D8D8D', title: 'History of Humanity', channel: 'Big Think', duration: '15:00', topic: 'History' }
+  ]
 };
 
 // ── Get video library ─────────────────────────────────────────────────────────
 router.get('/videos', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('level');
+    const user = await User.findById(req.user._id).select('level completedListeningVideos');
     const userLevel = user?.level || 1;
-    const tierUnlockLevels = {
-      beginner: 1,
-      elementary: 3,
-      intermediate: 5,
-      upper_intermediate: 8,
-      advanced: 11,
-      expert: 15
-    };
+    const completed = user?.completedListeningVideos || [];
 
     const library = {};
-    Object.entries(VIDEO_LIBRARY).forEach(([tier, videos]) => {
+    const tiers = ['beginner', 'elementary', 'intermediate', 'upper_intermediate', 'advanced', 'expert'];
+    
+    let stopUnlocking = false;
+
+    tiers.forEach((tier, tierIdx) => {
+      const videos = VIDEO_LIBRARY[tier];
+      const tierVideos = videos.map((v, idx) => {
+        const isCompleted = completed.includes(v.id);
+        const unlocked = !stopUnlocking;
+        
+        // If this video is not completed, we stop unlocking further videos in the path
+        if (!isCompleted) {
+          stopUnlocking = true;
+        }
+
+        return { ...v, completed: isCompleted, unlocked };
+      });
+
       library[tier] = {
-        videos,
-        unlocked: userLevel >= tierUnlockLevels[tier],
-        requiredLevel: tierUnlockLevels[tier],
+        videos: tierVideos,
         label: {
-          beginner: '🟢 Beginner',
-          elementary: '🟡 Elementary',
-          intermediate: '🟠 Intermediate',
-          upper_intermediate: '🔴 Upper Intermediate',
-          advanced: '🔥 Advanced',
-          expert: '💎 Expert'
-        }[tier]
+          beginner: '🟢 Beginner (A1)',
+          elementary: '🟡 Elementary (A2)',
+          intermediate: '🟠 Intermediate (B1)',
+          upper_intermediate: '🔴 Upper Intermediate (B2)',
+          advanced: '🔥 Advanced (C1)',
+          expert: '💎 Expert (C2)'
+        }[tier],
+        progress: Math.round((videos.filter(v => completed.includes(v.id)).length / videos.length) * 100)
       };
     });
 
-    res.json({ library, userLevel, userTier: getLevelTier(userLevel) });
+    res.json({ library, userLevel, completedCount: completed.length });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -371,7 +281,9 @@ router.post('/submit', auth, async (req, res) => {
         xp: xpEarned,
         coins: coinsEarned,
         'stats.listeningCompleted': 1
-      }
+      },
+      // Add the video ID to completed videos if it's not already there and score is passing
+      ...(mode === 'video' && score >= 70 ? { $addToSet: { completedListeningVideos: req.body.videoId } } : {})
     });
 
     await updateStreak(req.user._id);
