@@ -1,231 +1,50 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { PenTool, Send, RotateCcw, Zap, ChevronRight, Clock, BookOpen, Lock, Wand2, Eye, EyeOff, Flame } from 'lucide-react';
+import {
+  PenTool, Send, RotateCcw, Zap, BookOpen, Star, Timer,
+  ChevronRight, Lock, Lightbulb, CheckCircle, AlertTriangle,
+  Newspaper, Mail, Image, BarChart2, RefreshCw, Eye, Wand2, FileText
+} from 'lucide-react';
 import XPReward from '../components/XPReward';
 import { useAuth } from '../context/AuthContext';
-import WordPopup from '../components/WordPopup';
 
-const LEVEL_COLORS = {
-  beginner: 'text-green-400 bg-green-500/10 border-green-500/20',
-  intermediate: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20',
-  advanced: 'text-red-400 bg-red-500/10 border-red-500/20',
-};
-const LEVEL_REQUIRED = { beginner: 0, intermediate: 2, advanced: 3 };
-const TARGET_WORDS = 200;
-const TIMER_OPTIONS = [{ label: '15 min', secs: 900 }, { label: '25 min', secs: 1500 }, { label: '30 min', secs: 1800 }];
-const VOCAB_MAP = { good: ['excellent', 'commendable', 'remarkable'], bad: ['poor', 'substandard', 'inadequate'], big: ['substantial', 'considerable', 'immense'], small: ['diminutive', 'minimal', 'negligible'], nice: ['pleasant', 'delightful', 'appealing'], very: ['extremely', 'remarkably', 'exceptionally'], said: ['remarked', 'stated', 'declared'] };
-const STATUS_STYLE = { correct: 'bg-green-500/15 border-b-2 border-green-400', minor: 'bg-yellow-500/15 border-b-2 border-yellow-400', major: 'bg-red-500/15 border-b-2 border-red-400' };
+const MODE_ICONS = { story_continuation: BookOpen, picture_writing: Image, timed_challenge: Timer, news_article: Newspaper, letter_email: Mail, creative_scene: Star };
 
 const ScoreBar = ({ label, value, color = 'bg-primary-500' }) => (
   <div className="mb-3">
     <div className="flex justify-between text-sm mb-1">
       <span className="text-slate-400">{label}</span>
-      <span className="font-semibold text-white">{value}%</span>
+      <span className={`font-bold ${value >= 80 ? 'text-green-400' : value >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>{value}%</span>
     </div>
     <div className="h-2 bg-dark-600 rounded-full overflow-hidden">
-      <div className={`h-full ${color} rounded-full transition-all duration-700`} style={{ width: `${value}%` }} />
+      <div className={`h-full ${color} rounded-full transition-all duration-1000`} style={{ width: `${value}%` }} />
     </div>
   </div>
 );
 
-const STATUS_ICONS = { correct: '✅', minor: '⚠️', major: '❌' };
-const STATUS_LABELS = { correct: 'Correct', minor: 'Minor Issue', major: 'Grammar Error' };
-const STATUS_NOTE_STYLE = { correct: 'border-green-500/40 bg-green-500/10 text-green-300', minor: 'border-yellow-500/40 bg-yellow-500/10 text-yellow-300', major: 'border-red-500/40 bg-red-500/10 text-red-300' };
-
-function SentenceHighlight({ text, analysis }) {
-  const [activeIdx, setActiveIdx] = useState(null);
-
-  if (!analysis || analysis.length === 0)
-    return <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{text}</p>;
-
-  let remaining = text;
-  const parts = [];
-
-  analysis.forEach((item, idx) => {
-    const pos = remaining.indexOf(item.sentence);
-    if (pos === -1) return;
-    if (pos > 0) parts.push(<span key={`pre-${idx}`} className="text-slate-300">{remaining.slice(0, pos)}</span>);
-
-    const isActive = activeIdx === idx;
-    parts.push(
-      <span key={`s-${idx}`} className="relative inline">
-        <span
-          onClick={() => setActiveIdx(isActive ? null : idx)}
-          className={`${STATUS_STYLE[item.status] || ''} px-0.5 rounded cursor-pointer select-none`}
-        >
-          {item.sentence}
-        </span>
-        {isActive && item.status !== 'correct' && (
-          <span
-            className={`absolute left-0 top-full mt-1 z-50 flex flex-col gap-1 rounded-xl border px-3 py-2 text-xs shadow-xl whitespace-normal min-w-[220px] max-w-xs ${STATUS_NOTE_STYLE[item.status]}`}
-            style={{ pointerEvents: 'none' }}
-          >
-            <span className="font-bold text-sm">
-              {STATUS_ICONS[item.status]} {STATUS_LABELS[item.status]}
-            </span>
-            <span className="leading-relaxed opacity-90">{item.note || 'No additional details.'}</span>
-          </span>
-        )}
-      </span>
-    );
-    remaining = remaining.slice(pos + item.sentence.length);
-  });
-
-  if (remaining) parts.push(<span key="tail" className="text-slate-300">{remaining}</span>);
-
+function CountdownTimer({ seconds, onExpire }) {
+  const [remaining, setRemaining] = useState(seconds);
+  useEffect(() => {
+    const t = setInterval(() => setRemaining(p => { if (p <= 1) { clearInterval(t); onExpire(); return 0; } return p - 1; }), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const mins = Math.floor(remaining / 60);
+  const secs = remaining % 60;
+  const pct = (remaining / seconds) * 100;
+  const col = pct > 50 ? 'text-green-400' : pct > 25 ? 'text-yellow-400' : 'text-red-400';
   return (
-    <div>
-      <p className="text-sm leading-loose">{parts}</p>
-      {activeIdx !== null && analysis[activeIdx]?.status !== 'correct' && (
-        <button onClick={() => setActiveIdx(null)} className="mt-3 text-xs text-slate-500 hover:text-slate-300">
-          ✕ Close note
-        </button>
-      )}
+    <div className="flex items-center gap-3">
+      <div className={`font-mono text-2xl font-bold ${col}`}>{String(mins).padStart(2,'0')}:{String(secs).padStart(2,'0')}</div>
+      <div className="flex-1 h-2 bg-dark-600 rounded-full overflow-hidden">
+        <div className={`h-full rounded-full transition-all duration-1000 ${pct > 50 ? 'bg-green-500' : pct > 25 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${pct}%` }} />
+      </div>
     </div>
   );
 }
 
-export default function Writing() {
-  const { user, fetchProfile } = useAuth();
-  const [topics, setTopics] = useState([]);
-  const [selectedTopic, setSelectedTopic] = useState(null);
-  const [text, setText] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [reward, setReward] = useState(null);
-  const [startTime, setStartTime] = useState(null);
-  const [wordCount, setWordCount] = useState(0);
-  // Auto-save
-  const [savedAt, setSavedAt] = useState(null);
-  const [savedAgo, setSavedAgo] = useState('');
-  // Timer
-  const [timerSecs, setTimerSecs] = useState(null);
-  const [remaining, setRemaining] = useState(null);
-  const timerRef = useRef(null);
-  // Improve This
-  const [selectedSentence, setSelectedSentence] = useState('');
-  const [improved, setImproved] = useState(null);
-  const [improving, setImproving] = useState(false);
-  // Vocab suggestions
-  const [vocabSuggestions, setVocabSuggestions] = useState([]);
-  // Model answer
-  const [showModel, setShowModel] = useState(false);
-  // Word popup
-  const [popupWord, setPopupWord] = useState(null);
-
-  const handleWordClick = (e) => {
-    if (e.detail === 2) {
-      const word = window.getSelection()?.toString().trim().replace(/[^a-zA-Z]/g, '');
-      if (word && word.length > 2) setPopupWord(word.toLowerCase());
-    }
-  };
-
-  useEffect(() => {
-    axios.get('/api/writing/topics').then(r => setTopics(r.data)).catch(() => toast.error('Failed to load topics'));
-  }, []);
-
-  useEffect(() => {
-    setWordCount(text.trim() ? text.trim().split(/\s+/).length : 0);
-    // Vocab suggestions
-    const words = text.toLowerCase().split(/\s+/);
-    const found = [];
-    words.forEach(w => { const clean = w.replace(/[^a-z]/g, ''); if (VOCAB_MAP[clean]) found.push({ word: clean, alts: VOCAB_MAP[clean] }); });
-    const unique = found.filter((v, i, a) => a.findIndex(x => x.word === v.word) === i).slice(0, 4);
-    setVocabSuggestions(unique);
-  }, [text]);
-
-  // Auto-save every 30s
-  useEffect(() => {
-    if (!selectedTopic || !text) return;
-    const key = `draft_${selectedTopic.id}`;
-    const id = setInterval(() => {
-      localStorage.setItem(key, text);
-      setSavedAt(Date.now());
-    }, 30000);
-    return () => clearInterval(id);
-  }, [text, selectedTopic]);
-
-  // Saved-ago ticker
-  useEffect(() => {
-    if (!savedAt) return;
-    const id = setInterval(() => {
-      const secs = Math.floor((Date.now() - savedAt) / 1000);
-      setSavedAgo(secs < 60 ? `${secs}s ago` : `${Math.floor(secs / 60)}m ago`);
-    }, 5000);
-    setSavedAgo('just now');
-    return () => clearInterval(id);
-  }, [savedAt]);
-
-  // Countdown timer
-  useEffect(() => {
-    if (remaining === null) return;
-    if (remaining <= 0) { clearInterval(timerRef.current); toast('⏰ Time is up! Submitting…', { icon: '⏰' }); handleSubmit(); return; }
-    timerRef.current = setInterval(() => setRemaining(r => r - 1), 1000);
-    return () => clearInterval(timerRef.current);
-  }, [remaining]);
-
-  const startTopic = (topic) => {
-    setSelectedTopic(topic);
-    const saved = localStorage.getItem(`draft_${topic.id}`);
-    setText(saved || '');
-    setResult(null);
-    setStartTime(Date.now());
-    setSavedAt(null);
-    setTimerSecs(null);
-    setRemaining(null);
-    setImproved(null);
-    setSelectedSentence('');
-    clearInterval(timerRef.current);
-  };
-
-  const startTimer = (secs) => {
-    clearInterval(timerRef.current);
-    setTimerSecs(secs);
-    setRemaining(secs);
-  };
-
-  const handleSubmit = useCallback(async () => {
-    if (!text.trim()) return toast.error('Please write something!');
-    setLoading(true);
-    clearInterval(timerRef.current);
-    try {
-      const timeSpent = startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
-      const { data } = await axios.post('/api/writing/submit', { text, topicId: selectedTopic?.id, timeSpent });
-      setResult(data);
-      setReward({ xp: data.xpEarned, coins: data.coinsEarned, score: data.evaluation.overallScore });
-      localStorage.removeItem(`draft_${selectedTopic?.id}`);
-      await fetchProfile();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Submission failed');
-    } finally {
-      setLoading(false);
-    }
-  }, [text, startTime, selectedTopic, fetchProfile]);
-
-  const handleImprove = async () => {
-    if (!selectedSentence.trim()) return toast.error('Select a sentence first');
-    setImproving(true);
-    try {
-      const { data } = await axios.post('/api/writing/improve', { sentence: selectedSentence });
-      setImproved(data);
-    } catch { toast.error('Could not improve sentence'); }
-    finally { setImproving(false); }
-  };
-
-  const handleTextSelect = () => {
-    const sel = window.getSelection()?.toString().trim();
-    if (sel && sel.length > 5) setSelectedSentence(sel);
-  };
-
-  const reset = () => { setSelectedTopic(null); setResult(null); setText(''); setReward(null); setTimerSecs(null); setRemaining(null); clearInterval(timerRef.current); };
-
-  const userLevel = user?.level || 1;
-  const progressPct = Math.min(100, Math.round((wordCount / TARGET_WORDS) * 100));
-  const fmtTime = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
-
-  // ── Topic picker ──
-  if (!selectedTopic) return (
+function ModeSelector({ modes, onSelect, userLevel }) {
+  return (
     <div className="max-w-4xl mx-auto animate-slide-up">
       <div className="flex items-center gap-3 mb-8">
         <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-xl flex items-center justify-center">
@@ -233,254 +52,362 @@ export default function Writing() {
         </div>
         <div>
           <h1 className="text-2xl font-display font-bold text-white">Writing Practice</h1>
-          <p className="text-slate-400 text-sm">Choose a topic and get AI-powered feedback</p>
+          <p className="text-slate-400 text-sm">Choose a writing mode — each builds different skills</p>
         </div>
       </div>
-
-      {/* Writing streak bonus */}
-      {(user?.streak || 0) >= 2 && (
-        <div className="glass-card p-4 mb-6 bg-gradient-to-r from-orange-500/10 to-yellow-500/10 border-orange-500/20 flex items-center gap-3">
-          <Flame size={20} className="text-orange-400" />
-          <p className="text-sm text-slate-200">
-            You've written <span className="font-bold text-orange-400">{user.streak} days in a row!</span> Keep it up for a <span className="font-bold text-yellow-400">+50 bonus XP</span> milestone!
-          </p>
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {topics.map(topic => {
-          const required = LEVEL_REQUIRED[topic.level] || 0;
-          const locked = userLevel < required;
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        {modes.map(mode => {
+          const locked = userLevel < (mode.unlockLevel || 1);
           return (
-            <button
-              key={topic.id}
-              onClick={() => !locked && startTopic(topic)}
-              disabled={locked}
-              className={`glass-card p-6 text-left transition-all duration-200 group relative ${locked ? 'opacity-50 cursor-not-allowed' : 'hover:border-blue-500/30 hover:scale-[1.02]'}`}
-            >
-              {locked && (
-                <div className="absolute inset-0 rounded-xl flex items-center justify-center bg-dark-900/60 backdrop-blur-sm z-10">
-                  <div className="text-center">
-                    <Lock size={22} className="text-slate-400 mx-auto mb-1" />
-                    <p className="text-xs text-slate-400">Reach Level {required}</p>
-                  </div>
+            <button key={mode.id} onClick={() => locked ? toast.error(`Reach Level ${mode.unlockLevel} to unlock!`) : onSelect(mode)}
+              className={`glass-card p-5 text-left transition-all duration-300 relative overflow-hidden group ${locked ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.03] hover:border-white/15 cursor-pointer'}`}>
+              <div className={`absolute inset-0 bg-gradient-to-br ${mode.color} opacity-5 group-hover:opacity-10 transition-opacity`} />
+              {locked && <div className="absolute top-3 right-3 flex items-center gap-1 bg-dark-700 border border-white/10 rounded-full px-2 py-1"><Lock size={10} className="text-slate-400" /><span className="text-xs text-slate-400">Lv {mode.unlockLevel}</span></div>}
+              <div className="relative">
+                <div className={`w-12 h-12 bg-gradient-to-br ${mode.color} rounded-xl flex items-center justify-center mb-4 text-2xl shadow-lg`}>{mode.emoji}</div>
+                <h3 className="font-display font-bold text-white text-lg mb-1">{mode.label}</h3>
+                <p className="text-slate-400 text-sm mb-3 leading-relaxed">{mode.desc}</p>
+                <div className="flex items-center justify-between">
+                  <span className="xp-badge text-xs"><Zap size={10} />{mode.xp}</span>
+                  {!locked && <span className="text-xs text-primary-400 flex items-center gap-1">Start <ChevronRight size={12} /></span>}
                 </div>
-              )}
-              <div className="flex items-start justify-between mb-3">
-                <div className={`text-xs font-semibold px-2 py-1 rounded-full capitalize border ${LEVEL_COLORS[topic.level]}`}>{topic.level}</div>
-                <ChevronRight size={18} className="text-slate-500 group-hover:text-primary-400 transition-colors" />
-              </div>
-              <h3 className="font-display font-bold text-white text-lg mb-2">{topic.title}</h3>
-              <p className="text-slate-400 text-sm leading-relaxed">{topic.prompt}</p>
-              <div className="mt-4 flex items-center gap-2">
-                <span className="xp-badge text-xs"><Zap size={10} />10-50 XP</span>
               </div>
             </button>
           );
         })}
       </div>
+      <div className="glass-card p-4 border-primary-500/10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-slate-400">
+          <div className="flex items-start gap-2"><span className="text-primary-400">💡</span> Write more than the minimum for bonus XP</div>
+          <div className="flex items-start gap-2"><span className="text-green-400">⚡</span> Finish timed challenges early for extra XP</div>
+          <div className="flex items-start gap-2"><span className="text-accent-yellow">🏆</span> Score 90%+ to unlock achievement badges</div>
+        </div>
+      </div>
     </div>
   );
+}
 
-  // ── Writing view ──
-  if (!result) return (
-    <div className="max-w-4xl mx-auto animate-slide-up space-y-4" onClick={handleWordClick}>
-      {reward && <XPReward {...reward} onClose={() => setReward(null)} />}
-      {popupWord && <WordPopup word={popupWord} onClose={() => setPopupWord(null)} source="writing" />}
+function WritingEditor({ mode, prompt, onSubmit, onBack }) {
+  const [text, setText] = useState('');
+  const [wordCount, setWordCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [startTime] = useState(Date.now());
+  const [improving, setImproving] = useState(false);
+  const [improveResult, setImproveResult] = useState(null);
+  const [selectedSentence, setSelectedSentence] = useState('');
 
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <button onClick={reset} className="btn-ghost text-sm py-2 px-3 flex items-center gap-1">
-          <RotateCcw size={14} /> Back
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-display font-bold text-white">{selectedTopic.title}</h1>
-          <p className="text-slate-400 text-sm truncate">{selectedTopic.prompt}</p>
-        </div>
-        {/* Timer display */}
-        {remaining !== null && (
-          <div className={`font-mono font-bold text-lg px-3 py-1 rounded-lg ${remaining < 60 ? 'text-red-400 bg-red-500/10' : 'text-primary-400 bg-primary-500/10'}`}>
-            <Clock size={14} className="inline mr-1" />{fmtTime(remaining)}
+  useEffect(() => { setWordCount(text.trim() ? text.trim().split(/\s+/).length : 0); }, [text]);
+
+  const handleSubmit = async () => {
+    if (!text.trim()) return toast.error('Write something first!');
+    if (wordCount < (prompt.minWords || 30)) return toast.error(`Write at least ${prompt.minWords || 30} words!`);
+    setLoading(true);
+    try {
+      const { data } = await axios.post('/api/writing/submit', { text, mode: mode.id, promptData: prompt, timeSpent: Math.floor((Date.now() - startTime) / 1000), wordCount });
+      onSubmit(data);
+    } catch (err) { toast.error(err.response?.data?.message || 'Submission failed'); }
+    finally { setLoading(false); }
+  };
+
+  const handleImprove = async () => {
+    const sel = window.getSelection()?.toString().trim() || selectedSentence;
+    if (!sel || sel.length < 5) return toast.error('Select a sentence to improve first!');
+    setImproving(true);
+    try {
+      const { data } = await axios.post('/api/writing/improve', { sentence: sel });
+      setImproveResult(data);
+    } catch { toast.error('Could not improve sentence'); }
+    finally { setImproving(false); }
+  };
+
+  const applyImprovement = () => {
+    if (!improveResult) return;
+    const sel = window.getSelection()?.toString().trim() || selectedSentence;
+    if (sel) setText(prev => prev.replace(sel, improveResult.improved));
+    setImproveResult(null);
+    toast.success('Improvement applied!');
+  };
+
+  const pct = Math.min(100, (wordCount / (prompt.minWords || 100)) * 100);
+  const barColor = pct >= 100 ? 'bg-green-500' : pct >= 60 ? 'bg-yellow-500' : 'bg-primary-500';
+  const connectors = ['Furthermore,', 'However,', 'In contrast,', 'As a result,', 'To conclude,', 'Additionally,', 'Nevertheless,', 'In particular,'];
+  const verbs = ['demonstrates', 'argues', 'reveals', 'emphasises', 'highlights', 'suggests'];
+
+  return (
+    <div className="max-w-4xl mx-auto animate-slide-up">
+      <div className="flex items-center gap-3 mb-6">
+        <button onClick={onBack} className="btn-ghost text-sm py-2 px-3 flex items-center gap-1"><RotateCcw size={14} /> Back</button>
+        <span className="text-xl">{mode.emoji}</span>
+        <h2 className="text-xl font-display font-bold text-white">{mode.label}</h2>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 space-y-4">
+          {/* Prompt */}
+          <div className="glass-card p-5 border-primary-500/20 bg-primary-500/5">
+            {mode.id === 'story_continuation' && (<div><p className="text-xs text-primary-400 font-semibold mb-2">📖 STORY STARTER</p><p className="text-slate-200 italic leading-relaxed">"{prompt.starter}"</p><p className="text-xs text-slate-500 mt-2">Topic: {prompt.topic}</p></div>)}
+            {mode.id === 'news_article' && (<div><p className="text-xs text-primary-400 font-semibold mb-2">📰 HEADLINE</p><p className="text-2xl font-display font-bold text-white mb-2">"{prompt.headline}"</p><p className="text-slate-400 text-sm">{prompt.context}</p></div>)}
+            {mode.id === 'letter_email' && (<div><p className="text-xs text-primary-400 font-semibold mb-2">✉️ {prompt.format?.toUpperCase()}</p><p className="text-slate-200 leading-relaxed">{prompt.situation}</p><p className="text-xs text-slate-500 mt-2">Tone: {prompt.tone}</p></div>)}
+            {mode.id === 'creative_scene' && (<div><p className="text-xs text-primary-400 font-semibold mb-3">🎭 CREATIVE SCENE</p><div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2"><div className="bg-dark-600/50 rounded-lg p-2"><p className="text-xs text-slate-500">Characters</p><p className="text-xs text-slate-300">{prompt.characters}</p></div><div className="bg-dark-600/50 rounded-lg p-2"><p className="text-xs text-slate-500">Setting</p><p className="text-xs text-slate-300">{prompt.setting}</p></div><div className="bg-dark-600/50 rounded-lg p-2"><p className="text-xs text-slate-500">Situation</p><p className="text-xs text-slate-300">{prompt.situation}</p></div></div></div>)}
+            {mode.id === 'timed_challenge' && (<div><p className="text-xs text-primary-400 font-semibold mb-2">⏱️ TIMED CHALLENGE</p><p className="text-xl font-display font-bold text-white mb-3">"{prompt.topic}"</p><CountdownTimer seconds={prompt.timeSeconds || 300} onExpire={() => { toast('⏰ Time up! Submitting...'); handleSubmit(); }} /></div>)}
+            {mode.id === 'picture_writing' && (<div><p className="text-xs text-primary-400 font-semibold mb-2">🖼️ PICTURE PROMPT</p><img src={prompt.imageUrl} alt={prompt.description} className="w-full h-44 object-cover rounded-xl mb-3" onError={e => e.target.style.display='none'} /><p className="text-slate-400 text-sm">{prompt.task}</p></div>)}
+            <p className="text-xs text-slate-500 mt-3">Minimum: <span className="text-white font-medium">{prompt.minWords || 60} words</span></p>
           </div>
-        )}
-      </div>
 
-      {/* Pomodoro Timer Selector */}
-      <div className="glass-card p-4 flex flex-wrap items-center gap-3">
-        <span className="text-xs text-slate-400 font-medium">⏱ Timer:</span>
-        {TIMER_OPTIONS.map(o => (
-          <button key={o.secs} onClick={() => startTimer(o.secs)}
-            className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${timerSecs === o.secs ? 'bg-primary-500 border-primary-500 text-white' : 'border-white/10 text-slate-400 hover:border-primary-500/50'}`}>
-            {o.label}
-          </button>
-        ))}
-        {timerSecs && <button onClick={() => { clearInterval(timerRef.current); setTimerSecs(null); setRemaining(null); }} className="text-xs text-red-400 hover:text-red-300">Cancel</button>}
-        {savedAt && <span className="ml-auto text-xs text-slate-500">💾 Draft saved {savedAgo}</span>}
-      </div>
+          {/* Textarea */}
+          <div className="glass-card p-4">
+            <textarea value={text} onChange={e => setText(e.target.value)} onMouseUp={() => setSelectedSentence(window.getSelection()?.toString().trim() || '')}
+              placeholder={`Start writing here...\n\nTip: Select any sentence then click "Improve with AI" for suggestions!`}
+              className="input-field min-h-[260px] resize-y font-body text-base leading-relaxed" />
+            <div className="mt-3">
+              <div className="flex justify-between text-xs mb-1">
+                <span className="text-slate-400">Word count</span>
+                <span className={pct >= 100 ? 'text-green-400 font-medium' : 'text-slate-400'}>{wordCount} / {prompt.minWords || 60} minimum {pct >= 100 && '✓'}</span>
+              </div>
+              <div className="h-1.5 bg-dark-600 rounded-full overflow-hidden">
+                <div className={`h-full ${barColor} rounded-full transition-all duration-300`} style={{ width: `${Math.min(pct,100)}%` }} />
+              </div>
+            </div>
+          </div>
 
-      {/* Word count + progress */}
-      <div className="glass-card p-4">
-        <div className="flex items-center justify-between mb-2 text-xs">
-          <span className="text-slate-400 font-medium">Words: <span className={wordCount >= TARGET_WORDS ? 'text-green-400 font-bold' : wordCount >= TARGET_WORDS * 0.5 ? 'text-yellow-400' : 'text-white'}>{wordCount}</span> / {TARGET_WORDS} recommended</span>
-          <span className={wordCount >= TARGET_WORDS ? 'text-green-400 font-bold' : 'text-slate-400'}>{progressPct}%</span>
+          {improveResult && (
+            <div className="glass-card p-4 border-green-500/20 bg-green-500/5 animate-slide-up">
+              <p className="text-xs text-green-400 font-semibold mb-2 flex items-center gap-1"><Wand2 size={12} /> AI SUGGESTION</p>
+              <p className="text-slate-200 mb-2">"{improveResult.improved}"</p>
+              <p className="text-xs text-slate-400 mb-3">{improveResult.explanation}</p>
+              <div className="flex gap-2">
+                <button onClick={applyImprovement} className="btn-primary text-xs py-1.5 px-3">Apply</button>
+                <button onClick={() => setImproveResult(null)} className="btn-ghost text-xs py-1.5 px-3">Dismiss</button>
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-2">
+            <button onClick={handleImprove} disabled={improving || !text.trim()} className="btn-ghost flex items-center gap-2 text-sm disabled:opacity-50">
+              {improving ? <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" /> : <Wand2 size={14} />} Improve Selected
+            </button>
+            <button onClick={handleSubmit} disabled={loading || wordCount < (prompt.minWords || 30)} className="btn-primary flex items-center gap-2 flex-1 justify-center disabled:opacity-50">
+              {loading ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Analysing...</> : <><Send size={16} /> Submit for Review</>}
+            </button>
+          </div>
         </div>
-        <div className="h-2 bg-dark-600 rounded-full overflow-hidden">
-          <div className={`h-full rounded-full transition-all duration-300 ${wordCount >= TARGET_WORDS ? 'bg-green-500' : wordCount >= TARGET_WORDS * 0.5 ? 'bg-yellow-400' : 'bg-primary-500'}`}
-            style={{ width: `${progressPct}%` }} />
+
+        {/* Side Panel */}
+        <div className="space-y-4">
+          <div className="glass-card p-4">
+            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1"><Lightbulb size={12} /> Writing Buddy</h3>
+            <p className="text-xs text-slate-500 mb-1.5">Useful connectors:</p>
+            <div className="flex flex-wrap gap-1 mb-3">
+              {connectors.map(p => <button key={p} onClick={() => setText(prev => prev + (prev.endsWith(' ') || !prev ? '' : ' ') + p + ' ')} className="text-xs bg-dark-600 hover:bg-primary-500/20 hover:text-primary-400 border border-white/5 rounded-full px-2 py-0.5 text-slate-400 transition-all">{p}</button>)}
+            </div>
+            <p className="text-xs text-slate-500 mb-1.5">Strong verbs:</p>
+            <div className="flex flex-wrap gap-1">
+              {verbs.map(v => <button key={v} onClick={() => setText(prev => prev + ' ' + v)} className="text-xs bg-dark-600 hover:bg-green-500/20 hover:text-green-400 border border-white/5 rounded-full px-2 py-0.5 text-slate-400 transition-all">{v}</button>)}
+            </div>
+          </div>
+
+          <div className="glass-card p-4">
+            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Structure Guide</h3>
+            <div className="space-y-2 text-xs text-slate-400">
+              {mode.id === 'news_article' && ['Opening (who, what, when, where)', 'Background details', 'Expert quotes/opinions', 'Conclusion'].map((s,i) => <div key={i} className="flex items-start gap-2"><span className="text-primary-400">{i+1}.</span>{s}</div>)}
+              {mode.id === 'letter_email' && ['Greeting', 'Opening (state purpose)', 'Main body (details)', 'Closing (what you expect)', 'Sign-off'].map((s,i) => <div key={i} className="flex items-start gap-2"><span className="text-primary-400">{i+1}.</span>{s}</div>)}
+              {(mode.id === 'story_continuation' || mode.id === 'creative_scene') && ['Set scene and mood', 'Develop characters', 'Build tension/conflict', 'Resolution or cliffhanger'].map((s,i) => <div key={i} className="flex items-start gap-2"><span className="text-primary-400">{i+1}.</span>{s}</div>)}
+              {(mode.id === 'timed_challenge' || mode.id === 'picture_writing') && ['Introduction (main idea)', 'Supporting points with examples', 'Descriptive details', 'Conclusion / your opinion'].map((s,i) => <div key={i} className="flex items-start gap-2"><span className="text-primary-400">{i+1}.</span>{s}</div>)}
+            </div>
+          </div>
+
+          <div className="glass-card p-4">
+            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Live Stats</h3>
+            <div className="space-y-2 text-sm">
+              {[['Words', wordCount], ['Characters', text.length], ['Sentences', text.split(/[.!?]+/).filter(s => s.trim()).length], ['Paragraphs', text.split(/\n\n+/).filter(p => p.trim()).length || 1]].map(([l, v]) => (
+                <div key={l} className="flex justify-between"><span className="text-slate-400">{l}</span><span className="text-white font-medium">{v}</span></div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FeedbackReport({ result, mode, onRedo, onBack }) {
+  const { evaluation, xpEarned, coinsEarned } = result;
+  const [showModel, setShowModel] = useState(false);
+  const [showCorrected, setShowCorrected] = useState(false);
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-5 animate-slide-up">
+      <div className="glass-card p-6 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1">
+            <h2 className="text-xl font-display font-bold text-white mb-1">Writing Report Card</h2>
+            <p className="text-slate-400 text-sm leading-relaxed">{evaluation.feedback}</p>
+          </div>
+          <div className="text-right shrink-0 ml-4">
+            <div className={`text-4xl font-display font-bold ${evaluation.overallScore >= 80 ? 'text-green-400' : evaluation.overallScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>{evaluation.overallScore}%</div>
+            <div className="text-sm text-slate-400">CEFR: <span className="text-primary-400 font-bold">{evaluation.cefr}</span></div>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <span className="xp-badge"><Zap size={12} />+{xpEarned} XP</span>
+          <span className="inline-flex items-center gap-1 bg-yellow-500/20 text-yellow-400 text-xs font-bold px-2 py-1 rounded-full">+{coinsEarned} Coins</span>
+          <span className="text-xs bg-dark-600 border border-white/5 rounded-full px-2 py-1 text-slate-400">{evaluation.wordCount} words</span>
         </div>
       </div>
 
-      {/* Textarea */}
-      <div className="glass-card p-6">
-        <label className="text-sm font-medium text-slate-300 block mb-3">Your Response</label>
-        <textarea
-          value={text}
-          onChange={e => setText(e.target.value)}
-          onMouseUp={handleTextSelect}
-          onKeyUp={handleTextSelect}
-          placeholder={`Write about: ${selectedTopic.prompt}\n\nTip: Aim for at least ${TARGET_WORDS} words for better feedback.`}
-          className="input-field min-h-[280px] resize-y font-body text-base leading-relaxed w-full"
-        />
-        <div className="flex items-center justify-between mt-4">
-          <p className="text-xs text-slate-500">💡 Select any sentence to use "Improve This"</p>
-          <button onClick={handleSubmit} disabled={loading || !text.trim()}
-            className="btn-primary flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-            {loading ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Analyzing...</> : <><Send size={16} /> Submit for Review</>}
-          </button>
-        </div>
-      </div>
-
-      {/* Improve This panel */}
       <div className="glass-card p-5">
-        <h3 className="font-semibold text-white mb-3 flex items-center gap-2"><Wand2 size={16} className="text-accent-purple" /> Improve This AI Assistant</h3>
-        <div className="flex gap-3 mb-3">
-          <div className="flex-1 px-3 py-2 bg-dark-700 rounded-lg text-sm text-slate-400 min-h-[40px] italic truncate">
-            {selectedSentence || 'Select a sentence in the text above…'}
-          </div>
-          <button onClick={handleImprove} disabled={!selectedSentence || improving}
-            className="btn-primary text-sm px-4 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-            {improving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Wand2 size={14} />}
-            Improve
-          </button>
-        </div>
-        {improved && (
-          <div className="p-3 bg-accent-purple/10 border border-accent-purple/20 rounded-xl space-y-1">
-            <p className="text-sm text-white">✨ <span className="font-semibold">Improved:</span> {improved.improved}</p>
-            <p className="text-xs text-slate-400">💬 {improved.explanation}</p>
-            <button onClick={() => { setText(t => t.replace(selectedSentence, improved.improved)); setImproved(null); setSelectedSentence(''); toast.success('Sentence replaced!'); }}
-              className="text-xs text-primary-400 hover:text-primary-300 mt-1">Use this →</button>
-          </div>
-        )}
+        <h3 className="font-display font-bold text-white mb-4 flex items-center gap-2"><BarChart2 size={18} className="text-primary-400" /> Detailed Scores</h3>
+        <ScoreBar label="Grammar" value={evaluation.grammarScore} color="bg-blue-500" />
+        <ScoreBar label="Vocabulary" value={evaluation.vocabularyScore} color="bg-purple-500" />
+        <ScoreBar label="Coherence" value={evaluation.coherenceScore} color="bg-green-500" />
+        <ScoreBar label="Content" value={evaluation.contentScore} color="bg-orange-500" />
+        <ScoreBar label="Creativity" value={evaluation.creativityScore} color="bg-pink-500" />
       </div>
 
-      {/* Vocab suggestions */}
-      {vocabSuggestions.length > 0 && (
-        <div className="glass-card p-4">
-          <h3 className="text-sm font-semibold text-white mb-3">📚 Vocabulary Suggestions</h3>
-          <div className="flex flex-wrap gap-3">
-            {vocabSuggestions.map(({ word, alts }) => (
-              <div key={word} className="flex items-center gap-2 bg-dark-700 rounded-lg px-3 py-2">
-                <span className="text-xs text-slate-400 line-through">{word}</span>
-                <span className="text-slate-500">→</span>
-                {alts.map(a => (
-                  <button key={a} onClick={() => { setText(t => t.replace(new RegExp(`\\b${word}\\b`, 'i'), a)); toast.success(`Replaced "${word}" with "${a}"`); }}
-                    className="text-xs text-primary-400 hover:text-primary-300 hover:underline">{a}</button>
-                ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="glass-card p-5 border-green-500/10">
+          <h3 className="font-semibold text-green-400 mb-3 flex items-center gap-2"><CheckCircle size={16} /> Strengths</h3>
+          <ul className="space-y-2">{(evaluation.strengths||[]).map((s,i) => <li key={i} className="text-sm text-slate-300 flex items-start gap-2"><span className="text-green-400 shrink-0">✓</span>{s}</li>)}</ul>
+        </div>
+        <div className="glass-card p-5 border-amber-500/10">
+          <h3 className="font-semibold text-amber-400 mb-3 flex items-center gap-2"><AlertTriangle size={16} /> To Improve</h3>
+          <ul className="space-y-2">{(evaluation.improvements||[]).map((s,i) => <li key={i} className="text-sm text-slate-300 flex items-start gap-2"><span className="text-amber-400 shrink-0">→</span>{s}</li>)}</ul>
+        </div>
+      </div>
+
+      {evaluation.sentenceAnalysis?.length > 0 && (
+        <div className="glass-card p-5">
+          <h3 className="font-display font-bold text-white mb-3 flex items-center gap-2"><FileText size={18} className="text-primary-400" /> Sentence Analysis</h3>
+          <div className="space-y-2">
+            {evaluation.sentenceAnalysis.slice(0,6).map((s,i) => (
+              <div key={i} className={`p-3 rounded-xl text-sm border ${s.status==='correct'?'border-green-500/20 bg-green-500/5':s.status==='minor'?'border-yellow-500/20 bg-yellow-500/5':'border-red-500/20 bg-red-500/5'}`}>
+                <div className="flex items-start gap-2">
+                  <span className={s.status==='correct'?'text-green-400':s.status==='minor'?'text-yellow-400':'text-red-400'}>{s.status==='correct'?'✓':s.status==='minor'?'⚠':'✗'}</span>
+                  <div><p className="text-slate-300 italic">"{s.sentence}"</p>{s.note && <p className="text-xs text-slate-500 mt-1">{s.note}</p>}</div>
+                </div>
               </div>
             ))}
           </div>
         </div>
       )}
+
+      {evaluation.vocabularyHighlights?.length > 0 && (
+        <div className="glass-card p-5">
+          <h3 className="font-display font-bold text-white mb-3">Vocabulary Feedback</h3>
+          <div className="space-y-2">
+            {evaluation.vocabularyHighlights.map((v,i) => (
+              <div key={i} className="flex items-start gap-3 text-sm">
+                <span>{v.note?'👍':'💡'}</span>
+                <div><span className="font-medium text-white">"{v.word}"</span><span className="text-slate-400 ml-2">{v.note || `→ Try: "${v.suggestion}"`}</span></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {evaluation.nextLevelTip && (
+        <div className="glass-card p-4 border-primary-500/20 bg-primary-500/5">
+          <p className="text-xs text-primary-400 font-semibold mb-1 flex items-center gap-1"><Star size={12} /> NEXT LEVEL TIP</p>
+          <p className="text-sm text-slate-300">{evaluation.nextLevelTip}</p>
+        </div>
+      )}
+
+      {evaluation.modelAnswer && (
+        <div className="glass-card p-5">
+          <button onClick={() => setShowModel(p=>!p)} className="flex items-center justify-between w-full mb-3">
+            <h3 className="font-display font-bold text-white flex items-center gap-2"><Eye size={18} className="text-primary-400" /> Model Answer</h3>
+            <span className="text-xs text-slate-400">{showModel?'Hide':'Show'}</span>
+          </button>
+          {showModel && <p className="text-slate-300 text-sm leading-relaxed italic border-l-2 border-primary-500/30 pl-4">{evaluation.modelAnswer}</p>}
+        </div>
+      )}
+
+      {evaluation.correctedText && (
+        <div className="glass-card p-5">
+          <button onClick={() => setShowCorrected(p=>!p)} className="flex items-center justify-between w-full mb-3">
+            <h3 className="font-display font-bold text-white flex items-center gap-2"><BookOpen size={18} className="text-green-400" /> Corrected Version</h3>
+            <span className="text-xs text-slate-400">{showCorrected?'Hide':'Show'}</span>
+          </button>
+          {showCorrected && <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{evaluation.correctedText}</p>}
+        </div>
+      )}
+
+      <div className="flex gap-3">
+        <button onClick={onBack} className="btn-ghost flex-1 flex items-center justify-center gap-2"><RotateCcw size={16} /> All Modes</button>
+        <button onClick={onRedo} className="btn-primary flex-1 flex items-center justify-center gap-2"><RefreshCw size={16} /> Try Again</button>
+      </div>
     </div>
   );
+}
 
-  // ── Results view ──
+export default function Writing() {
+  const [phase, setPhase] = useState('modes');
+  const [modes, setModes] = useState([]);
+  const [selectedMode, setSelectedMode] = useState(null);
+  const [prompts, setPrompts] = useState([]);
+  const [selectedPrompt, setSelectedPrompt] = useState(null);
+  const [result, setResult] = useState(null);
+  const [reward, setReward] = useState(null);
+  const [userLevel, setUserLevel] = useState(1);
+  const { user, fetchProfile } = useAuth();
+
+  useEffect(() => {
+    setUserLevel(user?.level || 1);
+    axios.get('/api/writing/modes').then(r => setModes(r.data)).catch(() => {});
+  }, [user]);
+
+  const handleSelectMode = async (mode) => {
+    setSelectedMode(mode);
+    try {
+      const { data } = await axios.get(`/api/writing/prompts/${mode.id}`);
+      setPrompts(data.prompts || []);
+      setPhase('prompts');
+    } catch { toast.error('Failed to load prompts'); }
+  };
+
+  const handleSubmit = async (data) => {
+    setResult(data);
+    setReward({ xp: data.xpEarned, coins: data.coinsEarned, score: data.evaluation.overallScore });
+    setPhase('feedback');
+    await fetchProfile();
+  };
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-slide-up" onClick={handleWordClick}>
-      {reward && <XPReward {...reward} onClose={() => setReward(null)} />}
-      {popupWord && <WordPopup word={popupWord} onClose={() => setPopupWord(null)} source="writing" />}
+    <div className="max-w-6xl mx-auto">
+      {reward && phase === 'feedback' && <XPReward {...reward} onClose={() => setReward(null)} />}
 
-      {/* Overview */}
-      <div className="glass-card p-6 bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/20">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-display font-bold text-white">AI Feedback</h2>
-          <div className="text-4xl font-display font-bold text-white">{result.evaluation.overallScore}%</div>
-        </div>
-        <p className="text-slate-300 leading-relaxed">{result.evaluation.feedback}</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {result.evaluation.cefr && (
-            <span className="text-xs bg-primary-500/20 text-primary-400 border border-primary-500/20 rounded-full px-3 py-1">CEFR: {result.evaluation.cefr}</span>
-          )}
-          <span className="xp-badge"><Zap size={10} />+{result.xpEarned} XP</span>
-        </div>
-      </div>
+      {phase === 'modes' && <ModeSelector modes={modes} onSelect={handleSelectMode} userLevel={userLevel} />}
 
-      {/* Scores */}
-      <div className="glass-card p-6">
-        <h3 className="font-display font-bold text-white mb-4">Detailed Scores</h3>
-        <ScoreBar label="Grammar" value={result.evaluation.grammarScore} color="bg-blue-500" />
-        <ScoreBar label="Vocabulary" value={result.evaluation.vocabularyScore} color="bg-purple-500" />
-        <ScoreBar label="Coherence" value={result.evaluation.coherenceScore} color="bg-green-500" />
-        <ScoreBar label="Content" value={result.evaluation.contentScore} color="bg-orange-500" />
-      </div>
-
-      {/* Sentence Highlight */}
-      {result.evaluation.sentenceAnalysis?.length > 0 && (
-        <div className="glass-card p-5">
-          <h3 className="font-semibold text-white mb-2 flex items-center gap-2">🔍 Sentence-Level Analysis</h3>
-          <div className="flex flex-wrap gap-3 mb-3 text-xs">
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-green-500/30 inline-block border-b-2 border-green-400" /> Correct</span>
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-yellow-500/30 inline-block border-b-2 border-yellow-400" /> Minor issue</span>
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded-sm bg-red-500/30 inline-block border-b-2 border-red-400" /> Grammar error</span>
+      {phase === 'prompts' && selectedMode && (
+        <div className="max-w-3xl mx-auto animate-slide-up">
+          <div className="flex items-center gap-3 mb-6">
+            <button onClick={() => setPhase('modes')} className="btn-ghost text-sm py-2 px-3 flex items-center gap-1"><RotateCcw size={14} /> Back</button>
+            <span className="text-xl">{selectedMode.emoji}</span>
+            <h2 className="text-xl font-display font-bold text-white">{selectedMode.label} — Choose a Prompt</h2>
           </div>
-          <SentenceHighlight text={text} analysis={result.evaluation.sentenceAnalysis} />
-        </div>
-      )}
-
-      {/* Strengths & Improvements */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="glass-card p-5">
-          <h3 className="font-semibold text-green-400 mb-3">✅ Strengths</h3>
-          <ul className="space-y-2">
-            {(result.evaluation.strengths || []).map((s, i) => (
-              <li key={i} className="text-sm text-slate-300 flex items-start gap-2"><span className="text-green-400 mt-0.5">•</span>{s}</li>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {prompts.map((prompt, i) => (
+              <button key={i} onClick={() => { setSelectedPrompt(prompt); setPhase('editor'); }}
+                className="glass-card p-5 text-left hover:border-white/15 hover:scale-[1.02] transition-all duration-200 group">
+                <div className="flex items-start justify-between mb-3">
+                  <span className={`text-xs px-2 py-1 rounded-full bg-gradient-to-r ${selectedMode.color} text-white font-medium`}>{prompt.topic || prompt.format || `Prompt ${i+1}`}</span>
+                  <span className="text-xs text-slate-500">Min {prompt.minWords} words</span>
+                </div>
+                <p className="text-slate-300 text-sm leading-relaxed line-clamp-3">{prompt.starter || prompt.headline || prompt.situation || prompt.topic || prompt.task}</p>
+                {prompt.timeSeconds && <div className="mt-2 flex items-center gap-1 text-xs text-orange-400"><Timer size={12} /> {Math.floor(prompt.timeSeconds/60)} min limit</div>}
+                <div className="mt-3 flex items-center gap-1 text-xs text-primary-400 group-hover:gap-2 transition-all">Choose this prompt <ChevronRight size={12} /></div>
+              </button>
             ))}
-          </ul>
-        </div>
-        <div className="glass-card p-5">
-          <h3 className="font-semibold text-amber-400 mb-3">💡 To Improve</h3>
-          <ul className="space-y-2">
-            {(result.evaluation.improvements || []).map((s, i) => (
-              <li key={i} className="text-sm text-slate-300 flex items-start gap-2"><span className="text-amber-400 mt-0.5">•</span>{s}</li>
-            ))}
-          </ul>
-        </div>
-      </div>
-
-      {/* Corrected Version */}
-      {result.evaluation.correctedText && (
-        <div className="glass-card p-5">
-          <h3 className="font-semibold text-white mb-3 flex items-center gap-2"><BookOpen size={16} className="text-primary-400" /> Corrected Version</h3>
-          <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{result.evaluation.correctedText}</p>
-        </div>
-      )}
-
-      {/* Model Answer toggle */}
-      {result.evaluation.modelAnswer && (
-        <div className="glass-card p-5">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-semibold text-white flex items-center gap-2">🏆 Model Answer</h3>
-            <button onClick={() => setShowModel(v => !v)} className="text-xs text-primary-400 hover:text-primary-300 flex items-center gap-1">
-              {showModel ? <><EyeOff size={13} /> Hide</> : <><Eye size={13} /> Show</>}
-            </button>
           </div>
-          {showModel && <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{result.evaluation.modelAnswer}</p>}
         </div>
       )}
 
-      <button onClick={reset} className="btn-primary w-full flex items-center justify-center gap-2">
-        <PenTool size={16} /> Practice Another Topic
-      </button>
+      {phase === 'editor' && selectedMode && selectedPrompt && (
+        <WritingEditor mode={selectedMode} prompt={selectedPrompt} onSubmit={handleSubmit} onBack={() => setPhase('prompts')} />
+      )}
+
+      {phase === 'feedback' && result && (
+        <FeedbackReport result={result} mode={selectedMode} onRedo={() => setPhase('editor')} onBack={() => { setPhase('modes'); setResult(null); setReward(null); }} />
+      )}
     </div>
   );
 }
