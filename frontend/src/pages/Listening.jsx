@@ -81,7 +81,10 @@ export default function Listening() {
         mode: "video"
       });
       setResult({ ...res.data, feedback: res.data.score >= 70 ? "Great job! Lesson completed." : "Good effort! Try again to unlock the next lesson." });
-      if (res.data.score >= 70) fetchLibrary(); 
+      if (res.data.score >= 70) {
+        toast.success("🎉 Lesson Mastered! Next lesson unlocked.", { icon: "🔥", duration: 4000 });
+        fetchLibrary(); 
+      }
     } catch (err) { 
       console.error(err);
       toast.error("Failed to submit answers.");
@@ -254,6 +257,12 @@ export default function Listening() {
               style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
             />
           </div>
+
+          {questions.length === 0 && (
+            <p style={{ color: "#94a3b8", fontSize: 13, marginBottom: 16 }}>
+              💡 <b>To Complete:</b> Pass the quiz with <b>70% or higher</b> to unlock the next lesson!
+            </p>
+          )}
 
           {questions.length === 0 ? (
             <button onClick={handleGenerateQuestions} disabled={loading}
