@@ -246,7 +246,7 @@ export default function Listening() {
 
           <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, borderRadius: 12, overflow: "hidden", marginBottom: 20 }}>
             <iframe
-              src={`https://www.youtube.com/embed/${selectedVideo.id}?rel=0`}
+              src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}?rel=0`}
               title={selectedVideo.title}
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
