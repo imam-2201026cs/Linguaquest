@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { 
@@ -25,8 +25,8 @@ function ReadingRoadmap({ library, onSelectBook, completedCount }) {
             <Map size={28} className="text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-display font-bold text-white">Reading Roadmap <span className="text-green-500 text-xs">v2.0</span></h1>
-            <p className="text-slate-400 text-sm">180 Progressive Cartoon Stories</p>
+            <h1 className="text-3xl font-display font-bold text-white">Reading Centre <span className="text-green-500 text-xs">v2.0</span></h1>
+            <p className="text-slate-400 text-sm">180 Progressive Stories</p>
           </div>
         </div>
         <div className="glass-card px-6 py-3 flex items-center gap-4 border-green-500/20 bg-green-500/5">
@@ -59,7 +59,7 @@ function ReadingRoadmap({ library, onSelectBook, completedCount }) {
                 </div>
               </div>
 
-              {/* Roadmap Path */}
+              {/* Books Grid — use section.books directly, preserving server-side unlock status */}
               <div className="space-y-8">
                 {['beginner', 'intermediate', 'advanced'].map(tier => {
                   const tierBooks = section.books.filter(b => b.tier === tier);
@@ -73,16 +73,17 @@ function ReadingRoadmap({ library, onSelectBook, completedCount }) {
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                         {tierBooks.map((book) => {
-                          const idx = section.books.indexOf(book);
-                          const isUnlockedByForce = (lvl === 'beginner' && idx === 0);
-                          const isLocked = !book.isUnlocked && !isUnlockedByForce;
+                          // Use the isUnlocked value from the SERVER — don't recalculate in frontend
+                          // The server already handles: first book always unlocked, sequential unlock, etc.
+                          const isLocked = !book.isUnlocked;
                           const isCompleted = book.isCompleted;
+                          const globalIndex = section.books.indexOf(book);
                           
                           return (
                             <button
                               key={book.id}
                               disabled={isLocked}
-                              onClick={() => onSelectBook(book)}
+                              onClick={() => !isLocked && onSelectBook(book)}
                               className={`relative group p-4 rounded-2xl border transition-all duration-300 flex flex-col items-center text-center ${
                                 isCompleted 
                                 ? 'bg-green-500/10 border-green-500/30 shadow-lg shadow-green-500/5' 
@@ -94,11 +95,17 @@ function ReadingRoadmap({ library, onSelectBook, completedCount }) {
                               {/* Badge */}
                               <div className="absolute -top-2 -right-2 z-20">
                                 {isCompleted ? (
-                                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-lg"><CheckCircle size={14} className="text-white" /></div>
+                                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                                    <CheckCircle size={14} className="text-white" />
+                                  </div>
                                 ) : isLocked ? (
-                                  <div className="w-6 h-6 bg-dark-800 border border-white/10 rounded-full flex items-center justify-center"><Lock size={12} className="text-slate-500" /></div>
+                                  <div className="w-6 h-6 bg-dark-800 border border-white/10 rounded-full flex items-center justify-center">
+                                    <Lock size={12} className="text-slate-500" />
+                                  </div>
                                 ) : (
-                                  <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center animate-pulse shadow-lg"><Zap size={12} className="text-white" /></div>
+                                  <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center animate-pulse shadow-lg">
+                                    <Zap size={12} className="text-white" />
+                                  </div>
                                 )}
                               </div>
 
@@ -106,7 +113,9 @@ function ReadingRoadmap({ library, onSelectBook, completedCount }) {
                                 {book.emoji}
                               </div>
                               
-                              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1">Module {idx + 1}</div>
+                              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1">
+                                Module {globalIndex + 1}
+                              </div>
                               <h3 className="text-xs font-bold text-white leading-tight line-clamp-2 min-h-[32px]">
                                 {book.title}
                               </h3>
@@ -173,15 +182,15 @@ function ReadingExercise({ exercise, onBack, onComplete }) {
 
       {!quizMode ? (
         <div className="space-y-6">
-          {/* Cartoon Illustration Placeholder */}
+          {/* Illustration placeholder */}
           <div className="glass-card p-2 border-white/5 bg-gradient-to-br from-dark-800 to-dark-900 rounded-3xl overflow-hidden shadow-2xl">
             <div className="aspect-video bg-dark-700 rounded-2xl flex flex-col items-center justify-center p-8 text-center relative group overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-blue-500/10 opacity-50 group-hover:opacity-70 transition-opacity" />
               <div className="relative z-10">
                 <Palette size={48} className="text-green-400 mb-4 mx-auto animate-bounce" />
-                <p className="text-slate-300 italic text-sm max-w-sm">"{exercise.illustrationPrompt || 'An engaging cartoon illustration for this story'}"</p>
+                <p className="text-slate-300 italic text-sm max-w-sm">"{exercise.illustrationPrompt || 'An engaging illustration for this story'}"</p>
                 <div className="mt-4 flex items-center justify-center gap-2 text-[10px] text-slate-500 uppercase font-bold tracking-widest">
-                  <Sparkles size={12} className="text-yellow-500" /> AI Cartoon Style
+                  <Sparkles size={12} className="text-yellow-500" /> AI Story
                 </div>
               </div>
             </div>
@@ -200,7 +209,7 @@ function ReadingExercise({ exercise, onBack, onComplete }) {
                 <Book size={14} /> Key Vocabulary
               </h3>
               <div className="space-y-3">
-                {exercise.vocabulary.map((v, i) => (
+                {(exercise.vocabulary || []).map((v, i) => (
                   <div key={i} className="flex flex-col">
                     <span className="text-white font-bold text-sm">{v.word}</span>
                     <span className="text-slate-400 text-xs">{v.definition}</span>
@@ -209,12 +218,12 @@ function ReadingExercise({ exercise, onBack, onComplete }) {
               </div>
             </div>
             <div className="glass-card p-6 border-purple-500/10 flex flex-col justify-center items-center text-center">
-              <p className="text-slate-400 text-sm mb-6 italic">"Finished reading? Let's see how much you understood!"</p>
+              <p className="text-slate-400 text-sm mb-6 italic">"Finished reading? Let's test your understanding!"</p>
               <button 
                 onClick={() => setQuizMode(true)}
                 className="btn-primary w-full py-4 flex items-center justify-center gap-3 text-lg"
               >
-                Start Comprehension Quiz <ChevronRight size={20} />
+                Start Quiz <ChevronRight size={20} />
               </button>
             </div>
           </div>
@@ -245,7 +254,7 @@ function ReadingExercise({ exercise, onBack, onComplete }) {
                   return (
                     <button
                       key={oi}
-                      disabled={loading || result}
+                      disabled={loading || !!result}
                       onClick={() => setAnswers(p => ({ ...p, [qi]: oi }))}
                       className={`w-full text-left p-4 rounded-2xl border-2 transition-all flex items-center gap-4 ${
                         isCorrect ? 'border-green-500 bg-green-500/10 text-green-400' :
@@ -264,7 +273,9 @@ function ReadingExercise({ exercise, onBack, onComplete }) {
               </div>
               {result && q.explanation && (
                 <div className="mt-4 p-4 bg-dark-800 rounded-xl border border-white/5">
-                  <p className="text-xs text-slate-400 leading-relaxed"><span className="text-green-400 font-bold">Explanation:</span> {q.explanation}</p>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    <span className="text-green-400 font-bold">Explanation:</span> {q.explanation}
+                  </p>
                 </div>
               )}
             </div>
@@ -281,7 +292,7 @@ function ReadingExercise({ exercise, onBack, onComplete }) {
           ) : (
             <div className="glass-card p-8 bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-500/30 text-center mt-8">
               <div className="text-5xl font-black text-white mb-2">{result.score}%</div>
-              <p className="text-slate-300 mb-6">{result.score >= 70 ? "Excellent Mastery!" : "Keep Practicing!"}</p>
+              <p className="text-slate-300 mb-6">{result.score >= 70 ? "Excellent! Next lesson unlocked 🔥" : "Keep practicing!"}</p>
               <button onClick={onBack} className="btn-primary px-10">Continue Roadmap</button>
             </div>
           )}
@@ -307,13 +318,8 @@ export default function Reading() {
     } catch { toast.error("Failed to load library"); }
   };
 
-  useEffect(() => {
-    fetchLibrary();
-  }, []);
-
-  useEffect(() => {
-    if (user) fetchLibrary();
-  }, [user]);
+  useEffect(() => { fetchLibrary(); }, []);
+  useEffect(() => { if (user) fetchLibrary(); }, [user]);
 
   const handleSelectBook = async (book) => {
     setLoading(true);
@@ -321,7 +327,7 @@ export default function Reading() {
       const { data } = await axios.post('/api/reading/book-passage', { bookId: book.id });
       setExercise(data);
       setPhase('exercise');
-    } catch { toast.error("Failed to load story"); }
+    } catch { toast.error("Failed to load story. Please try again."); }
     finally { setLoading(false); }
   };
 
@@ -333,7 +339,7 @@ export default function Reading() {
           <div className="w-20 h-20 border-4 border-green-500 border-t-transparent rounded-full animate-spin absolute top-0 left-0" />
           <Palette size={32} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-green-500" />
         </div>
-        <p className="text-slate-400 animate-pulse font-display font-bold">Illustrating your cartoon story...</p>
+        <p className="text-slate-400 animate-pulse font-display font-bold">Generating your story...</p>
       </div>
     );
   }

@@ -36,7 +36,7 @@ function CountdownTimer({ seconds, onExpire }) {
   const col = pct > 50 ? 'text-green-400' : pct > 25 ? 'text-yellow-400' : 'text-red-400';
   return (
     <div className="flex items-center gap-3">
-      <div className={`font-mono text-2xl font-bold ${col}`}>{String(mins).padStart(2,'0')}:{String(secs).padStart(2,'0')}</div>
+      <div className={`font-mono text-2xl font-bold ${col}`}>{String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}</div>
       <div className="flex-1 h-2 bg-dark-600 rounded-full overflow-hidden">
         <div className={`h-full rounded-full transition-all duration-1000 ${pct > 50 ? 'bg-green-500' : pct > 25 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${pct}%` }} />
       </div>
@@ -101,9 +101,9 @@ function WritingEditor({ mode, prompt, onSubmit, onBack }) {
     axios.get('/api/writing/daily-mission').then(res => setMission(res.data));
   }, []);
 
-  useEffect(() => { 
+  useEffect(() => {
     const currentWordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
-    setWordCount(currentWordCount); 
+    setWordCount(currentWordCount);
 
     // Check Mission
     if (mission && text.toLowerCase().includes(mission.word.toLowerCase())) {
@@ -220,7 +220,7 @@ function WritingEditor({ mode, prompt, onSubmit, onBack }) {
             {mode.id === 'letter_email' && (<div><p className="text-xs text-primary-400 font-semibold mb-2">✉️ {prompt.format?.toUpperCase()}</p><p className="text-slate-200 leading-relaxed">{prompt.situation}</p><p className="text-xs text-slate-500 mt-2">Tone: {prompt.tone}</p></div>)}
             {mode.id === 'creative_scene' && (<div><p className="text-xs text-primary-400 font-semibold mb-3">🎭 CREATIVE SCENE</p><div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2"><div className="bg-dark-600/50 rounded-lg p-2"><p className="text-xs text-slate-500">Characters</p><p className="text-xs text-slate-300">{prompt.characters}</p></div><div className="bg-dark-600/50 rounded-lg p-2"><p className="text-xs text-slate-500">Setting</p><p className="text-xs text-slate-300">{prompt.setting}</p></div><div className="bg-dark-600/50 rounded-lg p-2"><p className="text-xs text-slate-500">Situation</p><p className="text-xs text-slate-300">{prompt.situation}</p></div></div></div>)}
             {mode.id === 'timed_challenge' && (<div><p className="text-xs text-primary-400 font-semibold mb-2">⏱️ TIMED CHALLENGE</p><p className="text-xl font-display font-bold text-white mb-3">"{prompt.topic}"</p><CountdownTimer seconds={prompt.timeSeconds || 300} onExpire={() => { toast('⏰ Time up! Submitting...'); handleSubmit(); }} /></div>)}
-            {mode.id === 'picture_writing' && (<div><p className="text-xs text-primary-400 font-semibold mb-2">🖼️ PICTURE PROMPT</p><img src={prompt.imageUrl} alt={prompt.description} className="w-full h-44 object-cover rounded-xl mb-3" onError={e => e.target.style.display='none'} /><p className="text-slate-400 text-sm">{prompt.task}</p></div>)}
+            {mode.id === 'picture_writing' && (<div><p className="text-xs text-primary-400 font-semibold mb-2">🖼️ PICTURE PROMPT</p><img src={prompt.imageUrl} alt={prompt.description} className="w-full h-44 object-cover rounded-xl mb-3" onError={e => e.target.style.display = 'none'} /><p className="text-slate-400 text-sm">{prompt.task}</p></div>)}
             <p className="text-xs text-slate-500 mt-3">Minimum: <span className="text-white font-medium">{prompt.minWords || 60} words</span></p>
           </div>
 
@@ -235,7 +235,7 @@ function WritingEditor({ mode, prompt, onSubmit, onBack }) {
                 <span className={pct >= 100 ? 'text-green-400 font-medium' : 'text-slate-400'}>{wordCount} / {prompt.minWords || 60} minimum {pct >= 100 && '✓'}</span>
               </div>
               <div className="h-1.5 bg-dark-600 rounded-full overflow-hidden">
-                <div className={`h-full ${barColor} rounded-full transition-all duration-300`} style={{ width: `${Math.min(pct,100)}%` }} />
+                <div className={`h-full ${barColor} rounded-full transition-all duration-300`} style={{ width: `${Math.min(pct, 100)}%` }} />
               </div>
             </div>
           </div>
@@ -282,37 +282,37 @@ function WritingEditor({ mode, prompt, onSubmit, onBack }) {
 
         {!focusMode && (
           <div className="space-y-4 animate-fade-in">
-          <div className="glass-card p-4">
-            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1"><Lightbulb size={12} /> Writing Buddy</h3>
-            <p className="text-xs text-slate-500 mb-1.5">Useful connectors:</p>
-            <div className="flex flex-wrap gap-1 mb-3">
-              {connectors.map(p => <button key={p} onClick={() => setText(prev => prev + (prev.endsWith(' ') || !prev ? '' : ' ') + p + ' ')} className="text-xs bg-dark-600 hover:bg-primary-500/20 hover:text-primary-400 border border-white/5 rounded-full px-2 py-0.5 text-slate-400 transition-all">{p}</button>)}
+            <div className="glass-card p-4">
+              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-1"><Lightbulb size={12} /> Writing Buddy</h3>
+              <p className="text-xs text-slate-500 mb-1.5">Useful connectors:</p>
+              <div className="flex flex-wrap gap-1 mb-3">
+                {connectors.map(p => <button key={p} onClick={() => setText(prev => prev + (prev.endsWith(' ') || !prev ? '' : ' ') + p + ' ')} className="text-xs bg-dark-600 hover:bg-primary-500/20 hover:text-primary-400 border border-white/5 rounded-full px-2 py-0.5 text-slate-400 transition-all">{p}</button>)}
+              </div>
+              <p className="text-xs text-slate-500 mb-1.5">Strong verbs:</p>
+              <div className="flex flex-wrap gap-1">
+                {verbs.map(v => <button key={v} onClick={() => setText(prev => prev + ' ' + v)} className="text-xs bg-dark-600 hover:bg-green-500/20 hover:text-green-400 border border-white/5 rounded-full px-2 py-0.5 text-slate-400 transition-all">{v}</button>)}
+              </div>
             </div>
-            <p className="text-xs text-slate-500 mb-1.5">Strong verbs:</p>
-            <div className="flex flex-wrap gap-1">
-              {verbs.map(v => <button key={v} onClick={() => setText(prev => prev + ' ' + v)} className="text-xs bg-dark-600 hover:bg-green-500/20 hover:text-green-400 border border-white/5 rounded-full px-2 py-0.5 text-slate-400 transition-all">{v}</button>)}
-            </div>
-          </div>
 
-          <div className="glass-card p-4">
-            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Structure Guide</h3>
-            <div className="space-y-2 text-xs text-slate-400">
-              {mode.id === 'news_article' && ['Opening (who, what, when, where)', 'Background details', 'Expert quotes/opinions', 'Conclusion'].map((s,i) => <div key={i} className="flex items-start gap-2"><span className="text-primary-400">{i+1}.</span>{s}</div>)}
-              {mode.id === 'letter_email' && ['Greeting', 'Opening (state purpose)', 'Main body (details)', 'Closing (what you expect)', 'Sign-off'].map((s,i) => <div key={i} className="flex items-start gap-2"><span className="text-primary-400">{i+1}.</span>{s}</div>)}
-              {(mode.id === 'story_continuation' || mode.id === 'creative_scene') && ['Set scene and mood', 'Develop characters', 'Build tension/conflict', 'Resolution or cliffhanger'].map((s,i) => <div key={i} className="flex items-start gap-2"><span className="text-primary-400">{i+1}.</span>{s}</div>)}
-              {(mode.id === 'timed_challenge' || mode.id === 'picture_writing') && ['Introduction (main idea)', 'Supporting points with examples', 'Descriptive details', 'Conclusion / your opinion'].map((s,i) => <div key={i} className="flex items-start gap-2"><span className="text-primary-400">{i+1}.</span>{s}</div>)}
+            <div className="glass-card p-4">
+              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Structure Guide</h3>
+              <div className="space-y-2 text-xs text-slate-400">
+                {mode.id === 'news_article' && ['Opening (who, what, when, where)', 'Background details', 'Expert quotes/opinions', 'Conclusion'].map((s, i) => <div key={i} className="flex items-start gap-2"><span className="text-primary-400">{i + 1}.</span>{s}</div>)}
+                {mode.id === 'letter_email' && ['Greeting', 'Opening (state purpose)', 'Main body (details)', 'Closing (what you expect)', 'Sign-off'].map((s, i) => <div key={i} className="flex items-start gap-2"><span className="text-primary-400">{i + 1}.</span>{s}</div>)}
+                {(mode.id === 'story_continuation' || mode.id === 'creative_scene') && ['Set scene and mood', 'Develop characters', 'Build tension/conflict', 'Resolution or cliffhanger'].map((s, i) => <div key={i} className="flex items-start gap-2"><span className="text-primary-400">{i + 1}.</span>{s}</div>)}
+                {(mode.id === 'timed_challenge' || mode.id === 'picture_writing') && ['Introduction (main idea)', 'Supporting points with examples', 'Descriptive details', 'Conclusion / your opinion'].map((s, i) => <div key={i} className="flex items-start gap-2"><span className="text-primary-400">{i + 1}.</span>{s}</div>)}
+              </div>
             </div>
-          </div>
 
-          <div className="glass-card p-4">
-            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Live Stats</h3>
-            <div className="space-y-2 text-sm">
-              {[['Words', wordCount], ['Characters', text.length], ['Sentences', text.split(/[.!?]+/).filter(s => s.trim()).length], ['Paragraphs', text.split(/\n\n+/).filter(p => p.trim()).length || 1]].map(([l, v]) => (
-                <div key={l} className="flex justify-between"><span className="text-slate-400">{l}</span><span className="text-white font-medium">{v}</span></div>
-              ))}
+            <div className="glass-card p-4">
+              <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Live Stats</h3>
+              <div className="space-y-2 text-sm">
+                {[['Words', wordCount], ['Characters', text.length], ['Sentences', text.split(/[.!?]+/).filter(s => s.trim()).length], ['Paragraphs', text.split(/\n\n+/).filter(p => p.trim()).length || 1]].map(([l, v]) => (
+                  <div key={l} className="flex justify-between"><span className="text-slate-400">{l}</span><span className="text-white font-medium">{v}</span></div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
       </div>
     </div>
   );
@@ -355,11 +355,11 @@ function FeedbackReport({ result, mode, onRedo, onBack }) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="glass-card p-5 border-green-500/10">
           <h3 className="font-semibold text-green-400 mb-3 flex items-center gap-2"><CheckCircle size={16} /> Strengths</h3>
-          <ul className="space-y-2">{(evaluation.strengths||[]).map((s,i) => <li key={i} className="text-sm text-slate-300 flex items-start gap-2"><span className="text-green-400 shrink-0">✓</span>{s}</li>)}</ul>
+          <ul className="space-y-2">{(evaluation.strengths || []).map((s, i) => <li key={i} className="text-sm text-slate-300 flex items-start gap-2"><span className="text-green-400 shrink-0">✓</span>{s}</li>)}</ul>
         </div>
         <div className="glass-card p-5 border-amber-500/10">
           <h3 className="font-semibold text-amber-400 mb-3 flex items-center gap-2"><AlertTriangle size={16} /> To Improve</h3>
-          <ul className="space-y-2">{(evaluation.improvements||[]).map((s,i) => <li key={i} className="text-sm text-slate-300 flex items-start gap-2"><span className="text-amber-400 shrink-0">→</span>{s}</li>)}</ul>
+          <ul className="space-y-2">{(evaluation.improvements || []).map((s, i) => <li key={i} className="text-sm text-slate-300 flex items-start gap-2"><span className="text-amber-400 shrink-0">→</span>{s}</li>)}</ul>
         </div>
       </div>
 
@@ -367,10 +367,10 @@ function FeedbackReport({ result, mode, onRedo, onBack }) {
         <div className="glass-card p-5">
           <h3 className="font-display font-bold text-white mb-3 flex items-center gap-2"><FileText size={18} className="text-primary-400" /> Sentence Analysis</h3>
           <div className="space-y-2">
-            {evaluation.sentenceAnalysis.slice(0,6).map((s,i) => (
-              <div key={i} className={`p-3 rounded-xl text-sm border ${s.status==='correct'?'border-green-500/20 bg-green-500/5':s.status==='minor'?'border-yellow-500/20 bg-yellow-500/5':'border-red-500/20 bg-red-500/5'}`}>
+            {evaluation.sentenceAnalysis.slice(0, 6).map((s, i) => (
+              <div key={i} className={`p-3 rounded-xl text-sm border ${s.status === 'correct' ? 'border-green-500/20 bg-green-500/5' : s.status === 'minor' ? 'border-yellow-500/20 bg-yellow-500/5' : 'border-red-500/20 bg-red-500/5'}`}>
                 <div className="flex items-start gap-2">
-                  <span className={s.status==='correct'?'text-green-400':s.status==='minor'?'text-yellow-400':'text-red-400'}>{s.status==='correct'?'✓':s.status==='minor'?'⚠':'✗'}</span>
+                  <span className={s.status === 'correct' ? 'text-green-400' : s.status === 'minor' ? 'text-yellow-400' : 'text-red-400'}>{s.status === 'correct' ? '✓' : s.status === 'minor' ? '⚠' : '✗'}</span>
                   <div><p className="text-slate-300 italic">"{s.sentence}"</p>{s.note && <p className="text-xs text-slate-500 mt-1">{s.note}</p>}</div>
                 </div>
               </div>
@@ -383,9 +383,9 @@ function FeedbackReport({ result, mode, onRedo, onBack }) {
         <div className="glass-card p-5">
           <h3 className="font-display font-bold text-white mb-3">Vocabulary Feedback</h3>
           <div className="space-y-2">
-            {evaluation.vocabularyHighlights.map((v,i) => (
+            {evaluation.vocabularyHighlights.map((v, i) => (
               <div key={i} className="flex items-start gap-3 text-sm">
-                <span>{v.note?'👍':'💡'}</span>
+                <span>{v.note ? '👍' : '💡'}</span>
                 <div><span className="font-medium text-white">"{v.word}"</span><span className="text-slate-400 ml-2">{v.note || `→ Try: "${v.suggestion}"`}</span></div>
               </div>
             ))}
@@ -402,9 +402,9 @@ function FeedbackReport({ result, mode, onRedo, onBack }) {
 
       {evaluation.modelAnswer && (
         <div className="glass-card p-5">
-          <button onClick={() => setShowModel(p=>!p)} className="flex items-center justify-between w-full mb-3">
+          <button onClick={() => setShowModel(p => !p)} className="flex items-center justify-between w-full mb-3">
             <h3 className="font-display font-bold text-white flex items-center gap-2"><Eye size={18} className="text-primary-400" /> Model Answer</h3>
-            <span className="text-xs text-slate-400">{showModel?'Hide':'Show'}</span>
+            <span className="text-xs text-slate-400">{showModel ? 'Hide' : 'Show'}</span>
           </button>
           {showModel && <p className="text-slate-300 text-sm leading-relaxed italic border-l-2 border-primary-500/30 pl-4">{evaluation.modelAnswer}</p>}
         </div>
@@ -412,9 +412,9 @@ function FeedbackReport({ result, mode, onRedo, onBack }) {
 
       {evaluation.correctedText && (
         <div className="glass-card p-5">
-          <button onClick={() => setShowCorrected(p=>!p)} className="flex items-center justify-between w-full mb-3">
+          <button onClick={() => setShowCorrected(p => !p)} className="flex items-center justify-between w-full mb-3">
             <h3 className="font-display font-bold text-white flex items-center gap-2"><BookOpen size={18} className="text-green-400" /> Corrected Version</h3>
-            <span className="text-xs text-slate-400">{showCorrected?'Hide':'Show'}</span>
+            <span className="text-xs text-slate-400">{showCorrected ? 'Hide' : 'Show'}</span>
           </button>
           {showCorrected && <p className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">{evaluation.correctedText}</p>}
         </div>
@@ -441,7 +441,7 @@ export default function Writing() {
 
   useEffect(() => {
     setUserLevel(user?.level || 1);
-    axios.get('/api/writing/modes').then(r => setModes(r.data)).catch(() => {});
+    axios.get('/api/writing/modes').then(r => setModes(r.data)).catch(() => { });
   }, [user]);
 
   const handleSelectMode = async (mode) => {
@@ -474,7 +474,7 @@ export default function Writing() {
               <span className="text-xl">{selectedMode.emoji}</span>
               <h2 className="text-xl font-display font-bold text-white">{selectedMode.label} — Choose a Prompt</h2>
             </div>
-            <button 
+            <button
               onClick={async () => {
                 const topic = prompt("Enter a topic you want to write about (e.g., 'Space exploration', 'My childhood'):");
                 if (!topic) return;
@@ -484,8 +484,8 @@ export default function Writing() {
                   setSelectedPrompt(data);
                   setPhase('editor');
                   toast.dismiss();
-                } catch { 
-                  toast.error("Failed to generate custom prompt"); 
+                } catch {
+                  toast.error("Failed to generate custom prompt");
                   toast.dismiss();
                 }
               }}
@@ -499,11 +499,11 @@ export default function Writing() {
               <button key={i} onClick={() => { setSelectedPrompt(prompt); setPhase('editor'); }}
                 className="glass-card p-5 text-left hover:border-white/15 hover:scale-[1.02] transition-all duration-200 group">
                 <div className="flex items-start justify-between mb-3">
-                  <span className={`text-xs px-2 py-1 rounded-full bg-gradient-to-r ${selectedMode.color} text-white font-medium`}>{prompt.topic || prompt.format || `Prompt ${i+1}`}</span>
+                  <span className={`text-xs px-2 py-1 rounded-full bg-gradient-to-r ${selectedMode.color} text-white font-medium`}>{prompt.topic || prompt.format || `Prompt ${i + 1}`}</span>
                   <span className="text-xs text-slate-500">Min {prompt.minWords} words</span>
                 </div>
                 <p className="text-slate-300 text-sm leading-relaxed line-clamp-3">{prompt.starter || prompt.headline || prompt.situation || prompt.topic || prompt.task}</p>
-                {prompt.timeSeconds && <div className="mt-2 flex items-center gap-1 text-xs text-orange-400"><Timer size={12} /> {Math.floor(prompt.timeSeconds/60)} min limit</div>}
+                {prompt.timeSeconds && <div className="mt-2 flex items-center gap-1 text-xs text-orange-400"><Timer size={12} /> {Math.floor(prompt.timeSeconds / 60)} min limit</div>}
                 <div className="mt-3 flex items-center gap-1 text-xs text-primary-400 group-hover:gap-2 transition-all">Choose this prompt <ChevronRight size={12} /></div>
               </button>
             ))}
