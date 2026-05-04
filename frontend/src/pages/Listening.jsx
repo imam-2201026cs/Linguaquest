@@ -1,444 +1,440 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
-import toast from "react-hot-toast";
+import { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import {
+  Headphones, Play, Pause, RefreshCw, ChevronRight, Zap,
+  CheckCircle, XCircle, Lock, Tv, Mic, Info, BarChart2
+} from 'lucide-react';
+import XPReward from '../components/XPReward';
+import { useAuth } from '../context/AuthContext';
 
-// ALL video IDs verified from YouTube search results May 2025
-// Video Library is now fetched from backend for structured progression tracking.
+const VIDEO_LIBRARY = {
+  beginner: {
+    unlockLevel: 1, label: '🟢 Beginner',
+    videos: [
+      { id: 'v_b1', youtubeId: 'mFCOUMsr0Hk', title: 'Peppa Pig - Best Moments', channel: 'Peppa Pig Official', duration: '10 min', topic: 'Family & Animals', description: 'Fun moments with Peppa Pig and her family' },
+      { id: 'v_b2', youtubeId: 'tos_O0WFeiM', title: 'Wheels on the Bus + Nursery Rhymes', channel: 'Cocomelon', duration: '8 min', topic: 'Songs & Learning', description: 'Popular nursery rhymes to build basic English vocabulary' },
+      { id: 'v_b3', youtubeId: 'E2x3HdPlkQQ', title: 'Kids Vocabulary - Animals', channel: 'English Singsing', duration: '5 min', topic: 'Vocabulary', description: 'Learn animal names and sounds in English' },
+      { id: 'v_b4', youtubeId: '6dR86-dDqhc', title: 'Weather Words for Kids', channel: 'English Singsing', duration: '5 min', topic: 'Weather', description: 'Learn weather words and expressions in English' },
+    ]
+  },
+  elementary: {
+    unlockLevel: 3, label: '🟡 Elementary',
+    videos: [
+      { id: 'v_e1', youtubeId: 'XiCrniLQGYc', title: 'Amazing Animals', channel: 'Nat Geo Kids', duration: '8 min', topic: 'Animals & Nature', description: 'Fascinating facts about animals from around the world' },
+      { id: 'v_e2', youtubeId: 'AnvJ3kpWMG4', title: '6 Minute English - Sleep', channel: 'BBC Learning English', duration: '6 min', topic: 'Health', description: 'Discuss sleep and health using real natural English' },
+      { id: 'v_e3', youtubeId: 'vQFSBFiH8PY', title: '6 Minute English - Technology', channel: 'BBC Learning English', duration: '6 min', topic: 'Technology', description: 'Talk about technology using everyday English' },
+      { id: 'v_e4', youtubeId: 'LnMTBxhUFhY', title: 'English Conversation Practice', channel: 'Learn English', duration: '10 min', topic: 'Conversation', description: 'Natural English conversation practice' },
+    ]
+  },
+  intermediate: {
+    unlockLevel: 5, label: '🟠 Intermediate',
+    videos: [
+      { id: 'v_i1', youtubeId: 'OWASCXDGOWo', title: 'How Does the Brain Work?', channel: 'TED-Ed', duration: '5 min', topic: 'Science', description: 'An animated explanation of how our brain functions' },
+      { id: 'v_i2', youtubeId: 'NbuUW9i-mHs', title: 'What Makes a Hero?', channel: 'TED-Ed', duration: '4 min', topic: 'Literature', description: "The hero's journey explained through great stories" },
+      { id: 'v_i3', youtubeId: 'Y6e_m9iq-4Q', title: 'How Do Vaccines Work?', channel: 'TED-Ed', duration: '5 min', topic: 'Health', description: 'The science behind vaccines explained simply' },
+      { id: 'v_i4', youtubeId: 'e-QFj59PON4', title: 'The History of English', channel: 'TED-Ed', duration: '5 min', topic: 'Language', description: 'How the English language evolved over 1400 years' },
+    ]
+  },
+  upper_intermediate: {
+    unlockLevel: 8, label: '🔴 Upper Intermediate',
+    videos: [
+      { id: 'v_u1', youtubeId: 'arj7oStGLkU', title: 'Your Body Language Shapes Who You Are', channel: 'TED', duration: '21 min', topic: 'Psychology', description: 'Amy Cuddy on how body language affects your mind' },
+      { id: 'v_u2', youtubeId: 'iG9CE55wbtY', title: 'Do Schools Kill Creativity?', channel: 'TED', duration: '20 min', topic: 'Education', description: 'Sir Ken Robinson on creativity in schools' },
+      { id: 'v_u3', youtubeId: 'H14bBuluwB8', title: 'The Power of Introverts', channel: 'TED', duration: '19 min', topic: 'Psychology', description: 'Susan Cain celebrates the power of introverted people' },
+      { id: 'v_u4', youtubeId: 'RcGyVTAoXEU', title: 'The Danger of a Single Story', channel: 'TED', duration: '18 min', topic: 'Culture', description: 'Chimamanda Adichie on stereotypes and storytelling' },
+    ]
+  },
+  advanced: {
+    unlockLevel: 11, label: '🔥 Advanced',
+    videos: [
+      { id: 'v_a1', youtubeId: 'VcjzHMhBtf0', title: 'How Language Shapes the Way We Think', channel: 'TED', duration: '14 min', topic: 'Language', description: 'How the language you speak influences your thoughts' },
+      { id: 'v_a2', youtubeId: '_mG-hhWL_ug', title: 'Why Good Leaders Make You Feel Safe', channel: 'TED', duration: '12 min', topic: 'Leadership', description: 'Simon Sinek on what makes a great leader' },
+      { id: 'v_a3', youtubeId: 'JC82Il2cjqA', title: 'How to Speak So People Want to Listen', channel: 'TED', duration: '10 min', topic: 'Communication', description: 'Julian Treasure on powerful speaking' },
+    ]
+  },
+  expert: {
+    unlockLevel: 15, label: '💎 Expert',
+    videos: [
+      { id: 'v_x1', youtubeId: '8jPQjjsBbIc', title: 'The Puzzle of Motivation', channel: 'TED', duration: '18 min', topic: 'Psychology', description: 'Dan Pink challenges traditional notions of motivation' },
+      { id: 'v_x2', youtubeId: 'eIho2S0ZahI', title: 'The Art of Innovation', channel: 'TED', duration: '16 min', topic: 'Business', description: 'Tom Kelley on building a culture of creativity' },
+    ]
+  },
+};
 
-export default function Listening() {
-  const [userLevel, setUserLevel]           = useState(1);
-  const [activeTab, setActiveTab]           = useState("videos");
-  const [selectedVideo, setSelectedVideo]   = useState(null);
-  const [questions, setQuestions]           = useState([]);
-  const [answers, setAnswers]               = useState({});
-  const [result, setResult]                 = useState(null);
-  const [loading, setLoading]               = useState(false);
-  const [vocabulary, setVocabulary]         = useState([]);
-  const [videoLibrary, setVideoLibrary]     = useState({});
-  const [completedCount, setCompletedCount] = useState(0);
-
-  // AI Passage mode
-  const [topic, setTopic]                         = useState("");
-  const [passage, setPassage]                     = useState("");
-  const [passageQuestions, setPassageQuestions]   = useState([]);
-  const [passageAnswers, setPassageAnswers]       = useState({});
-  const [passageResult, setPassageResult]         = useState(null);
-  const [passageLoading, setPassageLoading]       = useState(false);
-
-  const fetchLibrary = async () => {
-    try {
-      const res = await axios.get("/api/listening/videos");
-      setVideoLibrary(res.data.library || {});
-      setCompletedCount(res.data.completedCount || 0);
-    } catch (err) { 
-      console.error("Failed to fetch library", err); 
-      toast.error("Could not load video library");
-    }
-  };
-
+function YouTubePlayer({ videoId }) {
+  const containerRef = useRef(null);
   useEffect(() => {
-    fetchLibrary();
-  }, []);
-
-  const isUnlocked = (minLevel) => userLevel >= minLevel;
-
-  const handleSelectVideo = (video) => {
-    setSelectedVideo(video);
-    setQuestions([]);
-    setAnswers({});
-    setResult(null);
-    setVocabulary([]);
-  };
-
-  const handleGenerateQuestions = async () => {
-    if (!selectedVideo) return;
-    setLoading(true);
-    try {
-      const res = await axios.post("/api/listening/video-questions", {
-        title: selectedVideo.title, 
-        topic: selectedVideo.topic, 
-        videoId: selectedVideo.id,
-        description: selectedVideo.topic, // Fallback for description
-        level: userLevel 
-      });
-      setQuestions(res.data.questions || []);
-      setVocabulary(res.data.vocabulary || []);
-    } catch (err) { 
-      console.error(err);
-      toast.error("Failed to generate questions.");
-    }
-    setLoading(false);
-  };
-
-  const handleSubmitAnswers = async () => {
-    setLoading(true);
-    try {
-      const res = await axios.post("/api/listening/submit", { 
-        questions, 
-        answers: Object.keys(answers).map(i => ["A","B","C","D"].indexOf(answers[i])),
-        topic: selectedVideo.title,
-        videoId: selectedVideo.id,
-        mode: "video"
-      });
-      setResult({ ...res.data, feedback: res.data.score >= 70 ? "Great job! Lesson completed." : "Good effort! Try again to unlock the next lesson." });
-      if (res.data.score >= 70) {
-        toast.success("🎉 Lesson Mastered! Next lesson unlocked.", { icon: "🔥", duration: 4000 });
-        fetchLibrary(); 
+    if (!videoId || !containerRef.current) return;
+    const loadPlayer = () => {
+      if (window.YT && window.YT.Player) {
+        new window.YT.Player(containerRef.current, {
+          videoId,
+          playerVars: { cc_load_policy: 1, cc_lang_pref: 'en', hl: 'en', rel: 0, modestbranding: 1 },
+        });
       }
-    } catch (err) { 
-      console.error(err);
-      toast.error("Failed to submit answers.");
-    }
-    setLoading(false);
+    };
+    if (!window.YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+      window.onYouTubeIframeAPIReady = loadPlayer;
+    } else { loadPlayer(); }
+  }, [videoId]);
+  return (
+    <div className="relative w-full rounded-xl overflow-hidden" style={{ paddingBottom: '56.25%' }}>
+      <div ref={containerRef} className="absolute inset-0 w-full h-full" />
+    </div>
+  );
+}
+
+function VideoLibrary({ onSelectVideo, onSwitchToAI, userLevel }) {
+  const tiers = ['beginner', 'elementary', 'intermediate', 'upper_intermediate', 'advanced', 'expert'];
+  return (
+    <div className="max-w-5xl mx-auto animate-slide-up">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-500 rounded-xl flex items-center justify-center">
+          <Headphones size={22} className="text-white" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-display font-bold text-white">Listening Centre</h1>
+          <p className="text-slate-400 text-sm">Watch real videos or practise with AI passages</p>
+        </div>
+      </div>
+      <div className="flex gap-2 mb-6">
+        <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-purple-500/20 border border-purple-500/30 text-purple-400">
+          <Tv size={16} /> 🎬 Video Learning
+        </button>
+        <button onClick={onSwitchToAI} className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-white/5 text-slate-400 hover:bg-white/10 transition-all">
+          <Mic size={16} /> 🎧 AI Passages
+        </button>
+      </div>
+      <div className="space-y-8">
+        {tiers.map(tier => {
+          const section = VIDEO_LIBRARY[tier];
+          const unlocked = userLevel >= section.unlockLevel;
+          return (
+            <div key={tier}>
+              <div className="flex items-center gap-3 mb-3">
+                <h2 className="text-base font-display font-bold text-white">{section.label}</h2>
+                {!unlocked && <span className="text-xs text-slate-500 bg-dark-600 border border-white/10 rounded-full px-2 py-0.5">Unlock at Level {section.unlockLevel}</span>}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {section.videos.map(video => (
+                  <button key={video.id}
+                    onClick={() => unlocked ? onSelectVideo(video) : toast.error(`Reach Level ${section.unlockLevel} to unlock!`)}
+                    className={`glass-card p-3 text-left transition-all relative overflow-hidden group ${unlocked ? 'hover:scale-[1.02] hover:border-purple-500/20 cursor-pointer' : 'opacity-50 cursor-not-allowed'}`}>
+                    {!unlocked && <div className="absolute top-2 right-2"><Lock size={12} className="text-slate-500" /></div>}
+                    <div className="relative mb-3 rounded-lg overflow-hidden bg-dark-600" style={{ paddingBottom: '56.25%' }}>
+                      <img src={`https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`} alt={video.title}
+                        className="absolute inset-0 w-full h-full object-cover" onError={e => { e.target.style.display = 'none'; }} />
+                      {unlocked && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center"><Play size={18} className="text-white ml-1" /></div>
+                        </div>
+                      )}
+                    </div>
+                    <h3 className="font-semibold text-white text-xs mb-1 line-clamp-2 leading-tight">{video.title}</h3>
+                    <p className="text-xs text-slate-500 mb-2">{video.channel}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-500">{video.duration}</span>
+                      <span className="text-xs bg-dark-600 border border-white/5 rounded-full px-2 py-0.5 text-slate-400">{video.topic}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function VideoPlayer({ video, onBack }) {
+  const [phase, setPhase] = useState('watch');
+  const [questions, setQuestions] = useState(null);
+  const [loadingQ, setLoadingQ] = useState(false);
+  const [answers, setAnswers] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+  const [result, setResult] = useState(null);
+  const [reward, setReward] = useState(null);
+  const [showExplanation, setShowExplanation] = useState({});
+  const [startTime] = useState(Date.now());
+  const { fetchProfile } = useAuth();
+
+  const loadQuestions = async () => {
+    setLoadingQ(true);
+    try {
+      const { data } = await axios.post('/api/listening/video-questions', { videoId: video.youtubeId, title: video.title, topic: video.topic, description: video.description });
+      setQuestions(data); setPhase('quiz');
+    } catch { toast.error('Failed to load questions. Try again!'); }
+    finally { setLoadingQ(false); }
   };
 
-  const handleGeneratePassage = async () => {
-    if (!topic.trim()) return;
-    setPassageLoading(true);
-    setPassage(""); setPassageQuestions([]); setPassageAnswers({}); setPassageResult(null);
+  const handleSubmit = async () => {
+    if (!questions) return;
+    if (questions.questions.some((_, i) => answers[i] === undefined)) return toast.error('Answer all questions!');
+    setSubmitted(true);
     try {
-      const res = await axios.post("/api/listening/generate-passage", { topic, level: userLevel });
-      setPassage(res.data.passage || "");
-      setPassageQuestions(res.data.questions || []);
-    } catch (err) { 
-      console.error(err);
-      toast.error("Failed to generate AI passage.");
-    }
-    setPassageLoading(false);
-  };
-
-  const handleSubmitPassageAnswers = async () => {
-    setPassageLoading(true);
-    try {
-      const res = await axios.post("/api/listening/submit", { 
-        questions: passageQuestions,
-        answers: Object.keys(passageAnswers).map(i => ["A","B","C","D"].indexOf(passageAnswers[i])),
-        topic: topic,
-        mode: "passage"
+      const { data } = await axios.post('/api/listening/submit', {
+        answers: questions.questions.map((_, i) => answers[i]),
+        questions: questions.questions, topic: video.title,
+        timeSpent: Math.floor((Date.now() - startTime) / 1000), mode: 'video'
       });
-      setPassageResult({ ...res.data, feedback: res.data.score >= 70 ? "Excellent comprehension!" : "Keep practicing! AI passages help build focus." });
-    } catch (err) { 
-      console.error(err);
-      toast.error("Failed to submit answers.");
-    }
-    setPassageLoading(false);
+      setResult(data); setReward({ xp: data.xpEarned, coins: data.coinsEarned, score: data.score });
+      await fetchProfile();
+    } catch { toast.error('Submission failed'); }
   };
 
   return (
-    <div style={{ maxWidth: 920, margin: "0 auto", padding: "24px 16px", fontFamily: "sans-serif" }}>
-      <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 4 }}>🎬 Listening</h1>
-      <p style={{ color: "#6b7280", marginBottom: 24 }}>
-        Watch real YouTube videos or practice with AI-generated passages.
-      </p>
-
-      {/* TABS */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 28 }}>
-        {[["videos", "📹 Video Library"], ["passages", "🎧 AI Passages"]].map(([key, label]) => (
-          <button key={key} onClick={() => setActiveTab(key)} style={{
-            padding: "8px 20px", borderRadius: 8, border: "none", cursor: "pointer",
-            fontWeight: 600, fontSize: 14,
-            background: activeTab === key ? "#6366f1" : "#f3f4f6",
-            color: activeTab === key ? "#fff" : "#374151",
-          }}>
-            {label}
-          </button>
-        ))}
+    <div className="max-w-3xl mx-auto animate-slide-up">
+      {reward && <XPReward {...reward} onClose={() => setReward(null)} />}
+      <div className="flex items-center gap-3 mb-6">
+        <button onClick={onBack} className="btn-ghost text-sm py-2 px-3 flex items-center gap-1"><ChevronRight size={14} className="rotate-180" /> Library</button>
+        <h2 className="text-lg font-display font-bold text-white truncate">{video.title}</h2>
       </div>
-
-      {/* CURRICULUM ROADMAP */}
-      {activeTab === "videos" && !selectedVideo && (
-        <div style={{ paddingBottom: 40 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, background: "rgba(99,102,241,0.1)", padding: "12px 20px", borderRadius: 12, border: "1px solid rgba(99,102,241,0.2)" }}>
-            <div>
-              <div style={{ fontSize: 13, color: "#818cf8", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Your Path</div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: "#fff" }}>{completedCount} Lessons Mastered</div>
-            </div>
-            <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 24, fontWeight: 800, color: "#818cf8" }}>{Math.min(100, Math.round((completedCount/90)*100))}%</div>
-              <div style={{ fontSize: 11, color: "#94a3b8" }}>Overall Progress</div>
-            </div>
-          </div>
-
-          {Object.entries(videoLibrary).map(([levelKey, levelData]) => {
-            return (
-              <div key={levelKey} style={{ marginBottom: 40 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 16 }}>
-                  <div>
-                    <h2 style={{ fontSize: 20, fontWeight: 800, margin: 0, color: "#fff" }}>{levelData.label}</h2>
-                    <p style={{ fontSize: 13, color: "#94a3b8", margin: "4px 0 0 0" }}>{levelData.videos.length} Progressive Lessons</p>
-                  </div>
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: levelData.progress === 100 ? "#22c55e" : "#818cf8" }}>
-                      {levelData.progress}% Complete
-                    </div>
-                    <div style={{ width: 120, height: 6, background: "rgba(255,255,255,0.05)", borderRadius: 10, marginTop: 6, overflow: "hidden" }}>
-                      <div style={{ width: `${levelData.progress}%`, height: "100%", background: levelData.progress === 100 ? "#22c55e" : "#6366f1", transition: "width 0.5s ease" }} />
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
-                  {levelData.videos.map((video, idx) => (
-                    <button
-                      key={video.id}
-                      onClick={() => video.unlocked && handleSelectVideo(video)}
-                      disabled={!video.unlocked}
-                      style={{
-                        padding: 0, border: "none", textAlign: "left",
-                        borderRadius: 16, overflow: "hidden",
-                        border: video.completed ? "2px solid #22c55e" : video.unlocked ? "2px solid rgba(99,102,241,0.3)" : "2px solid rgba(255,255,255,0.05)",
-                        cursor: video.unlocked ? "pointer" : "not-allowed",
-                        background: video.completed ? "rgba(34, 197, 94, 0.05)" : video.unlocked ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.01)",
-                        display: "block", width: "100%",
-                        position: "relative", transition: "all 0.2s",
-                        opacity: video.unlocked ? 1 : 0.6
-                      }}
-                      className={video.unlocked ? "video-card-mobile" : ""}
-                    >
-                      <div style={{ position: "relative", background: "#000", height: 140 }}>
-                        <img
-                          src={`https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`}
-                          alt={video.title}
-                          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", opacity: video.unlocked ? 1 : 0.3 }}
-                        />
-                        {video.completed && (
-                          <div style={{ position: "absolute", top: 8, right: 8, background: "#22c55e", color: "#fff", borderRadius: "50%", width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.3)" }}>
-                            ✓
-                          </div>
-                        )}
-                        {!video.unlocked && (
-                          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                            <span style={{ fontSize: 24 }}>🔒</span>
-                            <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>Complete Previous Lesson</span>
-                          </div>
-                        )}
-                        {video.unlocked && !video.completed && (
-                          <div style={{ position: "absolute", bottom: 8, left: 8, background: "#6366f1", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 4, textTransform: "uppercase" }}>
-                            Start Lesson {idx + 1}
-                          </div>
-                        )}
-                      </div>
-                      <div style={{ padding: "14px" }}>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: video.unlocked ? "#fff" : "#64748b", lineHeight: 1.4, marginBottom: 4 }}>
-                          {idx + 1}. {video.title}
-                        </div>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10 }}>
-                          <span style={{ fontSize: 11, color: "#64748b" }}>{video.duration}</span>
-                          <span style={{ fontSize: 10, background: "rgba(255,255,255,0.05)", borderRadius: 4, padding: "2px 6px", color: "#94a3b8" }}>{video.topic}</span>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+      {phase === 'watch' && (
+        <div className="space-y-4">
+          <div className="glass-card p-2 border-purple-500/20 rounded-2xl overflow-hidden"><YouTubePlayer videoId={video.youtubeId} /></div>
+          <div className="glass-card p-5">
+            <div className="flex items-start justify-between mb-2">
+              <div>
+                <h3 className="font-display font-bold text-white">{video.title}</h3>
+                <p className="text-xs text-slate-500 mt-1">{video.channel} • {video.duration}</p>
               </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* VIDEO PLAYER */}
-      {activeTab === "videos" && selectedVideo && (
-        <div>
-          <button
-            onClick={() => { setSelectedVideo(null); setQuestions([]); setAnswers({}); setResult(null); }}
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, marginBottom: 16, color: "#fff", display: "flex", alignItems: "center", gap: 6 }}>
-            ← Back to Library
-          </button>
-
-          <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 20, color: "#fff" }}>▶️ {selectedVideo.title}</h3>
-
-          <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, borderRadius: 12, overflow: "hidden", marginBottom: 20 }}>
-            <iframe
-              src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}?rel=0`}
-              title={selectedVideo.title}
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
-            />
-          </div>
-
-          {questions.length === 0 && (
-            <p style={{ color: "#94a3b8", fontSize: 13, marginBottom: 16 }}>
-              💡 <b>To Complete:</b> Pass the quiz with <b>70% or higher</b> to unlock the next lesson!
-            </p>
-          )}
-
-          {questions.length === 0 ? (
-            <button onClick={handleGenerateQuestions} disabled={loading}
-              style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, cursor: "pointer", fontSize: 14, opacity: loading ? 0.7 : 1 }}>
-              {loading ? "Generating questions..." : "🧠 Test Me on This Video"}
-            </button>
-          ) : (
-            <div>
-              {vocabulary.length > 0 && (
-                <div style={{ marginBottom: 24, padding: 16, background: "rgba(99,102,241,0.05)", borderRadius: 12, border: "1px solid rgba(99,102,241,0.1)" }}>
-                  <div style={{ fontWeight: 700, marginBottom: 12, fontSize: 15, color: "#818cf8", display: "flex", alignItems: "center", gap: 8 }}>
-                    <span>📚</span> Key Vocabulary
-                  </div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-                    {vocabulary.map((v, i) => (
-                      <div key={i} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "8px 12px" }}>
-                        <span style={{ fontWeight: 700, color: "#fff", fontSize: 13 }}>{typeof v === 'string' ? v : v.word}:</span>
-                        <span style={{ color: "#94a3b8", fontSize: 12, marginLeft: 6 }}>{typeof v === 'string' ? '' : v.definition}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {questions.map((q, i) => (
-                <div key={i} style={{ marginBottom: 16, background: "rgba(255,255,255,0.03)", borderRadius: 12, padding: 16, border: "1px solid rgba(255,255,255,0.05)" }}>
-                  <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 14, color: "#f1f5f9" }}>Q{i + 1}: {q.question}</div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {q.options.map((opt, j) => {
-                      const letter = ["A","B","C","D"][j];
-                      const isSelected = answers[i] === letter;
-                      const isCorrect  = result && j === q.correct; // Backend uses index 'correct'
-                      const isWrong    = result && isSelected && j !== q.correct;
-                      return (
-                        <button key={j}
-                          onClick={() => !result && setAnswers(p => ({ ...p, [i]: letter }))}
-                          style={{
-                            textAlign: "left", padding: "10px 14px", borderRadius: 10,
-                            cursor: result ? "default" : "pointer", fontSize: 13,
-                            border: `2px solid ${isCorrect ? "#22c55e" : isWrong ? "#ef4444" : isSelected ? "#6366f1" : "rgba(255,255,255,0.1)"}`,
-                            background: isCorrect ? "rgba(34, 197, 94, 0.1)" : isWrong ? "rgba(239, 68, 68, 0.1)" : isSelected ? "rgba(99, 102, 241, 0.1)" : "rgba(255,255,255,0.02)",
-                            color: isCorrect ? "#4ade80" : isWrong ? "#f87171" : isSelected ? "#818cf8" : "#94a3b8",
-                            fontWeight: isSelected ? 600 : 400,
-                            transition: "all 0.2s"
-                          }}>
-                          <span style={{ marginRight: 8, opacity: 0.7 }}>{letter}.</span> {opt}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-
-              {!result && (
-                <button onClick={handleSubmitAnswers}
-                  disabled={loading || Object.keys(answers).length < questions.length}
-                  className="btn-primary"
-                  style={{ padding: "10px 24px", fontSize: 14, opacity: Object.keys(answers).length < questions.length ? 0.5 : 1 }}>
-                  {loading ? "Checking..." : "Submit Answers"}
-                </button>
-              )}
-
-              {result && (
-                <div style={{ marginTop: 16, background: "rgba(34, 197, 94, 0.1)", border: "1px solid rgba(34, 197, 94, 0.2)", borderRadius: 12, padding: 20 }}>
-                  <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 6, color: "#4ade80" }}>
-                    ✅ Score: {result.score}/{result.total} ({Math.round((result.score / result.total) * 100)}%)
-                  </div>
-                  <div style={{ color: "#94a3b8", fontSize: 14, marginBottom: 16 }}>{result.feedback}</div>
-                  <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
-                    <span className="xp-badge">+{result.xpEarned} XP</span>
-                    <span className="streak-badge">+{result.coinsEarned} Coins</span>
-                  </div>
-                  <div style={{ display: "flex", gap: 10 }}>
-                    <button onClick={() => { setQuestions([]); setAnswers({}); setResult(null); setVocabulary([]); }}
-                      className="btn-primary"
-                      style={{ padding: "8px 16px", fontSize: 13 }}>
-                      Try Again
-                    </button>
-                    <button onClick={() => { setSelectedVideo(null); setQuestions([]); setAnswers({}); setResult(null); }}
-                      className="btn-ghost"
-                      style={{ padding: "8px 16px", fontSize: 13 }}>
-                      Back to Library
-                    </button>
-                  </div>
-                </div>
-              )}
+              <span className="text-xs bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-full px-2 py-1 shrink-0">{video.topic}</span>
             </div>
-          )}
-        </div>
-      )}
-
-      {/* AI PASSAGES TAB */}
-      {activeTab === "passages" && (
-        <div className="glass-card" style={{ padding: 24, border: "1px solid rgba(255,255,255,0.1)" }}>
-          <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16, color: "#fff" }}>🎧 AI-Generated Listening Passages</h2>
-          <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
-            <input
-              value={topic}
-              onChange={e => setTopic(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && handleGeneratePassage()}
-              placeholder="Enter a topic (e.g. climate change, space, food)"
-              className="input-field"
-              style={{ flex: 1, padding: "10px 14px", borderRadius: 8, fontSize: 14 }}
-            />
-            <button onClick={handleGeneratePassage} disabled={passageLoading || !topic.trim()}
-              className="btn-primary"
-              style={{ padding: "10px 24px", fontSize: 14, opacity: !topic.trim() ? 0.5 : 1 }}>
-              {passageLoading ? "Generating..." : "Generate"}
+            <p className="text-sm text-slate-400 mb-4">{video.description}</p>
+            <div className="p-3 bg-dark-600/50 rounded-xl border border-white/5 mb-4">
+              <p className="text-xs text-slate-400">💡 <span className="text-white font-medium">Tips:</span> Watch the full video carefully. Enable subtitles using the <strong>CC</strong> button. Take notes on key points.</p>
+            </div>
+            <button onClick={loadQuestions} disabled={loadingQ} className="btn-primary w-full flex items-center justify-center gap-2">
+              {loadingQ ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Loading questions...</> : <><ChevronRight size={16} /> I'm Done — Test Me</>}
             </button>
           </div>
-
-          {passage && (
-            <div style={{ background: "rgba(30, 41, 59, 0.5)", borderRadius: 12, padding: 16, border: "1px solid rgba(255,255,255,0.1)", marginBottom: 16 }}>
-              <div style={{ fontWeight: 600, marginBottom: 8, fontSize: 14, color: "#94a3b8" }}>📖 Passage</div>
-              <p style={{ fontSize: 15, lineHeight: 1.75, color: "#38bdf8", fontWeight: 500 }}>{passage}</p>
+        </div>
+      )}
+      {phase === 'quiz' && questions && (
+        <div className="space-y-4">
+          <div className="glass-card p-4 bg-purple-500/5 border-purple-500/20">
+            <div className="flex items-center gap-2 mb-1"><BarChart2 size={16} className="text-purple-400" /><span className="font-semibold text-white">Comprehension Quiz</span></div>
+            <p className="text-xs text-slate-400">Based on: {video.title}</p>
+          </div>
+          {questions.keyPoints?.length > 0 && (
+            <div className="glass-card p-4">
+              <p className="text-xs text-slate-500 mb-2 font-semibold uppercase tracking-wider">Key Points:</p>
+              <ul className="space-y-1">{questions.keyPoints.map((p, i) => <li key={i} className="text-xs text-slate-300 flex items-start gap-2"><span className="text-purple-400 shrink-0">•</span>{p}</li>)}</ul>
             </div>
           )}
-
-          {passageQuestions.map((q, i) => (
-            <div key={i} style={{ marginBottom: 16, background: "rgba(255,255,255,0.03)", borderRadius: 12, padding: 14, border: "1px solid rgba(255,255,255,0.05)" }}>
-              <div style={{ fontWeight: 600, marginBottom: 10, fontSize: 14, color: "#f1f5f9" }}>Q{i + 1}: {q.question}</div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {q.options.map((opt, j) => {
-                  const letter = ["A","B","C","D"][j];
-                  const isSelected = passageAnswers[i] === letter;
-                  const isCorrect  = passageResult && j === q.correct; // Backend uses index
-                  const isWrong    = passageResult && isSelected && j !== q.correct;
+          {questions.questions.map((q, qi) => (
+            <div key={q.id} className="glass-card p-5">
+              <p className="font-medium text-white mb-3 text-sm">{qi + 1}. {q.question}</p>
+              <div className="space-y-2">
+                {q.options.map((opt, oi) => {
+                  const isSelected = answers[qi] === oi;
+                  const isCorrect = submitted && oi === q.correct;
+                  const isWrong = submitted && isSelected && oi !== q.correct;
                   return (
-                    <button key={j}
-                      onClick={() => !passageResult && setPassageAnswers(p => ({ ...p, [i]: letter }))}
-                      style={{
-                        textAlign: "left", padding: "10px 14px", borderRadius: 10,
-                        cursor: passageResult ? "default" : "pointer", fontSize: 13,
-                        border: `2px solid ${isCorrect ? "#22c55e" : isWrong ? "#ef4444" : isSelected ? "#6366f1" : "rgba(255,255,255,0.1)"}`,
-                        background: isCorrect ? "rgba(34, 197, 94, 0.1)" : isWrong ? "rgba(239, 68, 68, 0.1)" : isSelected ? "rgba(99, 102, 241, 0.1)" : "rgba(255,255,255,0.02)",
-                        color: isCorrect ? "#4ade80" : isWrong ? "#f87171" : isSelected ? "#818cf8" : "#94a3b8",
-                        fontWeight: isSelected ? 600 : 400,
-                        transition: "all 0.2s"
-                      }}>
-                      <span style={{ marginRight: 8, opacity: 0.7 }}>{letter}.</span> {opt}
+                    <button key={oi} onClick={() => !submitted && setAnswers(p => ({ ...p, [qi]: oi }))}
+                      className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-all flex items-center gap-3 ${isCorrect ? 'border-green-500/50 bg-green-500/10 text-green-400' : isWrong ? 'border-red-500/50 bg-red-500/10 text-red-400' : isSelected ? 'border-purple-500/50 bg-purple-500/10 text-purple-300' : 'border-white/10 text-slate-300 hover:border-white/20 hover:bg-white/5'} ${submitted ? 'cursor-default' : 'cursor-pointer'}`}>
+                      <span className="w-5 h-5 rounded-full border border-current flex items-center justify-center text-xs shrink-0">{String.fromCharCode(65 + oi)}</span>
+                      <span className="flex-1">{opt}</span>
+                      {isCorrect && <CheckCircle size={16} />}{isWrong && <XCircle size={16} />}
                     </button>
                   );
                 })}
               </div>
+              {submitted && q.explanation && (
+                <div className="mt-2">
+                  <button onClick={() => setShowExplanation(p => ({ ...p, [qi]: !p[qi] }))} className="text-xs flex items-center gap-1 text-primary-400">
+                    <Info size={12} /> {showExplanation[qi] ? 'Hide' : 'Show'} Explanation
+                  </button>
+                  {showExplanation[qi] && <p className="text-xs text-slate-400 mt-2 p-3 bg-dark-600/50 rounded-lg">{q.explanation}</p>}
+                </div>
+              )}
             </div>
           ))}
-
-          {passageQuestions.length > 0 && !passageResult && (
-            <button onClick={handleSubmitPassageAnswers}
-              disabled={passageLoading || Object.keys(passageAnswers).length < passageQuestions.length}
-              className="btn-primary"
-              style={{ padding: "10px 24px", fontSize: 14, opacity: Object.keys(passageAnswers).length < passageQuestions.length ? 0.5 : 1 }}>
-              {passageLoading ? "Checking..." : "Submit Answers"}
-            </button>
-          )}
-
-          {passageResult && (
-            <div style={{ marginTop: 16, background: "rgba(34, 197, 94, 0.1)", border: "1px solid rgba(34, 197, 94, 0.2)", borderRadius: 12, padding: 20 }}>
-              <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 6, color: "#4ade80" }}>
-                ✅ Score: {passageResult.score}/{passageResult.total} ({Math.round((passageResult.score / passageResult.total) * 100)}%)
+          {questions.vocabulary?.length > 0 && submitted && (
+            <div className="glass-card p-5">
+              <h3 className="font-semibold text-white mb-3 text-sm">📚 Vocabulary from this Video</h3>
+              <div className="space-y-2">
+                {questions.vocabulary.map((v, i) => (
+                  <div key={i} className="bg-dark-600/50 rounded-xl p-3">
+                    <span className="font-medium text-white text-sm">{v.word}</span>
+                    <p className="text-xs text-slate-400 mt-0.5">{v.definition}</p>
+                    {v.example && <p className="text-xs text-slate-500 italic mt-0.5">"{v.example}"</p>}
+                  </div>
+                ))}
               </div>
-              <div style={{ color: "#94a3b8", fontSize: 14, marginBottom: 16 }}>{passageResult.feedback}</div>
-              <div style={{ display: "flex", gap: 10 }}>
-                <span className="xp-badge">+{passageResult.xpEarned} XP</span>
-                <span className="streak-badge">+{passageResult.coinsEarned} Coins</span>
-              </div>
-              <button
-                onClick={() => { setPassage(""); setPassageQuestions([]); setPassageAnswers({}); setPassageResult(null); setTopic(""); }}
-                className="btn-primary"
-                style={{ marginTop: 20, padding: "8px 20px", fontSize: 13 }}>
-                Try Another Topic
-              </button>
             </div>
           )}
+          {questions.discussionQuestion && submitted && (
+            <div className="glass-card p-4 border-primary-500/10 bg-primary-500/5">
+              <p className="text-xs text-primary-400 font-semibold mb-1">💬 DISCUSSION QUESTION</p>
+              <p className="text-sm text-slate-300">{questions.discussionQuestion}</p>
+            </div>
+          )}
+          {!submitted
+            ? <button onClick={handleSubmit} className="btn-primary w-full flex items-center justify-center gap-2"><ChevronRight size={16} /> Submit Answers</button>
+            : result && (
+              <div className="glass-card p-6 bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-display font-bold text-white">Results</h3>
+                  <span className={`text-3xl font-display font-bold ${result.score >= 80 ? 'text-green-400' : result.score >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>{result.score}%</span>
+                </div>
+                <p className="text-slate-300 mb-3">{result.correct} out of {result.total} correct</p>
+                <div className="flex gap-2 mb-4"><span className="xp-badge"><Zap size={12} />+{result.xpEarned} XP</span></div>
+                <button onClick={onBack} className="btn-ghost w-full text-sm flex items-center justify-center gap-2"><RefreshCw size={14} /> Watch Another</button>
+              </div>
+            )
+          }
         </div>
       )}
     </div>
   );
+}
+
+function AIPassageMode({ onBack }) {
+  const topics = ['Daily Life', 'Travel & Tourism', 'Technology', 'Health & Wellness', 'Environment', 'Food & Culture', 'Science', 'Sports', 'Business', 'History'];
+  const [selectedTopic, setSelectedTopic] = useState('Daily Life');
+  const [exercise, setExercise] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [answers, setAnswers] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+  const [result, setResult] = useState(null);
+  const [reward, setReward] = useState(null);
+  const [speaking, setSpeaking] = useState(false);
+  const [startTime, setStartTime] = useState(null);
+  const { fetchProfile } = useAuth();
+
+  const generate = async () => {
+    setLoading(true); setAnswers({}); setSubmitted(false); setResult(null); setReward(null);
+    try {
+      const { data } = await axios.post('/api/listening/generate', { topic: selectedTopic });
+      setExercise(data); setStartTime(Date.now());
+    } catch { toast.error('Failed to generate. Try again!'); }
+    finally { setLoading(false); }
+  };
+
+  const speak = () => {
+    if (!exercise?.passage) return;
+    if (speaking) { speechSynthesis.cancel(); setSpeaking(false); return; }
+    const utt = new SpeechSynthesisUtterance(exercise.passage);
+    utt.lang = 'en-US'; utt.rate = 0.9;
+    const voices = speechSynthesis.getVoices();
+    const pref = voices.find(v => v.name.includes('Google') && v.lang.startsWith('en'));
+    if (pref) utt.voice = pref;
+    utt.onend = () => setSpeaking(false);
+    speechSynthesis.speak(utt); setSpeaking(true);
+  };
+
+  const handleSubmit = async () => {
+    if (exercise.questions.some((_, i) => answers[i] === undefined)) return toast.error('Answer all questions!');
+    setSubmitted(true); speechSynthesis.cancel(); setSpeaking(false);
+    try {
+      const { data } = await axios.post('/api/listening/submit', {
+        answers: exercise.questions.map((_, i) => answers[i]),
+        questions: exercise.questions, topic: exercise.title,
+        timeSpent: startTime ? Math.floor((Date.now() - startTime) / 1000) : 0, mode: 'ai'
+      });
+      setResult(data); setReward({ xp: data.xpEarned, coins: data.coinsEarned, score: data.score });
+      await fetchProfile();
+    } catch { toast.error('Submission failed'); }
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto animate-slide-up">
+      {reward && <XPReward {...reward} onClose={() => setReward(null)} />}
+      <div className="flex items-center gap-3 mb-6">
+        <button onClick={onBack} className="btn-ghost text-sm py-2 px-3 flex items-center gap-1"><ChevronRight size={14} className="rotate-180" /> Videos</button>
+        <h2 className="text-xl font-display font-bold text-white">AI Listening Passages</h2>
+      </div>
+      {!exercise ? (
+        <div className="glass-card p-6">
+          <h3 className="font-semibold text-white mb-4">Choose a Topic</h3>
+          <div className="flex flex-wrap gap-2 mb-6">
+            {topics.map(t => (
+              <button key={t} onClick={() => setSelectedTopic(t)}
+                className={`text-xs px-3 py-1.5 rounded-full border transition-all ${selectedTopic === t ? 'bg-purple-500/20 border-purple-500/40 text-purple-400' : 'border-white/10 text-slate-400 hover:border-white/20'}`}>{t}</button>
+            ))}
+          </div>
+          <button onClick={generate} disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
+            {loading ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Generating...</> : <><Mic size={16} /> Generate Passage</>}
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="glass-card p-5 border-purple-500/20">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-display font-bold text-white">{exercise.title}</h3>
+              <button onClick={speak} className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all ${speaking ? 'bg-purple-500 text-white animate-pulse' : 'bg-purple-500/20 text-purple-400 hover:bg-purple-500/30'}`}>
+                {speaking ? <><Pause size={14} /> Stop</> : <><Play size={14} /> Listen</>}
+              </button>
+            </div>
+            <div className="bg-dark-600/50 rounded-xl p-4 mb-3">
+              <p className="text-sm text-slate-300 leading-relaxed">{submitted ? exercise.passage : '🎧 Click "Listen" to hear the passage, then answer the questions below.'}</p>
+              {!submitted && <p className="text-xs text-slate-500 mt-2">💡 Transcript revealed after submitting</p>}
+            </div>
+            {exercise.vocabulary?.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {exercise.vocabulary.map((v, i) => <span key={i} title={v.meaning} className="text-xs bg-dark-600 border border-white/10 rounded-lg px-2 py-1 text-slate-300 cursor-help">{v.word}</span>)}
+              </div>
+            )}
+          </div>
+          <div className="space-y-4">
+            {exercise.questions.map((q, qi) => (
+              <div key={q.id} className="glass-card p-5">
+                <p className="font-medium text-white mb-3 text-sm">{qi + 1}. {q.question}</p>
+                <div className="space-y-2">
+                  {q.options.map((opt, oi) => {
+                    const isSelected = answers[qi] === oi;
+                    const isCorrect = submitted && oi === q.correct;
+                    const isWrong = submitted && isSelected && oi !== q.correct;
+                    return (
+                      <button key={oi} onClick={() => !submitted && setAnswers(p => ({ ...p, [qi]: oi }))}
+                        className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-all flex items-center gap-3 ${isCorrect ? 'border-green-500/50 bg-green-500/10 text-green-400' : isWrong ? 'border-red-500/50 bg-red-500/10 text-red-400' : isSelected ? 'border-purple-500/50 bg-purple-500/10 text-purple-300' : 'border-white/10 text-slate-300 hover:border-white/20 hover:bg-white/5'} ${submitted ? 'cursor-default' : 'cursor-pointer'}`}>
+                        <span className="w-5 h-5 rounded-full border border-current flex items-center justify-center text-xs shrink-0">{String.fromCharCode(65 + oi)}</span>
+                        <span className="flex-1">{opt}</span>
+                        {isCorrect && <CheckCircle size={16} />}{isWrong && <XCircle size={16} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+          {!submitted
+            ? <button onClick={handleSubmit} className="btn-primary w-full flex items-center justify-center gap-2"><ChevronRight size={16} /> Submit Answers</button>
+            : result && (
+              <div className="glass-card p-6 bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-purple-500/20">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-display font-bold text-white">Results</h3>
+                  <span className={`text-3xl font-display font-bold ${result.score >= 80 ? 'text-green-400' : result.score >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>{result.score}%</span>
+                </div>
+                <p className="text-slate-300 mb-3">{result.correct} / {result.total} correct</p>
+                <div className="flex gap-2 mb-4"><span className="xp-badge"><Zap size={12} />+{result.xpEarned} XP</span></div>
+                <button onClick={() => { setExercise(null); setResult(null); setReward(null); }} className="btn-ghost w-full flex items-center justify-center gap-2 text-sm">
+                  <RefreshCw size={14} /> Try Another
+                </button>
+              </div>
+            )
+          }
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function Listening() {
+  const [phase, setPhase] = useState('library');
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [userLevel, setUserLevel] = useState(1);
+  const { user } = useAuth();
+
+  useEffect(() => { setUserLevel(user?.level || 1); }, [user]);
+
+  if (phase === 'video' && selectedVideo) return <VideoPlayer video={selectedVideo} onBack={() => { setPhase('library'); setSelectedVideo(null); }} />;
+  if (phase === 'ai') return <AIPassageMode onBack={() => setPhase('library')} />;
+  return <VideoLibrary userLevel={userLevel} onSelectVideo={v => { setSelectedVideo(v); setPhase('video'); }} onSwitchToAI={() => setPhase('ai')} />;
 }
