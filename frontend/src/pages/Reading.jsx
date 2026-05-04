@@ -62,7 +62,9 @@ function ReadingRoadmap({ library, onSelectBook, completedCount }) {
               {/* Roadmap Path */}
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {section.books.map((book, idx) => {
-                  const isLocked = !book.isUnlocked;
+                  // Safety: Level 1 Lesson 1 is ALWAYS unlocked regardless of backend response
+                  const isUnlockedByForce = (lvl === 'beginner' && idx === 0);
+                  const isLocked = !book.isUnlocked && !isUnlockedByForce;
                   const isCompleted = book.isCompleted;
                   
                   return (
@@ -298,7 +300,13 @@ export default function Reading() {
     } catch { toast.error("Failed to load library"); }
   };
 
-  useEffect(() => { fetchLibrary(); }, [user]);
+  useEffect(() => {
+    fetchLibrary();
+  }, []);
+
+  useEffect(() => {
+    if (user) fetchLibrary();
+  }, [user]);
 
   const handleSelectBook = async (book) => {
     setLoading(true);
