@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 // ALL video IDs verified from YouTube search results May 2025
 // Video Library is now fetched from backend for structured progression tracking.
@@ -25,25 +27,17 @@ export default function Listening() {
 
   const fetchLibrary = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("/api/listening/videos", {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      setVideoLibrary(data.library || {});
-      setCompletedCount(data.completedCount || 0);
-    } catch (err) { console.error("Failed to fetch library", err); }
+      const res = await axios.get("/api/listening/videos");
+      setVideoLibrary(res.data.library || {});
+      setCompletedCount(res.data.completedCount || 0);
+    } catch (err) { 
+      console.error("Failed to fetch library", err); 
+      toast.error("Could not load video library");
+    }
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        setUserLevel(payload.level || 1);
-      } catch {}
-      fetchLibrary();
-    }
+    fetchLibrary();
   }, []);
 
   const isUnlocked = (minLevel) => userLevel >= minLevel;
@@ -60,44 +54,38 @@ export default function Listening() {
     if (!selectedVideo) return;
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("/api/listening/video-questions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ 
-          title: selectedVideo.title, 
-          topic: selectedVideo.topic, 
-          videoId: selectedVideo.id,
-          description: selectedVideo.topic, // Fallback for description
-          level: userLevel 
-        }),
+      const res = await axios.post("/api/listening/video-questions", {
+        title: selectedVideo.title, 
+        topic: selectedVideo.topic, 
+        videoId: selectedVideo.id,
+        description: selectedVideo.topic, // Fallback for description
+        level: userLevel 
       });
-      const data = await res.json();
-      setQuestions(data.questions || []);
-      setVocabulary(data.vocabulary || []);
-    } catch (err) { console.error(err); }
+      setQuestions(res.data.questions || []);
+      setVocabulary(res.data.vocabulary || []);
+    } catch (err) { 
+      console.error(err);
+      toast.error("Failed to generate questions.");
+    }
     setLoading(false);
   };
 
   const handleSubmitAnswers = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("/api/listening/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ 
-          questions, 
-          answers: Object.keys(answers).map(i => ["A","B","C","D"].indexOf(answers[i])),
-          topic: selectedVideo.title,
-          videoId: selectedVideo.id,
-          mode: "video"
-        }),
+      const res = await axios.post("/api/listening/submit", { 
+        questions, 
+        answers: Object.keys(answers).map(i => ["A","B","C","D"].indexOf(answers[i])),
+        topic: selectedVideo.title,
+        videoId: selectedVideo.id,
+        mode: "video"
       });
-      const data = await res.json();
-      setResult({ ...data, feedback: data.score >= 70 ? "Great job! Lesson completed." : "Good effort! Try again to unlock the next lesson." });
-      if (data.score >= 70) fetchLibrary(); // Refresh library to unlock next video
-    } catch (err) { console.error(err); }
+      setResult({ ...res.data, feedback: res.data.score >= 70 ? "Great job! Lesson completed." : "Good effort! Try again to unlock the next lesson." });
+      if (res.data.score >= 70) fetchLibrary(); 
+    } catch (err) { 
+      console.error(err);
+      toast.error("Failed to submit answers.");
+    }
     setLoading(false);
   };
 
@@ -106,36 +94,30 @@ export default function Listening() {
     setPassageLoading(true);
     setPassage(""); setPassageQuestions([]); setPassageAnswers({}); setPassageResult(null);
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("/api/listening/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ topic, level: userLevel }),
-      });
-      const data = await res.json();
-      setPassage(data.passage || "");
-      setPassageQuestions(data.questions || []);
-    } catch (err) { console.error(err); }
+      const res = await axios.post("/api/listening/generate-passage", { topic, level: userLevel });
+      setPassage(res.data.passage || "");
+      setPassageQuestions(res.data.questions || []);
+    } catch (err) { 
+      console.error(err);
+      toast.error("Failed to generate AI passage.");
+    }
     setPassageLoading(false);
   };
 
   const handleSubmitPassageAnswers = async () => {
     setPassageLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch("/api/listening/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ 
-          questions: passageQuestions, // Backend generate returns 'correct' as index
-          answers: Object.keys(passageAnswers).map(i => ["A","B","C","D"].indexOf(passageAnswers[i])),
-          topic: topic,
-          mode: "passage"
-        }),
+      const res = await axios.post("/api/listening/submit", { 
+        questions: passageQuestions,
+        answers: Object.keys(passageAnswers).map(i => ["A","B","C","D"].indexOf(passageAnswers[i])),
+        topic: topic,
+        mode: "passage"
       });
-      const data = await res.json();
-      setPassageResult({ ...data, feedback: data.score >= 70 ? "Excellent comprehension!" : "Keep practicing! AI passages help build focus." });
-    } catch (err) { console.error(err); }
+      setPassageResult({ ...res.data, feedback: res.data.score >= 70 ? "Excellent comprehension!" : "Keep practicing! AI passages help build focus." });
+    } catch (err) { 
+      console.error(err);
+      toast.error("Failed to submit answers.");
+    }
     setPassageLoading(false);
   };
 

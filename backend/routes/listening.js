@@ -204,7 +204,7 @@ Return ONLY valid JSON with no markdown:
 });
 
 // ── Generate AI passage ───────────────────────────────────────────────────────
-router.post('/generate', auth, async (req, res) => {
+router.post('/generate-passage', auth, async (req, res) => {
   try {
     const { topic = 'daily life' } = req.body;
     const user = await User.findById(req.user._id).select('level');
