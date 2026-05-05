@@ -17,7 +17,7 @@ export const generateContent = async (prompt) => {
       ],
       model: 'llama-3.3-70b-versatile', // Reliable high-quality model on Groq
       temperature: 0.7,
-      max_tokens: 1024,
+      max_tokens: 3072,
     });
 
     return completion.choices[0]?.message?.content || '';
@@ -37,7 +37,8 @@ export const generateJSON = async (prompt) => {
         },
       ],
       model: 'llama-3.3-70b-versatile',
-      temperature: 0.2, // Lower temperature for JSON reliability
+      temperature: 0.2,
+      max_tokens: 4096, // Increased to support 30 questions
       response_format: { type: 'json_object' },
     });
 
