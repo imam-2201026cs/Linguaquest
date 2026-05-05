@@ -30,24 +30,32 @@ router.get('/daily', auth, async (req, res) => {
     
     // If no challenge exists for today, GENERATE IT!
     if (!challenge) {
-      console.log(`[DailyChallenge] Generating NEW random grammar challenge for ${today}`);
+      // Pick a hidden topic to force AI variety
+      const topics = [
+        "Mixed Tenses", "Conditional Sentences", "Relative Clauses", "Passive Voice", 
+        "Prepositional Phrases", "Phrasal Verbs", "Articles & Quantifiers", 
+        "Reported Speech", "Gerunds vs Infinitives", "Modal Verbs", "Complex Sentence Structures"
+      ];
+      const hiddenTopic = topics[today.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % topics.length];
+      
+      console.log(`[DailyChallenge] Generating NEW random grammar challenge for ${today}. Hidden Topic: ${hiddenTopic}`);
       
       const prompt = `
         Create a 10-question Daily Challenge Quiz for English learners for the date: ${today}.
-        The questions should be random English Grammar questions (tenses, prepositions, articles, etc.).
+        PRIMARY FOCUS: ${hiddenTopic} (but mix in other grammar topics too).
         
         Requirements:
-        1. Mix various grammar topics to keep it interesting and diverse.
+        1. Mix various grammar topics (tenses, prepositions, articles, etc.) to keep it diverse.
         2. Difficulty: Intermediate (B1-B2).
         3. Return a JSON object with a "questions" key containing an array of EXACTLY 10 objects.
-        4. Each question MUST be unique and specifically generated for this date to ensure daily variety.
+        4. Each question MUST be unique, creative, and specifically generated for this date. Avoid "generic" or "common" textbook examples. Use realistic and modern English scenarios.
         
         Each question object format:
         {
           "question": "The grammar question here...",
           "options": ["Option A", "Option B", "Option C", "Option D"],
           "correct": 0, // Index of correct option (0-3)
-          "explanation": "Briefly explain the grammar rule."
+          "explanation": "Briefly explain the grammar rule in a helpful way."
         }
       `;
       
