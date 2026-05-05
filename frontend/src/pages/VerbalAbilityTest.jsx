@@ -59,7 +59,8 @@ export default function VerbalAbilityTest() {
       setCorrectCount(0);
       setWrongCount(0);
     } catch (err) {
-      toast.error('Failed to generate test. Please try again.');
+      const errorMsg = err.response?.data?.error || err.response?.data?.message || 'Failed to generate test. Please try again.';
+      toast.error(errorMsg);
       setStage(0);
     }
   };

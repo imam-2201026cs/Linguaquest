@@ -60,7 +60,11 @@ router.post('/generate', auth, async (req, res) => {
     });
   } catch (err) {
     console.error('Verbal Test Generation Error:', err);
-    res.status(500).json({ message: 'Failed to generate test questions', error: err.message });
+    res.status(500).json({ 
+      message: 'Failed to generate test questions', 
+      error: err.message,
+      details: err.response?.data || 'Check backend logs for full error'
+    });
   }
 });
 
