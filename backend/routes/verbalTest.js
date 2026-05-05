@@ -1,6 +1,6 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
-import { generateJSON } from '../middleware/groq.js';
+import { generateJSON } from '../middleware/gemini.js';
 
 const router = express.Router();
 
@@ -21,11 +21,12 @@ router.post('/generate', auth, async (req, res) => {
     // we'll instruct the AI to be concise but thorough.
     const randomSeed = Math.random().toString(36).substring(7);
     const prompt = `
-      Generate a competitive exam-style 10-question English Verbal Ability Test for the topic: "${promptTopic}".
+      Generate a professional 25-question English Verbal Ability Test for the topic: "${promptTopic}".
+      PATTERN: Competitive Exams (SSC, Banking, GRE style).
       RANDOM SEED: ${randomSeed}.
       
       Requirements:
-      1. EXACTLY 10 questions.
+      1. EXACTLY 25 questions in the array.
       2. Exactly 4 options (A, B, C, D) for every question.
       3. Format: Return ONLY a JSON object with a "questions" key.
       

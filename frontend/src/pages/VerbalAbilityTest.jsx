@@ -116,7 +116,7 @@ export default function VerbalAbilityTest() {
           </button>
           <div>
             <h1 className="text-3xl font-display font-bold text-white">Verbal Ability Test</h1>
-            <p className="text-slate-400">Master English proficiency with 10-question targeted practice</p>
+            <p className="text-slate-400">Master English proficiency with 25-question targeted practice</p>
           </div>
         </div>
 
@@ -133,7 +133,7 @@ export default function VerbalAbilityTest() {
             <div>
               <div className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-white mb-3 inline-block">MOST CHALLENGING</div>
               <h2 className="text-3xl font-bold text-white mb-2">Mixed Ability Test</h2>
-              <p className="text-white/80 max-w-md">A comprehensive 10-question mixture of all topics to test your overall English proficiency.</p>
+              <p className="text-white/80 max-w-md">A comprehensive 25-question mixture of all topics to test your overall English proficiency.</p>
             </div>
             <div className="bg-white text-primary-600 px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-xl">
               Start Mega Test <ChevronRight size={18} />
@@ -156,7 +156,7 @@ export default function VerbalAbilityTest() {
                 <BookOpen size={20} className="text-white" />
               </div>
               <h4 className="font-bold text-white mb-1 group-hover:text-primary-400 transition-colors">{topic}</h4>
-              <p className="text-xs text-slate-500">10 Questions • Advanced</p>
+              <p className="text-xs text-slate-500">25 Questions • Advanced</p>
             </button>
           ))}
         </div>
@@ -176,7 +176,7 @@ export default function VerbalAbilityTest() {
           </div>
         </div>
         <h2 className="text-2xl font-display font-bold text-white mb-2">Generating Your Test</h2>
-        <p className="text-slate-400">Our AI is hand-picking 10 high-quality questions for <br/><strong className="text-primary-400">{selectedTopic}</strong>...</p>
+        <p className="text-slate-400">Our AI is hand-picking 25 high-quality questions for <br/><strong className="text-primary-400">{selectedTopic}</strong>...</p>
       </div>
     );
   }
