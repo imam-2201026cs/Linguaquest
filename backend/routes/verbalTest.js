@@ -1,6 +1,7 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
-import { generateJSON } from '../middleware/gemini.js';
+import { generateJSON as generateGeminiJSON } from '../middleware/gemini.js';
+import { generateJSON as generateGroqJSON } from '../middleware/groq.js';
 
 const router = express.Router();
 
@@ -43,27 +44,35 @@ router.post('/generate', auth, async (req, res) => {
       }
     `;
 
-    const result = await generateJSON(prompt);
-    let questions = result.questions || [];
-
-    // If result is an array directly
-    if (Array.isArray(result)) questions = result;
-
-    if (!Array.isArray(questions) || questions.length === 0) {
-      throw new Error('AI failed to generate a valid question array');
+    let result;
+    try {
+      console.log(`[VerbalTest] Attempting generation with Primary AI (Gemini)...`);
+      result = await generateGeminiJSON(prompt);
+    } catch (geminiError) {
+      console.warn(`[VerbalTest] Primary AI (Gemini) failed or hit quota. Falling back to Backup AI (Groq)...`);
+      try {
+        // Fallback to Groq if Gemini fails
+        result = await generateGroqJSON(prompt);
+        console.log(`[VerbalTest] Successfully generated using Backup AI (Groq).`);
+      } catch (groqError) {
+        console.error(`[VerbalTest] Both AI providers failed.`);
+        throw new Error('Both AI providers are currently busy. Please try again in a moment.');
+      }
     }
 
-    res.json({ 
+    if (!result || !Array.isArray(result.questions)) {
+      throw new Error('Invalid response format from AI');
+    }
+
+    res.json({
       topic,
-      count: questions.length,
-      questions 
+      questions: result.questions.slice(0, 20)
     });
   } catch (err) {
     console.error('Verbal Test Generation Error:', err);
     res.status(500).json({ 
       message: 'Failed to generate test questions', 
-      error: err.message,
-      details: err.response?.data || 'Check backend logs for full error'
+      error: err.message
     });
   }
 });
