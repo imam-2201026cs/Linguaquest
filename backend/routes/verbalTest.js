@@ -21,12 +21,11 @@ router.post('/generate', auth, async (req, res) => {
     // we'll instruct the AI to be concise but thorough.
     const randomSeed = Math.random().toString(36).substring(7);
     const prompt = `
-      Generate a professional 15-question English Verbal Ability Test for the topic: "${promptTopic}".
-      PATTERN: Competitive Exams (SSC, Banking, GRE style).
+      Generate a competitive exam-style 10-question English Verbal Ability Test for the topic: "${promptTopic}".
       RANDOM SEED: ${randomSeed}.
       
       Requirements:
-      1. EXACTLY 15 questions in the array.
+      1. EXACTLY 10 questions.
       2. Exactly 4 options (A, B, C, D) for every question.
       3. Format: Return ONLY a JSON object with a "questions" key.
       

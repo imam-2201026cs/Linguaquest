@@ -32,13 +32,17 @@ export const generateJSON = async (prompt) => {
     const completion = await groq.chat.completions.create({
       messages: [
         {
+          role: 'system',
+          content: 'You are a helpful assistant that only responds in JSON format.'
+        },
+        {
           role: 'user',
           content: prompt,
         },
       ],
       model: 'llama-3.3-70b-versatile',
       temperature: 0.2,
-      max_tokens: 4096, // Increased to support 30 questions
+      max_tokens: 4096,
       response_format: { type: 'json_object' },
     });
 
