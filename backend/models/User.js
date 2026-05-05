@@ -33,6 +33,7 @@ const userSchema = new mongoose.Schema({
   },
   completedListeningVideos: [{ type: String }], // Array of YouTube IDs
   completedReadingLessons: [{ type: String }], // Array of Book IDs
+  completedWritingLessons: [{ type: String }], // Array of Lesson IDs
   createdAt: { type: Date, default: Date.now }
 });
 
