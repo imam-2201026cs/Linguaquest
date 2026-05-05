@@ -33,20 +33,28 @@ export const generateJSON = async (prompt) => {
       messages: [
         {
           role: 'system',
-          content: 'You are a helpful assistant that only responds in JSON format.'
+          content: 'You are a professional exam generator. Return ONLY raw JSON.'
         },
         {
           role: 'user',
           content: prompt,
         },
       ],
-      model: 'llama-3.3-70b-versatile',
-      temperature: 0.2,
+      model: 'llama-3.1-8b-instant',
+      temperature: 0.1,
       max_tokens: 4096,
       response_format: { type: 'json_object' },
     });
 
-    return JSON.parse(completion.choices[0]?.message?.content || '{}');
+    let content = completion.choices[0]?.message?.content || '{}';
+    // Clean up any potential markdown noise if the model ignores the instruction
+    if (content.includes('```json')) {
+      content = content.split('```json')[1].split('```')[0];
+    } else if (content.includes('```')) {
+      content = content.split('```')[1].split('```')[0];
+    }
+    
+    return JSON.parse(content.trim());
   } catch (error) {
     console.error('Groq generateJSON Error:', error.message || error);
     // Fallback parsing if JSON mode fails or returns weirdness
