@@ -34,21 +34,25 @@ router.get('/daily', auth, async (req, res) => {
       const topics = [
         "Mixed Tenses", "Conditional Sentences", "Relative Clauses", "Passive Voice", 
         "Prepositional Phrases", "Phrasal Verbs", "Articles & Quantifiers", 
-        "Reported Speech", "Gerunds vs Infinitives", "Modal Verbs", "Complex Sentence Structures"
+        "Reported Speech", "Gerunds vs Infinitives", "Modal Verbs", "Complex Sentence Structures",
+        "Subjunctive Mood", "Inversion in English", "Causative Verbs", "Advanced Adjectives & Adverbs",
+        "Conjunctions & Transition Words", "Noun Clauses", "Participial Phrases", "Idiomatic Expressions"
       ];
       const hiddenTopic = topics[today.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % topics.length];
+      const randomDailySeed = Math.random().toString(36).substring(7);
       
       console.log(`[DailyChallenge] Generating NEW random grammar challenge for ${today}. Hidden Topic: ${hiddenTopic}`);
       
       const prompt = `
         Create a 10-question Daily Challenge Quiz for English learners for the date: ${today}.
         PRIMARY FOCUS: ${hiddenTopic} (but mix in other grammar topics too).
+        DAILY SEED: ${randomDailySeed}
         
         Requirements:
         1. Mix various grammar topics (tenses, prepositions, articles, etc.) to keep it diverse.
-        2. Difficulty: Intermediate (B1-B2).
+        2. Difficulty: Intermediate to Advanced (B2-C1).
         3. Return a JSON object with a "questions" key containing an array of EXACTLY 10 objects.
-        4. Each question MUST be unique, creative, and specifically generated for this date. Avoid "generic" or "common" textbook examples. Use realistic and modern English scenarios.
+        4. Each question MUST be unique, creative, and specifically generated for this seed. Avoid "generic" or "common" textbook examples. Use realistic and modern English scenarios.
         
         Each question object format:
         {
