@@ -1,16 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import {
-  PenTool, Send, RotateCcw, Zap, BookOpen, Star, Timer,
-  ChevronRight, Lock, Lightbulb, CheckCircle, AlertTriangle,
-  Newspaper, Mail, Image, BarChart2, RefreshCw, Eye, Wand2, FileText,
-  Maximize2, Minimize2, Sparkles, MessageSquarePlus
+  PenTool, Send, RotateCcw, Zap, BookOpen, Timer,
+  ChevronRight, Lock, CheckCircle, Trophy, BarChart2,
+  RefreshCw, Wand2, FileText, Maximize2, Minimize2, Sparkles
 } from 'lucide-react';
 import XPReward from '../components/XPReward';
 import { useAuth } from '../context/AuthContext';
-
-const MODE_ICONS = { story_continuation: BookOpen, picture_writing: Image, timed_challenge: Timer, news_article: Newspaper, letter_email: Mail, creative_scene: Star };
 
 const ScoreBar = ({ label, value, color = 'bg-primary-500' }) => (
   <div className="mb-3">
@@ -23,26 +20,6 @@ const ScoreBar = ({ label, value, color = 'bg-primary-500' }) => (
     </div>
   </div>
 );
-
-function CountdownTimer({ seconds, onExpire }) {
-  const [remaining, setRemaining] = useState(seconds);
-  useEffect(() => {
-    const t = setInterval(() => setRemaining(p => { if (p <= 1) { clearInterval(t); onExpire(); return 0; } return p - 1; }), 1000);
-    return () => clearInterval(t);
-  }, []);
-  const mins = Math.floor(remaining / 60);
-  const secs = remaining % 60;
-  const pct = (remaining / seconds) * 100;
-  const col = pct > 50 ? 'text-green-400' : pct > 25 ? 'text-yellow-400' : 'text-red-400';
-  return (
-    <div className="flex items-center gap-3">
-      <div className={`font-mono text-2xl font-bold ${col}`}>{String(mins).padStart(2, '0')}:{String(secs).padStart(2, '0')}</div>
-      <div className="flex-1 h-2 bg-dark-600 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full transition-all duration-1000 ${pct > 50 ? 'bg-green-500' : pct > 25 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${pct}%` }} />
-      </div>
-    </div>
-  );
-}
 
 function WritingRoadmap({ library, onSelectLesson, completedCount }) {
   const levels = ['a1', 'a2', 'b1', 'b2', 'c1', 'c2'];
@@ -516,11 +493,6 @@ export default function Writing() {
           onRedo={() => setPhase('editor')} 
           onBack={() => { setPhase('roadmap'); setResult(null); setReward(null); }} 
         />
-      )}
-    </div>
-  );
-}
-e('modes'); setResult(null); setReward(null); }} />
       )}
     </div>
   );
