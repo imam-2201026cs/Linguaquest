@@ -14,8 +14,8 @@ export const generateAI = async (prompt, isJson = false) => {
 
     // We try multiple stable free models to ensure 100% uptime
     const models = [
-      "meta-llama/llama-3.1-8b-instruct:free",
       "google/gemini-2.0-flash-exp:free",
+      "meta-llama/llama-3.1-8b-instruct:free",
       "mistralai/mistral-7b-instruct:free",
       "openchat/openchat-7b:free"
     ];
@@ -32,7 +32,7 @@ export const generateAI = async (prompt, isJson = false) => {
               {
                 role: "system",
                 content: isJson 
-                  ? "You are a professional AI content generator. Return ONLY raw, valid JSON. No markdown. No conversational text." 
+                  ? "You are a professional AI content generator. Return ONLY raw, valid JSON. No markdown formatting (no ```json). No conversational text." 
                   : "You are a helpful English teacher."
               },
               {
@@ -46,20 +46,28 @@ export const generateAI = async (prompt, isJson = false) => {
           {
             headers: {
               "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-              "HTTP-Referer": "https://linguaquest.vercel.app",
+              "HTTP-Referer": "https://linguaquest-plum.vercel.app",
               "X-Title": "LinguaQuest",
               "Content-Type": "application/json"
             },
-            timeout: 15000 // 15s timeout per model
+            timeout: 20000 // Increased to 20s
           }
         );
 
-        const content = response.data.choices[0]?.message?.content || "";
+        let content = response.data.choices[0]?.message?.content || "";
 
         if (isJson) {
-          // Cleanup markdown
-          const cleanJson = content.replace(/```json\n?|```/g, '').trim();
-          return JSON.parse(cleanJson);
+          try {
+            // Aggressive JSON cleanup
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              content = jsonMatch[0];
+            }
+            return JSON.parse(content);
+          } catch (parseErr) {
+            console.warn(`Model ${model} sent invalid JSON. Retrying with next model...`);
+            continue;
+          }
         }
 
         return content;
