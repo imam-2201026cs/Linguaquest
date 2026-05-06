@@ -206,140 +206,140 @@ export default function VerbalAbilityTest() {
   // 3. Quiz View
   if (stage === 2) {
     const currentQ = questions[currentIndex];
+    const isAnswered = answers[currentIndex] !== undefined;
+    const selectedOption = answers[currentIndex];
+
     return (
-      <div className="max-w-2xl mx-auto flex flex-col min-h-[80vh] text-white">
-        {/* Header */}
-        <header className="flex items-center justify-between p-4 md:p-6 bg-dark-950/20 sticky top-0 z-30 backdrop-blur-xl border-b border-white/5">
-          <button onClick={() => setStage(0)} className="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors border border-white/5">
-            <ArrowLeft size={18} md:size={20} />
+      <div className="fixed inset-0 flex flex-col bg-dark-950 text-white overflow-hidden">
+        {reward && <XPReward {...reward} onClose={() => setReward(null)} />}
+
+        {/* Header - Compact */}
+        <header className="flex items-center justify-between px-6 py-3 bg-dark-950/20 border-b border-white/5 shrink-0">
+          <button onClick={() => setStage(0)} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors border border-white/5">
+            <ArrowLeft size={18} />
           </button>
-          <div className="flex gap-3 md:gap-4">
-            <div className="flex items-center gap-2 md:gap-3 bg-accent-emerald/10 border border-accent-emerald/20 px-3 md:px-4 py-1.5 md:py-2 rounded-xl md:rounded-2xl">
-              <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-accent-emerald animate-pulse shadow-glow" />
-              <span className="text-[10px] md:text-xs font-black text-accent-emerald uppercase tracking-widest">{correctCount}</span>
+          <div className="flex gap-3">
+            <div className="flex items-center gap-2 bg-accent-emerald/10 border border-accent-emerald/20 px-3 py-1.5 rounded-xl">
+              <div className="w-1.5 h-1.5 rounded-full bg-accent-emerald animate-pulse shadow-glow" />
+              <span className="text-[10px] font-black text-accent-emerald uppercase tracking-widest">{correctCount}</span>
             </div>
-            <div className="flex items-center gap-2 md:gap-3 bg-accent-rose/10 border border-accent-rose/20 px-3 md:px-4 py-1.5 md:py-2 rounded-xl md:rounded-2xl">
-              <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-accent-rose shadow-glow" />
-              <span className="text-[10px] md:text-xs font-black text-accent-rose uppercase tracking-widest">{wrongCount}</span>
+            <div className="flex items-center gap-2 bg-accent-rose/10 border border-accent-rose/20 px-3 py-1.5 rounded-xl">
+              <div className="w-1.5 h-1.5 rounded-full bg-accent-rose shadow-glow" />
+              <span className="text-[10px] font-black text-accent-rose uppercase tracking-widest">{wrongCount}</span>
             </div>
           </div>
         </header>
 
-        {/* Progress System */}
-        <div className="px-6 py-4 md:py-6">
-           <div className="h-2 bg-dark-900 rounded-full overflow-hidden p-0.5 border border-white/5">
-             <motion.div 
-               initial={{ width: 0 }}
-               animate={{ width: `${((currentIndex + (isAnswered ? 1 : 0)) / questions.length) * 100}%` }}
-               transition={{ duration: 0.5 }}
-               className="h-full bg-gradient-to-r from-primary-600 to-primary-400 rounded-full shadow-glow" 
-             />
-           </div>
-        </div>
-
-        <div className="px-6 space-y-6 pb-20">
-          {/* Question Card */}
-          <AnimatePresence mode="wait">
-             <motion.div 
-               key={currentIndex}
-               initial={{ opacity: 0, x: 20 }}
-               animate={{ opacity: 1, x: 0 }}
-               exit={{ opacity: 0, x: -20 }}
-               className="glass-card overflow-hidden border-white/5 bg-gradient-to-br from-primary-600 to-primary-900 shadow-2xl"
-             >
-               {/* Question Header */}
-               <div className="bg-dark-950/40 px-6 py-3 border-b border-white/5 text-center">
-                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary-200 opacity-80">
-                    Question {currentIndex + 1} of {questions.length}
-                  </span>
-               </div>
-
-               {/* Question Body */}
-               <div className="p-8 md:p-12 text-center space-y-6">
-                 <h2 className="text-base md:text-2xl font-display font-bold text-white leading-relaxed tracking-tight">
-                   {currentQ.question}
-                 </h2>
-                 
-                 {/* Action Row */}
-                 <div className="flex justify-center gap-4 pt-2">
-                    <button onClick={() => speak(currentQ.question)} className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-all border border-white/10">
-                      <Volume2 size={18} />
-                    </button>
-                    <button className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-all border border-white/10">
-                      <Languages size={18} />
-                    </button>
-                 </div>
-               </div>
-             </motion.div>
-          </AnimatePresence>
-
-          {/* Options Grid */}
-          <div className="grid grid-cols-1 gap-3 md:gap-4">
-            {currentQ.options.map((option, idx) => {
-              const isCorrect = idx === currentQ.correct;
-              const isSelected = idx === selectedOption;
-              
-              let variant = "bg-dark-900/50 border-white/5 text-slate-400 hover:border-white/10 hover:bg-white/5";
-              if (isAnswered) {
-                if (isCorrect) variant = "bg-accent-emerald/20 border-accent-emerald/40 text-accent-emerald shadow-glow";
-                else if (isSelected) variant = "bg-accent-rose/20 border-accent-rose/40 text-accent-rose shadow-glow";
-                else variant = "bg-dark-950 border-white/5 text-slate-600 opacity-40";
-              }
-
-              return (
-                <motion.button
-                  key={idx}
-                  whileHover={!isAnswered ? { scale: 1.01 } : {}}
-                  disabled={isAnswered}
-                  onClick={() => handleOptionSelect(idx)}
-                  className={`group relative text-left p-5 rounded-2xl border transition-all duration-300 flex flex-col gap-4 ${variant}`}
-                >
-                  <div className="flex items-center gap-5">
-                    <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-[10px] font-black shrink-0 transition-all ${isAnswered && (isCorrect || isSelected) ? 'border-white/40 bg-white/10' : 'border-white/10 bg-white/5'}`}>
-                      {isAnswered && isCorrect ? <CheckCircle size={14} /> : isAnswered && isSelected ? <XCircle size={14} /> : String.fromCharCode(65 + idx)}
-                    </div>
-                    <span className="flex-1 font-bold tracking-tight text-sm md:text-base leading-snug">{option}</span>
-                  </div>
-
-                  {/* Option Utility Icons */}
-                  <div className="flex gap-4 px-1 opacity-20 group-hover:opacity-60 transition-all duration-300">
-                    <Volume2 size={14} />
-                    <Languages size={14} />
-                  </div>
-                </motion.button>
-              );
-            })}
+        {/* Main Content Area - Scroll-free Flex */}
+        <main className="flex-1 flex flex-col max-w-4xl mx-auto w-full overflow-hidden">
+          
+          {/* Progress Indicator - Slim */}
+          <div className="px-6 py-4 shrink-0">
+             <div className="h-1.5 bg-dark-900 rounded-full overflow-hidden p-0.5 border border-white/5">
+               <motion.div 
+                 initial={{ width: 0 }}
+                 animate={{ width: `${((currentIndex + (isAnswered ? 1 : 0)) / questions.length) * 100}%` }}
+                 transition={{ duration: 0.5 }}
+                 className="h-full bg-gradient-to-r from-primary-600 to-primary-400 rounded-full shadow-glow" 
+               />
+             </div>
           </div>
 
-          {/* Explanation Box */}
-          <AnimatePresence>
-             {isAnswered && (
+          <div className="flex-1 flex flex-col px-6 gap-4 md:gap-6 overflow-hidden">
+            {/* Question Card - Adaptive Height */}
+            <AnimatePresence mode="wait">
                <motion.div 
-                 initial={{ opacity: 0, y: 10 }}
-                 animate={{ opacity: 1, y: 0 }}
-                 className="space-y-4 md:space-y-6"
+                 key={currentIndex}
+                 initial={{ opacity: 0, scale: 0.98 }}
+                 animate={{ opacity: 1, scale: 1 }}
+                 exit={{ opacity: 0, scale: 0.98 }}
+                 className="glass-card overflow-hidden border-white/5 bg-gradient-to-br from-primary-600/20 to-primary-900/40 shadow-2xl shrink-0"
                >
-                 <div className="glass-card p-6 md:p-8 bg-primary-500/5 border-primary-500/20 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-primary-500/5 rounded-full -mr-12 -mt-12" />
-                    <div className="flex items-center gap-3 text-primary-400 font-black text-[10px] uppercase tracking-widest mb-3 md:mb-4">
-                      <Lightbulb size={16} />
-                      <span>Neural Analysis</span>
-                    </div>
-                    <p className="text-slate-300 text-xs md:text-sm leading-relaxed font-medium">
-                      {currentQ.explanation}
-                    </p>
+                 <div className="bg-dark-950/40 px-4 py-2 border-b border-white/5 text-center">
+                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary-200 opacity-60">
+                      Objective {currentIndex + 1} / {questions.length}
+                    </span>
                  </div>
-
-                 <button 
-                    onClick={handleNext}
-                    className="w-full btn-primary py-4 md:py-5 flex items-center justify-center gap-3 rounded-2xl shadow-glow text-sm md:text-base uppercase font-black tracking-widest"
-                  >
-                    {currentIndex === questions.length - 1 ? 'Terminate Mission' : 'Next Objective'} <ChevronRight size={20} />
-                  </button>
+                 <div className="p-5 md:p-8 text-center space-y-4">
+                   <h2 className="text-sm md:text-xl font-display font-bold text-white leading-relaxed tracking-tight max-h-[100px] overflow-y-auto scrollbar-hide">
+                     {currentQ.question}
+                   </h2>
+                   <div className="flex justify-center gap-3">
+                      <button onClick={() => speak(currentQ.question)} className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center text-white/40 hover:text-white transition-all border border-white/5">
+                        <Volume2 size={16} />
+                      </button>
+                      <button className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center text-white/40 border border-white/5">
+                        <Languages size={16} />
+                      </button>
+                   </div>
+                 </div>
                </motion.div>
-             )}
-          </AnimatePresence>
-        </div>
+            </AnimatePresence>
+
+            {/* Options Area - Grid on Tablet/PC, Stack on Mobile */}
+            <div className="flex-1 flex flex-col justify-center gap-2 md:gap-4 overflow-y-auto scrollbar-hide pb-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
+                {currentQ.options.map((option, idx) => {
+                  const isCorrect = idx === currentQ.correct;
+                  const isSelected = idx === selectedOption;
+                  
+                  let variant = "bg-dark-900/50 border-white/5 text-slate-400 hover:border-white/10 hover:bg-white/5";
+                  if (isAnswered) {
+                    if (isCorrect) variant = "bg-accent-emerald/20 border-accent-emerald/40 text-accent-emerald";
+                    else if (isSelected) variant = "bg-accent-rose/20 border-accent-rose/40 text-accent-rose";
+                    else variant = "bg-dark-950/30 border-white/5 text-slate-600 opacity-40";
+                  }
+
+                  return (
+                    <motion.button
+                      key={idx}
+                      whileHover={!isAnswered ? { scale: 1.01 } : {}}
+                      disabled={isAnswered}
+                      onClick={() => handleOptionSelect(idx)}
+                      className={`group relative text-left p-3 md:p-5 rounded-xl md:rounded-2xl border transition-all duration-300 flex flex-col gap-2 ${variant}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-6 h-6 rounded-full border flex items-center justify-center text-[9px] font-black shrink-0 ${isAnswered && (isCorrect || isSelected) ? 'border-white/40 bg-white/10' : 'border-white/10 bg-white/5'}`}>
+                          {isAnswered && isCorrect ? <CheckCircle size={12} /> : isAnswered && isSelected ? <XCircle size={12} /> : String.fromCharCode(65 + idx)}
+                        </div>
+                        <span className="flex-1 font-bold tracking-tight text-xs md:text-base leading-snug line-clamp-2">{option}</span>
+                      </div>
+                      
+                      <div className="flex gap-2 px-1 opacity-10 group-hover:opacity-40 transition-opacity">
+                        <Volume2 size={10} />
+                        <Languages size={10} />
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
+
+              {/* Explanation/Next - Only if answered */}
+              <AnimatePresence>
+                {isAnswered && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="space-y-3"
+                  >
+                    <div className="glass-card p-4 bg-primary-500/5 border-primary-500/10">
+                       <p className="text-slate-300 text-[11px] md:text-sm leading-relaxed line-clamp-2 overflow-y-auto max-h-[60px] scrollbar-hide">
+                         {currentQ.explanation}
+                       </p>
+                    </div>
+
+                    <button 
+                      onClick={handleNext}
+                      className="w-full btn-primary py-3 md:py-4 flex items-center justify-center gap-3 rounded-xl shadow-glow text-xs md:text-base"
+                    >
+                      Next Objective <ChevronRight size={16} />
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
