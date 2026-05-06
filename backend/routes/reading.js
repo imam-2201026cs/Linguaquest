@@ -96,7 +96,7 @@ router.get('/books', auth, async (req, res) => {
     const completed = user?.completedReadingLessons || [];
 
     const levels = ['beginner', 'elementary', 'intermediate', 'upper_intermediate', 'advanced', 'expert'];
-    const levelLabels = { beginner: 'A1 Beginner', elementary: 'A2 Elementary', intermediate: 'B1 Intermediate', upper_intermediate: 'B2 Upper', advanced: 'C1 Advanced', expert: 'C2 Expert' };
+    const levelLabels = { beginner: 'Beginner', elementary: 'Elementary', intermediate: 'Intermediate', upper_intermediate: 'Upper Intermediate', advanced: 'Advanced', expert: 'Expert' };
 
     const library = {};
     levels.forEach(lvl => {

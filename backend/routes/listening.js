@@ -131,6 +131,7 @@ router.get('/videos', auth, async (req, res) => {
 
     const library = {};
     const tiers = ['beginner', 'elementary', 'intermediate', 'upper_intermediate', 'advanced', 'expert'];
+    const levelLabels = { beginner: 'Beginner', elementary: 'Elementary', intermediate: 'Intermediate', upper_intermediate: 'Upper Intermediate', advanced: 'Advanced', expert: 'Expert' };
     
     let stopUnlocking = false;
 
@@ -151,12 +152,12 @@ router.get('/videos', auth, async (req, res) => {
       library[tier] = {
         videos: tierVideos,
         label: {
-          beginner: '🟢 Beginner (A1)',
-          elementary: '🟡 Elementary (A2)',
-          intermediate: '🟠 Intermediate (B1)',
-          upper_intermediate: '🔴 Upper Intermediate (B2)',
-          advanced: '🔥 Advanced (C1)',
-          expert: '💎 Expert (C2)'
+          beginner: 'Beginner',
+          elementary: 'Elementary',
+          intermediate: 'Intermediate',
+          upper_intermediate: 'Upper Intermediate',
+          advanced: 'Advanced',
+          expert: 'Expert'
         }[tier],
         progress: Math.round((videos.filter(v => completed.includes(v.id)).length / videos.length) * 100)
       };
