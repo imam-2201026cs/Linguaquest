@@ -321,7 +321,7 @@ export default function Landing() {
       {/* Hero */}
       <section className="relative z-10 max-w-7xl mx-auto px-6 py-16 text-center">
         <div className="inline-flex items-center gap-2 bg-primary-500/10 border border-primary-500/20 rounded-full px-4 py-2 mb-8 text-sm text-primary-400 font-medium">
-          <Zap size={14} /> Powered by Gemini AI
+          <Zap size={14} /> Powered by Groq AI
         </div>
         <h1 className="font-display text-5xl md:text-7xl font-bold text-white leading-tight mb-6">
           Master English<br />

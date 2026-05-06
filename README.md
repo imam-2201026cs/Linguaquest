@@ -1,6 +1,6 @@
 # 🏆 LinguaQuest — AI-Powered English Learning Platform
 
-A fully gamified English communication platform built with **React + Tailwind CSS** (frontend) and **Node.js + Express + MongoDB** (backend), powered by **Google Gemini 2.5 Flash-Lite** AI.
+A fully gamified English communication platform built with **React + Tailwind CSS** (frontend) and **Node.js + Express + MongoDB** (backend), powered by **Groq AI (Llama 3)**.
 
 ---
 
@@ -42,7 +42,7 @@ A fully gamified English communication platform built with **React + Tailwind CS
 **Backend:**
 - Node.js + Express (ES Modules)
 - MongoDB + Mongoose
-- Google Generative AI SDK (Gemini 2.5 Flash-Lite)
+- Groq SDK (Llama 3.3-70b & 3.1-8b)
 - JWT Authentication
 - bcryptjs
 
@@ -53,7 +53,7 @@ A fully gamified English communication platform built with **React + Tailwind CS
 ### Prerequisites
 - Node.js 18+
 - MongoDB (local or MongoDB Atlas)
-- Google Gemini API key (free at [aistudio.google.com](https://aistudio.google.com))
+- Groq API key (free at [console.groq.com](https://console.groq.com))
 
 ---
 
@@ -81,11 +81,11 @@ Edit `.env`:
 PORT=5000
 MONGO_URI=mongodb://localhost:27017/english_app
 JWT_SECRET=your_super_secret_jwt_key_change_this_in_production
-GEMINI_API_KEY=your_gemini_api_key_here
+GROQ_API_KEY=your_groq_api_key_here
 ```
 
-**Get your Gemini API Key:**
-1. Go to [https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)
+**Get your Groq API Key:**
+1. Go to [https://console.groq.com/keys](https://console.groq.com/keys)
 2. Click "Create API Key"
 3. Copy it into `.env`
 
@@ -126,7 +126,7 @@ english-app/
 │   │   └── Activity.js      # Activity tracking schema
 │   ├── middleware/
 │   │   ├── auth.js          # JWT middleware
-│   │   └── gemini.js        # Gemini AI helper
+│   │   └── groq.js          # Groq AI helper
 │   ├── routes/
 │   │   ├── auth.js          # Register/Login
 │   │   ├── user.js          # Profile, history, stats
@@ -214,7 +214,7 @@ english-app/
 
 ## 🐛 Troubleshooting
 
-**"Failed to generate exercise"** — Check your Gemini API key in `.env`
+**"Failed to generate exercise"** — Check your Groq API key in `.env`
 
 **MongoDB connection error** — Ensure MongoDB is running locally or check Atlas URI
 

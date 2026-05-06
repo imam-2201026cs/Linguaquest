@@ -2,7 +2,7 @@ import express from 'express';
 import multer from 'multer';
 import pdfParse from 'pdf-parse/lib/pdf-parse.js';
 import auth from '../middleware/auth.js';
-import { generateContent, generateJSON } from '../middleware/gemini.js';
+import { generateContent, generateJSON } from '../middleware/groq.js';
 import Conversation from '../models/Conversation.js';
 import User from '../models/User.js';
 import { SCENARIOS, getScenarioById } from '../data/scenarios.js';

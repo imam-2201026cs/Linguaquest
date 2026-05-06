@@ -1,7 +1,6 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
-import { generateJSON as generateGeminiJSON } from '../middleware/gemini.js';
-import { generateJSON as generateGroqJSON } from '../middleware/groq.js';
+import { generateJSON } from '../middleware/groq.js';
 
 const router = express.Router();
 
@@ -18,8 +17,7 @@ router.post('/generate', auth, async (req, res) => {
   try {
     let promptTopic = topic === 'Mixed' ? `a mixture of these topics: ${TOPICS.join(', ')}` : topic;
     
-    // We'll ask for 30 questions. To handle potential JSON size limits, 
-    // we'll instruct the AI to be concise but thorough.
+    // We'll ask for 20 questions.
     const randomSeed = Math.random().toString(36).substring(7);
     const prompt = `
       Generate a professional 20-question English Verbal Ability Test for the topic: "${promptTopic}".
@@ -44,21 +42,8 @@ router.post('/generate', auth, async (req, res) => {
       }
     `;
 
-    let result;
-    try {
-      console.log(`[VerbalTest] Attempting generation with Primary AI (Gemini)...`);
-      result = await generateGeminiJSON(prompt);
-    } catch (geminiError) {
-      console.warn(`[VerbalTest] Primary AI (Gemini) failed or hit quota. Falling back to Backup AI (Groq)...`);
-      try {
-        // Fallback to Groq if Gemini fails
-        result = await generateGroqJSON(prompt);
-        console.log(`[VerbalTest] Successfully generated using Backup AI (Groq).`);
-      } catch (groqError) {
-        console.error(`[VerbalTest] Both AI providers failed.`);
-        throw new Error('Both AI providers are currently busy. Please try again in a moment.');
-      }
-    }
+    console.log(`[VerbalTest] Generating with Groq AI...`);
+    const result = await generateJSON(prompt);
 
     if (!result || !Array.isArray(result.questions)) {
       throw new Error('Invalid response format from AI');
