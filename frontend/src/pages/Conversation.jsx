@@ -6,7 +6,7 @@ import {
   MessageCircle, Play, Square, Mic, MicOff, Volume2, VolumeX,
   Send, RotateCcw, ChevronRight, Zap, Star, Lock, Trophy,
   AlertTriangle, CheckCircle, XCircle, Clock, BarChart2,
-  BookOpen, Target, Lightbulb, ArrowLeft,
+  BookOpen, Target, Lightbulb, ArrowLeft, ArrowRight, User,
   Flame, Award, Users, Briefcase, Globe, GraduationCap, Heart,
   Search, Upload, Check, Crown, Sparkles, MessageSquare, Info
 } from 'lucide-react';

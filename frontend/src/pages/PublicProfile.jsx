@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Trophy, Star, Zap, Flame, Calendar, Activity as ActivityIcon, 
   ArrowLeft, Globe, Shield, Target, Award, Sparkles, Map, Info,
-  Search, MessageSquare
+  Search, MessageSquare, Swords
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 

@@ -7,7 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   PenTool, Headphones, BookOpen, CheckSquare, Zap, Flame, Trophy,
   TrendingUp, Clock, Target, ArrowRight, Coins, Star, CheckCircle2,
-  Circle, RotateCcw, MessageCircle, Sparkles, Activity, Calendar, LayoutGrid
+  Circle, RotateCcw, MessageCircle, Sparkles, Activity, Calendar, LayoutGrid,
+  ChevronRight
 } from 'lucide-react';
 
 /* ─────────────────── constants ─────────────────── */
