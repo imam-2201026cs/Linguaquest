@@ -32,21 +32,21 @@ router.post('/generate', auth, async (req, res) => {
       `;
     }
 
-    // We'll ask for 20 questions.
+    // We'll ask for 10 questions for better stability and speed.
     const randomSeed = Math.random().toString(36).substring(7);
     const prompt = `
-      Generate a professional 20-question English Verbal Ability Test for the topic: "${promptTopic}".
+      Generate a professional 10-question English Verbal Ability Test for the topic: "${promptTopic}".
       PATTERN: Competitive Exams (SSC, Banking, GRE style).
       RANDOM SEED: ${randomSeed}.
       
       ${patternInstruction}
 
       Requirements:
-      1. EXACTLY 20 questions in the array.
+      1. EXACTLY 10 questions in the array.
       2. Provide exactly 4 distinct multiple-choice options for each question (unless it is Error Detection).
       3. CRITICAL: DO NOT include labels like "A)", "B.", or "1." inside the option strings.
       4. CRITICAL: DO NOT use single letters (like "A", "B", "C", "D") as the content of the options. Every option must be a valid word or phrase relevant to the topic.
-      5. RANDOMIZE CORRECT ANSWERS: Ensure the correct answer index (0, 1, 2, or 3) is evenly distributed across all 20 questions.
+      5. RANDOMIZE CORRECT ANSWERS: Ensure the correct answer index (0, 1, 2, or 3) is evenly distributed across all 10 questions.
       6. EXPLANATIONS: Every question MUST have a clear, helpful "explanation" field.
       7. Format: Return ONLY a JSON object with a "questions" key.
       
@@ -72,7 +72,7 @@ router.post('/generate', auth, async (req, res) => {
 
     res.json({
       topic,
-      questions: result.questions.slice(0, 20)
+      questions: result.questions.slice(0, 10)
     });
   } catch (err) {
     console.error('Verbal Test Generation Error:', err);

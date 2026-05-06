@@ -142,7 +142,7 @@ export default function VerbalAbilityTest() {
                  <Sparkles size={12} className="animate-pulse" /> Elite Protocol
               </div>
               <h2 className="text-4xl font-display font-bold text-white tracking-tight">Ultimate Mixed Assessment</h2>
-              <p className="text-white/80 text-lg font-medium max-w-xl">A comprehensive 20-objective circuit spanning all linguistic domains. The definitive test of your proficiency.</p>
+              <p className="text-white/80 text-lg font-medium max-w-xl">A comprehensive 10-objective circuit spanning all linguistic domains. The definitive test of your proficiency.</p>
             </div>
             <div className="bg-white text-primary-700 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl group-hover:px-12 transition-all">
               Initiate Mega Mission
@@ -171,7 +171,7 @@ export default function VerbalAbilityTest() {
                     </div>
                     <h4 className="text-lg font-bold text-white mb-2 tracking-tight group-hover:text-primary-400 transition-colors">{topic}</h4>
                     <div className="flex items-center gap-2">
-                       <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">20 Objectives</span>
+                       <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">10 Objectives</span>
                        <div className="w-1 h-1 rounded-full bg-slate-700" />
                        <span className="text-[10px] font-black text-primary-400 uppercase tracking-widest">Advanced</span>
                     </div>
@@ -197,7 +197,7 @@ export default function VerbalAbilityTest() {
         </div>
         <div className="space-y-3">
            <h2 className="text-3xl font-display font-bold text-white tracking-tight">Syncing Mission Data</h2>
-           <p className="text-slate-400 text-lg font-medium">Calibrating 20 high-fidelity objectives for <br/><span className="text-primary-400 font-bold">{selectedTopic}</span></p>
+           <p className="text-slate-400 text-lg font-medium">Calibrating 10 high-fidelity objectives for <br/><span className="text-primary-400 font-bold">{selectedTopic}</span></p>
         </div>
       </div>
     );
