@@ -32,47 +32,24 @@ router.post('/generate', auth, async (req, res) => {
       `;
     }
 
-    // We'll ask for 10 questions for better stability and speed.
-    const randomSeed = Math.random().toString(36).substring(7);
-    const prompt = `
-      Generate a professional 10-question English Verbal Ability Test for the topic: "${promptTopic}".
-      PATTERN: Competitive Exams (SSC, Banking, GRE style).
-      RANDOM SEED: ${randomSeed}.
-      
-      ${patternInstruction}
+    // Generate 30 questions using 3 parallel requests (10 each) to stay within token limits and avoid timeouts.
+    console.log(`[VerbalTest] Generating 30 questions for ${topic} in parallel...`);
+    
+    const questionChunks = await Promise.all([
+      generateJSON(getPrompt(promptTopic, patternInstruction, 1), 'llama-3.3-70b-versatile'),
+      generateJSON(getPrompt(promptTopic, patternInstruction, 2), 'llama-3.3-70b-versatile'),
+      generateJSON(getPrompt(promptTopic, patternInstruction, 3), 'llama-3.3-70b-versatile')
+    ]);
 
-      Requirements:
-      1. EXACTLY 10 questions in the array.
-      2. Provide exactly 4 distinct multiple-choice options for each question (unless it is Error Detection).
-      3. CRITICAL: DO NOT include labels like "A)", "B.", or "1." inside the option strings.
-      4. CRITICAL: DO NOT use single letters (like "A", "B", "C", "D") as the content of the options. Every option must be a valid word or phrase relevant to the topic.
-      5. RANDOMIZE CORRECT ANSWERS: Ensure the correct answer index (0, 1, 2, or 3) is evenly distributed across all 10 questions.
-      6. EXPLANATIONS: Every question MUST have a clear, helpful "explanation" field.
-      7. Format: Return ONLY a JSON object with a "questions" key.
-      
-      Example:
-      {
-        "questions": [
-          {
-            "question": "The book is __________ the table.",
-            "options": ["on", "at", "in", "by"],
-            "correct": 0,
-            "explanation": "We use 'on' for surfaces."
-          }
-        ]
-      }
-    `;
+    const allQuestions = questionChunks.flatMap(chunk => chunk.questions || []);
 
-    console.log(`[VerbalTest] Generating ${topic} with Groq AI (Llama 70B)...`);
-    const result = await generateJSON(prompt, 'llama-3.3-70b-versatile');
-
-    if (!result || !Array.isArray(result.questions)) {
-      throw new Error('Invalid response format from AI');
+    if (allQuestions.length === 0) {
+      throw new Error('Failed to generate any questions');
     }
 
     res.json({
       topic,
-      questions: result.questions.slice(0, 10)
+      questions: allQuestions.slice(0, 30)
     });
   } catch (err) {
     console.error('Verbal Test Generation Error:', err);
@@ -82,5 +59,23 @@ router.post('/generate', auth, async (req, res) => {
     });
   }
 });
+
+// Helper function to create the prompt
+function getPrompt(topic, pattern, part) {
+  const seed = Math.random().toString(36).substring(7);
+  return `
+    Generate 10 UNIQUE professional English Verbal Ability questions (Part ${part}) for: "${topic}".
+    PATTERN: Competitive Exams (SSC, Banking).
+    SEED: ${seed}.
+    ${pattern}
+
+    Requirements:
+    1. Exactly 10 questions.
+    2. 4 distinct options per question.
+    3. NO "A)", "B)" labels in options.
+    4. NO single-letter placeholders.
+    5. Return ONLY a JSON object with a "questions" key.
+  `;
+}
 
 export default router;
