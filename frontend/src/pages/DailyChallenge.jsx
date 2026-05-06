@@ -181,17 +181,7 @@ export default function DailyChallenge() {
         </header>
 
         {/* Progress System */}
-        <div className="px-6 py-6 md:py-8">
-           <div className="flex justify-between items-end mb-4 px-1">
-              <div>
-                 <p className="text-[10px] font-black text-primary-400 uppercase tracking-[0.2em] mb-1">Current Protocol</p>
-                 <h2 className="text-xl md:text-2xl font-display font-bold text-white tracking-tight">Daily Global Objective</h2>
-              </div>
-              <div className="text-right">
-                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Question</p>
-                 <p className="text-sm font-black text-white">{currentIndex + 1} / {challenge.questions.length}</p>
-              </div>
-           </div>
+        <div className="px-6 py-4 md:py-6">
            <div className="h-2 bg-dark-900 rounded-full overflow-hidden p-0.5 border border-white/5">
              <motion.div 
                initial={{ width: 0 }}
@@ -202,7 +192,7 @@ export default function DailyChallenge() {
            </div>
         </div>
 
-        <div className="px-6 space-y-6 md:space-y-8 pb-20">
+        <div className="px-6 space-y-6 pb-20">
           {/* Question Card */}
           <AnimatePresence mode="wait">
              <motion.div 
@@ -210,19 +200,29 @@ export default function DailyChallenge() {
                initial={{ opacity: 0, x: 20 }}
                animate={{ opacity: 1, x: 0 }}
                exit={{ opacity: 0, x: -20 }}
-               className="glass-card p-1 border-white/5 bg-gradient-to-br from-primary-500/10 to-transparent"
+               className="glass-card overflow-hidden border-white/5 bg-gradient-to-br from-primary-600 to-primary-900 shadow-2xl"
              >
-               <div className="p-6 md:p-10 text-center space-y-4 md:space-y-6">
-                 <h2 className="text-lg md:text-2xl font-display font-bold text-white leading-tight md:leading-relaxed tracking-tight">
+               {/* Question Header */}
+               <div className="bg-dark-950/40 px-6 py-3 border-b border-white/5 text-center">
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary-200 opacity-80">
+                    Question {currentIndex + 1} of {challenge.questions.length}
+                  </span>
+               </div>
+
+               {/* Question Body */}
+               <div className="p-8 md:p-12 text-center space-y-6">
+                 <h2 className="text-base md:text-2xl font-display font-bold text-white leading-relaxed tracking-tight">
                    {currentQ.question}
                  </h2>
-                 <div className="flex justify-center gap-6">
-                    <button onClick={() => speak(currentQ.question)} className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-slate-500 hover:text-white transition-all border border-white/5">
-                      <Volume2 size={22} />
+                 
+                 {/* Action Row */}
+                 <div className="flex justify-center gap-4 pt-2">
+                    <button onClick={() => speak(currentQ.question)} className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-all border border-white/10">
+                      <Volume2 size={18} />
                     </button>
-                    <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-slate-500 border border-white/5">
-                      <Languages size={22} />
-                    </div>
+                    <button className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center text-white/60 hover:text-white hover:bg-white/20 transition-all border border-white/10">
+                      <Languages size={18} />
+                    </button>
                  </div>
                </div>
              </motion.div>
@@ -244,15 +244,23 @@ export default function DailyChallenge() {
               return (
                 <motion.button
                   key={idx}
-                  whileHover={!isAnswered ? { scale: 1.02 } : {}}
+                  whileHover={!isAnswered ? { scale: 1.01 } : {}}
                   disabled={isAnswered}
                   onClick={() => handleOptionSelect(idx)}
-                  className={`group relative text-left p-4 md:p-5 rounded-2xl border transition-all duration-300 flex items-center gap-4 md:gap-5 ${variant}`}
+                  className={`group relative text-left p-5 rounded-2xl border transition-all duration-300 flex flex-col gap-4 ${variant}`}
                 >
-                  <div className={`w-10 h-10 rounded-xl border flex items-center justify-center text-xs font-black shrink-0 transition-all ${isAnswered && (isCorrect || isSelected) ? 'bg-white/10 border-white/20' : 'bg-white/5 border-white/10'}`}>
-                    {isAnswered && isCorrect ? <CheckCircle size={18} /> : isAnswered && isSelected ? <XCircle size={18} /> : String.fromCharCode(65 + idx)}
+                  <div className="flex items-center gap-5">
+                    <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-[10px] font-black shrink-0 transition-all ${isAnswered && (isCorrect || isSelected) ? 'border-white/40 bg-white/10' : 'border-white/10 bg-white/5'}`}>
+                      {isAnswered && isCorrect ? <CheckCircle size={14} /> : isAnswered && isSelected ? <XCircle size={14} /> : String.fromCharCode(65 + idx)}
+                    </div>
+                    <span className="flex-1 font-bold tracking-tight text-sm md:text-base leading-snug">{option}</span>
                   </div>
-                  <span className="flex-1 font-bold tracking-tight text-sm md:text-base">{option}</span>
+
+                  {/* Option Utility Icons */}
+                  <div className="flex gap-4 px-1 opacity-20 group-hover:opacity-60 transition-all duration-300">
+                    <Volume2 size={14} />
+                    <Languages size={14} />
+                  </div>
                 </motion.button>
               );
             })}
