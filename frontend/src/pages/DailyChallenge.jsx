@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Target, Timer, CheckCircle, XCircle, ChevronRight, Zap, Trophy, 
-  Globe, Flame, ArrowLeft, Volume2, Languages, Lightbulb, RefreshCw
+  Globe, Flame, ArrowLeft, Volume2, Languages, Lightbulb, RefreshCw,
+  Sparkles, Activity, Shield
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import XPReward from '../components/XPReward';
@@ -61,8 +63,6 @@ export default function DailyChallenge() {
     try {
       const res = await axios.get('/api/challenge/daily');
       setData(res.data);
-      // We don't automatically jump to stage 2 even if submission exists, 
-      // because user can now attempt more than once.
     } catch (err) {
       toast.error('Failed to load Daily Challenge');
     } finally {
@@ -118,7 +118,6 @@ export default function DailyChallenge() {
       }
       setStage(2);
       fetchProfile();
-      // Update global stats by refetching challenge data
       const refreshRes = await axios.get('/api/challenge/daily');
       setData(refreshRes.data);
     } catch (err) {
@@ -146,8 +145,9 @@ export default function DailyChallenge() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+        <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
+        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Syncing Challenge Data</p>
       </div>
     );
   }
@@ -160,185 +160,229 @@ export default function DailyChallenge() {
   // Quiz View
   if (stage === 1) {
     return (
-      <div className="max-w-xl mx-auto min-h-[90vh] flex flex-col bg-dark-900 text-white pb-10">
+      <div className="max-w-2xl mx-auto flex flex-col min-h-[80vh] text-white">
         {reward && <XPReward {...reward} onClose={() => setReward(null)} />}
 
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sticky top-0 bg-dark-900 z-20 border-b border-white/5">
-          <button onClick={() => navigate(-1)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-            <ArrowLeft size={24} />
+        <header className="flex items-center justify-between p-6 bg-dark-950/20 sticky top-0 z-30 backdrop-blur-xl border-b border-white/5">
+          <button onClick={() => navigate(-1)} className="w-11 h-11 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors border border-white/5">
+            <ArrowLeft size={20} />
           </button>
-          <div className="flex gap-3">
-            <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/20 px-3 py-1 rounded-full">
-              <span className="w-5 h-5 bg-green-500 text-dark-900 rounded-full flex items-center justify-center text-[10px] font-bold">{correctCount}</span>
-              <span className="text-xs font-bold text-green-400">Correct</span>
+          <div className="flex gap-4">
+            <div className="flex items-center gap-3 bg-accent-emerald/10 border border-accent-emerald/20 px-4 py-2 rounded-2xl">
+              <div className="w-2 h-2 rounded-full bg-accent-emerald animate-pulse shadow-glow" />
+              <span className="text-xs font-black text-accent-emerald uppercase tracking-widest">{correctCount}</span>
             </div>
-            <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 px-3 py-1 rounded-full">
-              <span className="w-5 h-5 bg-red-500 text-dark-900 rounded-full flex items-center justify-center text-[10px] font-bold">{wrongCount}</span>
-              <span className="text-xs font-bold text-red-400">Wrong</span>
+            <div className="flex items-center gap-3 bg-accent-rose/10 border border-accent-rose/20 px-4 py-2 rounded-2xl">
+              <div className="w-2 h-2 rounded-full bg-accent-rose shadow-glow" />
+              <span className="text-xs font-black text-accent-rose uppercase tracking-widest">{wrongCount}</span>
             </div>
           </div>
-        </div>
+        </header>
 
-        {/* Progress Bar */}
-        <div className="w-full h-1.5 bg-dark-700">
-          <div 
-            className="h-full bg-green-500 transition-all duration-500 ease-out" 
-            style={{ width: `${((currentIndex + (isAnswered ? 1 : 0)) / challenge.questions.length) * 100}%` }}
-          />
-        </div>
-
-        <div className="p-6 flex-1 space-y-6">
-          {/* Question Card */}
-          <div className="glass-card border-primary-500/30 overflow-hidden">
-            <div className="bg-primary-500/10 p-3 text-center border-b border-primary-500/20">
-              <span className="text-xs font-bold text-primary-400 uppercase tracking-widest">
-                QUESTION {currentIndex + 1} OF {challenge.questions.length}
-              </span>
-            </div>
-            <div className="p-6">
-              <h2 className="text-xl font-medium text-center text-primary-100 mb-6 leading-relaxed">
-                {currentQ.question}
-              </h2>
-              <div className="flex justify-center gap-4">
-                <button onClick={() => speak(currentQ.question)} className="p-2 text-slate-400 hover:text-white transition-colors">
-                  <Volume2 size={20} />
-                </button>
-                <button className="p-2 text-slate-400 hover:text-white transition-colors">
-                  <Languages size={20} />
-                </button>
+        {/* Progress System */}
+        <div className="px-6 py-8">
+           <div className="flex justify-between items-end mb-4 px-1">
+              <div>
+                 <p className="text-[10px] font-black text-primary-400 uppercase tracking-[0.2em] mb-1">Current Protocol</p>
+                 <h2 className="text-2xl font-display font-bold text-white tracking-tight">Daily Global Objective</h2>
               </div>
-            </div>
-          </div>
+              <div className="text-right">
+                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Question</p>
+                 <p className="text-sm font-black text-white">{currentIndex + 1} / {challenge.questions.length}</p>
+              </div>
+           </div>
+           <div className="h-2 bg-dark-900 rounded-full overflow-hidden p-0.5 border border-white/5">
+             <motion.div 
+               initial={{ width: 0 }}
+               animate={{ width: `${((currentIndex + (isAnswered ? 1 : 0)) / challenge.questions.length) * 100}%` }}
+               transition={{ duration: 0.5 }}
+               className="h-full bg-gradient-to-r from-primary-600 to-primary-400 rounded-full shadow-glow" 
+             />
+           </div>
+        </div>
 
-          {/* Options */}
-          <div className="space-y-3">
+        <div className="px-6 space-y-8 pb-20">
+          {/* Question Card */}
+          <AnimatePresence mode="wait">
+             <motion.div 
+               key={currentIndex}
+               initial={{ opacity: 0, x: 20 }}
+               animate={{ opacity: 1, x: 0 }}
+               exit={{ opacity: 0, x: -20 }}
+               className="glass-card p-1 border-white/5 bg-gradient-to-br from-primary-500/10 to-transparent"
+             >
+               <div className="p-10 text-center space-y-6">
+                 <h2 className="text-2xl font-display font-bold text-white leading-relaxed tracking-tight">
+                   {currentQ.question}
+                 </h2>
+                 <div className="flex justify-center gap-6">
+                    <button onClick={() => speak(currentQ.question)} className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-slate-500 hover:text-white transition-all border border-white/5">
+                      <Volume2 size={22} />
+                    </button>
+                    <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-slate-500 border border-white/5">
+                      <Languages size={22} />
+                    </div>
+                 </div>
+               </div>
+             </motion.div>
+          </AnimatePresence>
+
+          {/* Options Grid */}
+          <div className="grid grid-cols-1 gap-4">
             {currentQ.options.map((option, idx) => {
-              let statusClass = "border-white/10 text-slate-300 hover:border-white/20 hover:bg-white/5";
+              const isCorrect = idx === currentQ.correct;
+              const isSelected = idx === selectedOption;
+              
+              let variant = "bg-dark-900/50 border-white/5 text-slate-400 hover:border-white/10 hover:bg-white/5";
               if (isAnswered) {
-                if (idx === currentQ.correct) {
-                  statusClass = "border-green-500 bg-green-500 text-white font-bold shadow-[0_0_20px_rgba(34,197,94,0.3)]";
-                } else if (idx === selectedOption) {
-                  statusClass = "border-red-500 bg-red-500 text-white font-bold shadow-[0_0_20px_rgba(239,68,68,0.3)]";
-                } else {
-                  statusClass = "border-white/5 text-slate-500 opacity-50";
-                }
+                if (isCorrect) variant = "bg-accent-emerald/20 border-accent-emerald/40 text-accent-emerald shadow-[0_0_20px_rgba(16,185,129,0.1)]";
+                else if (isSelected) variant = "bg-accent-rose/20 border-accent-rose/40 text-accent-rose shadow-[0_0_20px_rgba(244,63,94,0.1)]";
+                else variant = "bg-dark-950 border-white/5 text-slate-600 opacity-40";
               }
 
               return (
-                <button
+                <motion.button
                   key={idx}
+                  whileHover={!isAnswered ? { scale: 1.02 } : {}}
                   disabled={isAnswered}
                   onClick={() => handleOptionSelect(idx)}
-                  className={`w-full text-left p-4 rounded-xl border transition-all duration-300 flex items-center gap-4 ${statusClass}`}
+                  className={`group relative text-left p-5 rounded-2xl border transition-all duration-300 flex items-center gap-5 ${variant}`}
                 >
-                  <div className={`w-6 h-6 rounded-full border flex items-center justify-center text-xs font-bold shrink-0 ${isAnswered && (idx === currentQ.correct || idx === selectedOption) ? 'border-white text-white' : 'border-slate-500 text-slate-500'}`}>
-                    {isAnswered && idx === currentQ.correct ? '✓' : String.fromCharCode(65 + idx)}
+                  <div className={`w-10 h-10 rounded-xl border flex items-center justify-center text-xs font-black shrink-0 transition-all ${isAnswered && (isCorrect || isSelected) ? 'bg-white/10 border-white/20' : 'bg-white/5 border-white/10'}`}>
+                    {isAnswered && isCorrect ? <CheckCircle size={18} /> : isAnswered && isSelected ? <XCircle size={18} /> : String.fromCharCode(65 + idx)}
                   </div>
-                  <span className="flex-1">{option}</span>
-                </button>
+                  <span className="flex-1 font-bold tracking-tight">{option}</span>
+                </motion.button>
               );
             })}
           </div>
 
           {/* Explanation Box */}
-          {isAnswered && (
-            <div className="animate-slide-up">
-              <div className="bg-primary-500/10 border border-primary-500/20 p-5 rounded-2xl">
-                <div className="flex items-center gap-2 text-primary-400 font-bold text-sm mb-2">
-                  <Lightbulb size={18} />
-                  <span>Here is the explanation</span>
+          <AnimatePresence>
+             {isAnswered && (
+               <motion.div 
+                 initial={{ opacity: 0, y: 10 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 className="space-y-4"
+               >
+                 <div className="glass-card p-8 bg-primary-500/5 border-primary-500/20 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-primary-500/5 rounded-full -mr-12 -mt-12" />
+                    <div className="flex items-center gap-3 text-primary-400 font-black text-[10px] uppercase tracking-widest mb-4">
+                      <Lightbulb size={16} />
+                      <span>Neural Insight</span>
+                    </div>
+                    <p className="text-slate-300 text-sm leading-relaxed font-medium">
+                      {currentQ.explanation}
+                    </p>
+                 </div>
+
+                 {!showStageBreak && (
+                    <button 
+                      onClick={handleNext}
+                      className="w-full btn-primary py-5 flex items-center justify-center gap-3 rounded-2xl shadow-glow text-base"
+                    >
+                      Continue Protocol <ChevronRight size={20} />
+                    </button>
+                 )}
+               </motion.div>
+             )}
+          </AnimatePresence>
+
+          {/* Stage Break */}
+          <AnimatePresence>
+            {showStageBreak && (
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="glass-card p-10 border-accent-amber/30 bg-accent-amber/5 text-center space-y-8"
+              >
+                <div>
+                   <div className="w-16 h-16 bg-accent-amber/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                      <Activity size={32} className="text-accent-amber" />
+                   </div>
+                   <h3 className="text-2xl font-display font-bold text-white tracking-tight">Phase 1 Normalized</h3>
+                   <p className="text-slate-400 text-sm mt-2">Extend the mission for 5 more objectives to <span className="text-accent-amber font-black italic">Double Rewards</span>, or extract now.</p>
                 </div>
-                <p className="text-slate-300 text-sm leading-relaxed">
-                  {currentQ.explanation}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Early Submit Stage Break */}
-          {showStageBreak && (
-            <div className="glass-card p-6 border-yellow-500/30 bg-yellow-500/5 text-center mt-4">
-              <h3 className="font-bold text-white mb-2">Stage 1 Complete!</h3>
-              <p className="text-sm text-slate-400 mb-6">Continue for 5 more questions and double the XP, or submit now.</p>
-              <div className="flex gap-3">
-                <button onClick={() => submitQuiz(5)} className="btn-ghost flex-1">Submit (5 Qs)</button>
-                <button onClick={() => { setShowStageBreak(false); handleNext(); }} className="btn-primary flex-1">Stage 2</button>
-              </div>
-            </div>
-          )}
+                <div className="grid grid-cols-2 gap-4">
+                  <button onClick={() => submitQuiz(5)} className="btn-ghost py-4 text-[10px] font-black uppercase tracking-widest border-white/5">Extract (5 XP)</button>
+                  <button onClick={() => { setShowStageBreak(false); handleNext(); }} className="btn-primary py-4 text-[10px] font-black uppercase tracking-widest shadow-glow">Advance Phase 2</button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-
-        {/* Floating next button */}
-        {isAnswered && !showStageBreak && (
-          <div className="p-6">
-             <button 
-              onClick={handleNext}
-              className="w-full btn-primary py-4 flex items-center justify-center gap-2 rounded-2xl shadow-xl shadow-primary-500/20"
-            >
-              Next Question <ChevronRight size={18} />
-            </button>
-          </div>
-        )}
       </div>
     );
   }
 
   // Summary View
   return (
-    <div className="max-w-2xl mx-auto space-y-6 animate-slide-up pb-20">
-      <div className="glass-card p-10 text-center border-primary-500/20 bg-gradient-to-b from-primary-500/10 to-transparent">
-        <div className="w-24 h-24 bg-dark-700/50 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-white/5 shadow-2xl relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary-500 to-accent-blue opacity-20 group-hover:opacity-40 transition-opacity"></div>
-          <Trophy size={48} className="text-primary-400 relative z-10" />
-        </div>
-        
-        <h2 className="text-3xl font-display font-bold text-white mb-2">
-          {result?.score >= 80 ? "Excellent Work!" : result?.score >= 50 ? "Good work finishing the quiz" : "Great effort!"}
-        </h2>
-        <p className="text-slate-400 mb-8 max-w-sm mx-auto">
-          {result?.score >= 50 ? "Let's turn today's mistakes into tomorrow's wins" : "Every day is a chance to get better. Keep practicing!"}
-        </p>
-        
-        <div className="flex flex-wrap justify-center gap-6 mb-10">
-          <div className="bg-dark-800 border border-white/5 rounded-2xl p-6 min-w-[140px]">
-            <p className="text-xs text-green-500 uppercase font-black tracking-widest mb-1">Correct</p>
-            <p className="text-4xl font-bold text-white">{result?.correct}</p>
+    <div className="max-w-3xl mx-auto py-10 px-6 space-y-10 animate-slide-up">
+      <div className="glass-card p-1 border-white/5 bg-gradient-to-br from-primary-500/10 to-transparent shadow-2xl">
+        <div className="p-12 text-center flex flex-col items-center">
+          <div className="w-24 h-24 bg-dark-950 rounded-[32px] flex items-center justify-center mb-8 border border-white/5 shadow-inner relative group overflow-hidden">
+             <div className="absolute inset-0 bg-primary-500/10 group-hover:bg-primary-500/20 transition-colors" />
+             <Trophy size={48} className="text-primary-400 shadow-glow relative z-10" />
           </div>
-          <div className="bg-dark-800 border border-white/5 rounded-2xl p-6 min-w-[140px]">
-            <p className="text-xs text-red-500 uppercase font-black tracking-widest mb-1">Wrong</p>
-            <p className="text-4xl font-bold text-white">{result?.total - result?.correct}</p>
+          
+          <h2 className="text-4xl md:text-5xl font-display font-bold text-white tracking-tight mb-4">
+            Mission <span className="shimmer-text">Deciphered</span>
+          </h2>
+          <p className="text-slate-400 text-lg font-medium max-w-sm mb-10 leading-relaxed">
+            {result?.score >= 80 ? "Exemplary performance! You've dominated today's global protocol." : "Solid progress recorded. Every mistake is a recalibration for success."}
+          </p>
+          
+          <div className="grid grid-cols-2 gap-6 w-full max-w-md mb-12">
+            <div className="bg-dark-950 border border-white/5 rounded-3xl p-8 transition-transform hover:scale-105">
+              <p className="text-[10px] text-accent-emerald uppercase font-black tracking-widest mb-2">Verified</p>
+              <p className="text-5xl font-black text-white leading-none">{result?.correct}</p>
+            </div>
+            <div className="bg-dark-950 border border-white/5 rounded-3xl p-8 transition-transform hover:scale-105">
+              <p className="text-[10px] text-accent-rose uppercase font-black tracking-widest mb-2">Flags</p>
+              <p className="text-5xl font-black text-white leading-none">{result?.total - result?.correct}</p>
+            </div>
           </div>
-        </div>
 
-        <div className="space-y-3 max-w-sm mx-auto">
-          <button onClick={resetQuiz} className="btn-primary w-full py-4 flex items-center justify-center gap-2 rounded-2xl">
-            <RefreshCw size={18} /> Try Again
-          </button>
-          <button onClick={() => navigate('/dashboard')} className="btn-ghost w-full py-4 rounded-2xl">
-            Back to Home Screen
-          </button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+            <button onClick={resetQuiz} className="btn-primary py-5 flex items-center justify-center gap-3 rounded-2xl shadow-glow font-black text-xs uppercase tracking-[0.2em]">
+              <RefreshCw size={18} /> Re-Initiate
+            </button>
+            <button onClick={() => navigate('/dashboard')} className="btn-ghost py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] border-white/5">
+              Command Center
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Global Stats */}
-      <div className="glass-card p-6 overflow-hidden relative">
-        <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
-        <h3 className="font-bold text-white mb-6 flex items-center gap-2">
-          <Globe size={18} className="text-blue-400" /> Global Community Stats
+      {/* Global Analytics */}
+      <div className="glass-card p-10 border-white/5 bg-dark-900/40 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
+        
+        <h3 className="text-xl font-display font-bold text-white mb-8 flex items-center gap-3">
+          <Globe size={20} className="text-primary-400" /> Global Intelligence
         </h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <div className="bg-blue-500/5 border border-blue-500/10 rounded-2xl p-5">
-            <p className="text-xs text-blue-300 font-bold mb-1 flex items-center gap-1"><Trophy size={12}/> Average Score</p>
-            <p className="text-3xl font-bold text-blue-400">{Math.round(challenge.averageScore)}%</p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+          <div className="space-y-2">
+             <div className="flex items-center gap-2 mb-1">
+                <Trophy size={14} className="text-accent-amber"/>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Average Mastery</p>
+             </div>
+             <p className="text-3xl font-black text-white tracking-tight">{Math.round(challenge.averageScore)}%</p>
           </div>
-          <div className="bg-purple-500/5 border border-purple-500/10 rounded-2xl p-5">
-            <p className="text-xs text-purple-300 font-bold mb-1 flex items-center gap-1"><Target size={12}/> Total Players</p>
-            <p className="text-3xl font-bold text-purple-400">{challenge.totalCompletions}</p>
+          <div className="space-y-2">
+             <div className="flex items-center gap-2 mb-1">
+                <Shield size={14} className="text-primary-400"/>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Active Operatives</p>
+             </div>
+             <p className="text-3xl font-black text-white tracking-tight">{challenge.totalCompletions}</p>
           </div>
-          <div className="bg-orange-500/5 border border-orange-500/10 rounded-2xl p-5 col-span-2 md:col-span-1">
-            <p className="text-xs text-orange-300 font-bold mb-1 flex items-center gap-1"><Flame size={12}/> Hardcore (10 Qs)</p>
-            <p className="text-3xl font-bold text-orange-400">{challenge.totalStage2Completions}</p>
+          <div className="space-y-2">
+             <div className="flex items-center gap-2 mb-1">
+                <Flame size={14} className="text-accent-rose"/>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Hardcore Elite</p>
+             </div>
+             <p className="text-3xl font-black text-white tracking-tight">{challenge.totalStage2Completions}</p>
           </div>
         </div>
       </div>

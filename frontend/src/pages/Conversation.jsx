@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   MessageCircle, Play, Square, Mic, MicOff, Volume2, VolumeX,
   Send, RotateCcw, ChevronRight, Zap, Star, Lock, Trophy,
   AlertTriangle, CheckCircle, XCircle, Clock, BarChart2,
   BookOpen, Target, Lightbulb, ArrowLeft,
   Flame, Award, Users, Briefcase, Globe, GraduationCap, Heart,
-  Search, Upload, Check, Crown
+  Search, Upload, Check, Crown, Sparkles, MessageSquare, Info
 } from 'lucide-react';
 
 import XPReward from '../components/XPReward';
@@ -31,17 +32,10 @@ const CATEGORY_ICONS = {
 };
 
 const DIFFICULTY_COLORS = {
-  beginner: 'text-green-400 border-green-500/30 bg-green-500/10',
-  intermediate: 'text-yellow-400 border-yellow-500/30 bg-yellow-500/10',
-  advanced: 'text-red-400 border-red-500/30 bg-red-500/10',
-  challenge: 'text-purple-400 border-purple-500/30 bg-purple-500/10',
-};
-
-const MODE_INFO = {
-  free: { label: 'Free Mode', desc: 'No hints, full immersion', icon: '🎯' },
-  guided: { label: 'Guided Mode', desc: 'AI gives hints when needed', icon: '💡' },
-  correction: { label: 'Correction Mode', desc: 'AI corrects every mistake inline', icon: '✏️' },
-  silent: { label: 'Silent Mode', desc: 'Mistakes tracked silently', icon: '🔇' },
+  beginner: 'text-accent-emerald border-accent-emerald/20 bg-accent-emerald/10',
+  intermediate: 'text-accent-amber border-accent-amber/20 bg-accent-amber/10',
+  advanced: 'text-accent-rose border-accent-rose/20 bg-accent-rose/10',
+  challenge: 'text-primary-400 border-primary-400/20 bg-primary-400/10',
 };
 
 const PROFESSIONAL_ROLES = [
@@ -67,24 +61,32 @@ const INTERVIEWERS = [
 ];
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
-function ScoreRing({ score, size = 80, label }) {
-  const radius = (size - 10) / 2;
+function ScoreRing({ score, size = 100, label }) {
+  const radius = (size - 12) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (score / 100) * circumference;
-  const color = score >= 80 ? '#22c55e' : score >= 60 ? '#fbbf24' : '#ef4444';
+  const color = score >= 80 ? '#10b981' : score >= 60 ? '#f59e0b' : '#ef4444';
 
   return (
-    <div className="flex flex-col items-center gap-1">
-      <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size/2} cy={size/2} r={radius} stroke="#1e2d4a" strokeWidth="8" fill="none" />
-        <circle cx={size/2} cy={size/2} r={radius} stroke={color} strokeWidth="8" fill="none"
-          strokeDasharray={circumference} strokeDashoffset={offset}
-          strokeLinecap="round" style={{ transition: 'stroke-dashoffset 1s ease' }} />
-      </svg>
-      <div className="text-center -mt-14 mb-6">
-        <div className="text-xl font-bold" style={{ color }}>{score}%</div>
+    <div className="flex flex-col items-center gap-3">
+      <div className="relative" style={{ width: size, height: size }}>
+        <svg width={size} height={size} className="-rotate-90">
+          <circle cx={size/2} cy={size/2} r={radius} stroke="rgba(255,255,255,0.05)" strokeWidth="10" fill="none" />
+          <motion.circle 
+            initial={{ strokeDashoffset: circumference }}
+            animate={{ strokeDashoffset: offset }}
+            transition={{ duration: 1.5, ease: "easeOut" }}
+            cx={size/2} cy={size/2} r={radius} stroke={color} strokeWidth="10" fill="none"
+            strokeDasharray={circumference}
+            strokeLinecap="round" 
+            className="shadow-glow"
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center flex-col">
+          <span className="text-2xl font-black text-white">{score}%</span>
+        </div>
       </div>
-      {label && <p className="text-xs text-slate-400 text-center">{label}</p>}
+      {label && <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">{label}</p>}
     </div>
   );
 }
@@ -94,47 +96,49 @@ function LiveAnalysis({ errors, messageCount, scores }) {
   const stats = [
     { label: 'Grammar', val: avg(scores.grammar) },
     { label: 'Vocabulary', val: avg(scores.vocabulary) },
-    { label: 'Formality', val: avg(scores.formality) },
-    { label: 'Relevance', val: avg(scores.relevance) },
+    { label: 'Fluency', val: avg(scores.formality) },
+    { label: 'Logic', val: avg(scores.relevance) },
   ];
 
-  const getColor = (v) => v >= 80 ? 'text-green-400' : v >= 60 ? 'text-yellow-400' : 'text-red-400';
-  const getBar = (v) => v >= 80 ? 'bg-green-500' : v >= 60 ? 'bg-yellow-500' : 'bg-red-500';
-
   return (
-    <div className="glass-card p-4 space-y-4">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-        <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Live Analysis</span>
+    <div className="glass-card p-6 space-y-6 border-white/5 bg-dark-900/40">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 bg-accent-emerald rounded-full animate-pulse shadow-[0_0_8px_#10b981]" />
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Neural Analysis</span>
+        </div>
+        <span className="text-[10px] font-black text-primary-400">{messageCount} EXCH</span>
       </div>
-      <div className="space-y-2">
+      <div className="grid grid-cols-2 gap-4">
         {stats.map(({ label, val }) => (
-          <div key={label}>
-            <div className="flex justify-between text-xs mb-1">
-              <span className="text-slate-400">{label}</span>
-              <span className={getColor(val)}>{val}%</span>
+          <div key={label} className="space-y-1.5">
+            <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-slate-500">
+              <span>{label}</span>
+              <span className="text-white">{val}%</span>
             </div>
-            <div className="h-1.5 bg-dark-600 rounded-full overflow-hidden">
-              <div className={`h-full ${getBar(val)} rounded-full transition-all duration-500`} style={{ width: `${val}%` }} />
+            <div className="h-1 bg-dark-950 rounded-full overflow-hidden p-0.5 border border-white/5">
+              <motion.div 
+                animate={{ width: `${val}%` }}
+                className="h-full bg-primary-500 rounded-full" 
+              />
             </div>
           </div>
         ))}
       </div>
-      <div className="border-t border-white/5 pt-3">
-        <p className="text-xs text-slate-500">Messages sent: {messageCount}</p>
-        {errors.length > 0 && (
-          <div className="mt-2">
-            <p className="text-[10px] text-amber-400 uppercase tracking-tighter mb-1">Recent Flags</p>
-            <div className="space-y-1">
-              {errors.slice(-2).map((e, i) => (
-                <div key={i} className="text-[10px] bg-red-500/5 border border-red-500/10 rounded-lg p-2 text-slate-300">
-                  <span className="line-through text-red-400/70">"{e.original}"</span> → <span className="text-green-400">"{e.correction}"</span>
-                </div>
-              ))}
-            </div>
+      {errors.length > 0 && (
+        <div className="pt-4 border-t border-white/5">
+          <p className="text-[9px] font-black text-accent-amber uppercase tracking-widest mb-3">Recent Corrections</p>
+          <div className="space-y-2">
+            {errors.slice(-2).map((e, i) => (
+              <div key={i} className="text-[10px] bg-dark-950/50 border border-white/5 rounded-xl p-3 leading-relaxed">
+                <span className="text-slate-500 line-through">"{e.original}"</span>
+                <span className="mx-1 text-primary-400">→</span>
+                <span className="text-white font-bold">"{e.correction}"</span>
+              </div>
+            ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -143,52 +147,80 @@ function ReportCard({ report, scenario, duration, xpEarned, coinsEarned, onResta
   const formatDuration = (s) => `${Math.floor(s / 60)}m ${s % 60}s`;
   const scoreItems = [
     { label: 'Grammar', val: report.grammarScore, icon: '✏️' },
-    { label: 'Vocabulary', val: report.vocabularyScore, icon: '📚' },
+    { label: 'Vocab', val: report.vocabularyScore, icon: '📚' },
     { label: 'Fluency', val: report.fluencyScore, icon: '🗣️' },
-    { label: 'Formality', val: report.formalityScore, icon: '👔' },
-    { label: 'Confidence', val: report.confidenceScore, icon: '💪' },
-    { label: 'Relevance', val: report.relevanceScore, icon: '🎯' },
+    { label: 'Formal', val: report.formalityScore, icon: '👔' },
+    { label: 'Conf', val: report.confidenceScore, icon: '💪' },
+    { label: 'Rel', val: report.relevanceScore, icon: '🎯' },
   ];
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5 animate-slide-up pb-20">
-      <div className="glass-card p-6 text-center bg-gradient-to-br from-primary-500/10 to-accent-purple/10 border-primary-500/20">
-        <div className="text-4xl mb-2">{scenario?.emoji || scenario?.icon || '🎭'}</div>
-        <h2 className="text-2xl font-display font-bold text-white mb-1">{scenario?.title}</h2>
-        <p className="text-slate-400 text-sm mb-4">{scenario?.category || 'Professional Mock Interview'} • {formatDuration(duration)}</p>
-        <div className="flex justify-center mb-4"><ScoreRing score={report.overallScore} size={100} /></div>
-        <div className="flex justify-center gap-4 mt-4">
-          <div className="bg-accent-yellow/10 border border-accent-yellow/20 rounded-xl px-5 py-2.5">
-            <div className="flex items-center gap-1 text-accent-yellow font-bold text-xl"><Zap size={14}/>+{xpEarned}</div>
-            <span className="text-xs text-slate-400">XP</span>
-          </div>
-          <div className="bg-primary-500/10 border border-primary-500/20 rounded-xl px-5 py-2.5">
-            <div className="text-xl font-bold text-primary-400">{report.cefrLevel}</div>
-            <span className="text-xs text-slate-400">Level</span>
-          </div>
-        </div>
+    <div className="max-w-4xl mx-auto py-10 px-6 space-y-8 animate-slide-up">
+      <div className="text-center space-y-4">
+         <div className="inline-flex items-center gap-2 bg-primary-500/10 border border-primary-500/20 text-primary-400 text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-[0.2em]">
+            <Trophy size={12} className="fill-primary-400"/> Session Deciphered
+         </div>
+         <h2 className="text-4xl md:text-5xl font-display font-bold text-white tracking-tight">Performance Summary</h2>
       </div>
 
-      <div className="glass-card p-5">
-        <h3 className="font-display font-bold text-white mb-4 flex items-center gap-2"><BarChart2 size={18} /> Breakdown</h3>
-        <div className="grid grid-cols-2 gap-3">
-          {scoreItems.map(({ label, val, icon }) => (
-            <div key={label} className="bg-dark-600/50 rounded-xl p-3">
-              <div className="flex justify-between text-xs mb-2">
-                <span className="text-slate-400">{icon} {label}</span>
-                <span className="font-bold text-white">{val}%</span>
-              </div>
-              <div className="h-1.5 bg-dark-500 rounded-full overflow-hidden">
-                <div className="h-full bg-primary-500" style={{ width: `${val}%` }} />
-              </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+         <div className="lg:col-span-1 space-y-8">
+            <div className="glass-card p-8 border-white/5 bg-dark-900/40 text-center flex flex-col items-center">
+               <div className="text-5xl mb-6">{scenario?.emoji || scenario?.icon || '🎭'}</div>
+               <h3 className="text-xl font-bold text-white mb-1 tracking-tight">{scenario?.title}</h3>
+               <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-8">{formatDuration(duration)} MISSION</p>
+               <ScoreRing score={report.overallScore} size={140} label="Overall Mastery" />
+               <div className="mt-8 flex gap-3 w-full">
+                  <div className="flex-1 bg-dark-950 border border-white/5 rounded-2xl p-4">
+                     <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">XP EARNED</p>
+                     <p className="text-xl font-black text-primary-400 leading-none">+{xpEarned}</p>
+                  </div>
+                  <div className="flex-1 bg-dark-950 border border-white/5 rounded-2xl p-4">
+                     <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">CEFR RANK</p>
+                     <p className="text-xl font-black text-white leading-none">{report.cefrLevel}</p>
+                  </div>
+               </div>
             </div>
-          ))}
-        </div>
-      </div>
+         </div>
 
-      <div className="flex gap-3">
-        <button onClick={onBack} className="btn-ghost flex-1">Back to Home</button>
-        <button onClick={onRestart} className="btn-primary flex-1">Try Again</button>
+         <div className="lg:col-span-2 space-y-8">
+            <div className="glass-card p-8 border-white/5 bg-dark-900/40">
+               <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-3">
+                  <BarChart2 size={18} className="text-primary-400" /> Neural Breakdown
+               </h3>
+               <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                  {scoreItems.map(({ label, val, icon }) => (
+                    <div key={label} className="space-y-3">
+                       <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{icon} {label}</span>
+                          <span className="text-xs font-black text-white">{val}%</span>
+                       </div>
+                       <div className="h-1.5 bg-dark-950 rounded-full overflow-hidden p-0.5 border border-white/5">
+                          <motion.div 
+                             initial={{ width: 0 }}
+                             animate={{ width: `${val}%` }}
+                             className="h-full bg-primary-500 rounded-full" 
+                          />
+                       </div>
+                    </div>
+                  ))}
+               </div>
+            </div>
+
+            <div className="glass-card p-8 border-white/5 bg-dark-900/40">
+               <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-3">
+                  <Lightbulb size={18} className="text-accent-amber" /> AI Insights
+               </h3>
+               <p className="text-slate-400 text-sm leading-relaxed font-medium italic">
+                 "Your articulation during the {scenario?.title} simulation was impressive. Focus on refining your use of complex transition phrases and maintaining formal structures in professional contexts."
+               </p>
+            </div>
+
+            <div className="flex gap-4">
+               <button onClick={onBack} className="btn-ghost flex-1 py-4 text-sm font-black uppercase tracking-widest border-white/5">Exit Mission</button>
+               <button onClick={onRestart} className="btn-primary flex-1 py-4 text-sm font-black uppercase tracking-widest shadow-glow">Re-Initiate</button>
+            </div>
+         </div>
       </div>
     </div>
   );
@@ -312,91 +344,135 @@ function ChatInterface({ conversationId, scenario, difficulty, mode, openingMess
   const formatTime = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-140px)] lg:h-[calc(100vh-140px)] max-h-[850px]" onClick={handleWordClick}>
+    <div className="flex flex-col lg:flex-row gap-8 h-[calc(100vh-160px)] max-w-7xl mx-auto" onClick={handleWordClick}>
       {popupWord && <WordPopup word={popupWord} onClose={() => setPopupWord(null)} source="conversation" />}
       
-      <div className="flex-1 flex flex-col glass-card overflow-hidden min-h-[400px]">
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col glass-card border-white/5 bg-dark-900/40 relative overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-3 md:p-4 border-b border-white/5">
-          <div className="flex items-center gap-3">
-            <div className="text-2xl">{scenario.emoji || scenario.icon}</div>
+        <div className="flex items-center justify-between px-6 py-5 border-b border-white/5 bg-dark-950/20">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-3xl border border-white/5 shadow-inner">
+               {scenario.emoji || scenario.icon}
+            </div>
             <div>
-              <h3 className="font-bold text-white text-sm">{scenario.title}</h3>
-              <span className={`text-[10px] px-1.5 py-0.5 rounded border capitalize ${DIFFICULTY_COLORS[difficulty]}`}>{difficulty}</span>
+              <h3 className="font-bold text-white text-lg tracking-tight leading-tight">{scenario.title}</h3>
+              <div className="flex items-center gap-2 mt-1">
+                 <span className={`text-[9px] font-black px-2 py-0.5 rounded-lg uppercase tracking-widest ${DIFFICULTY_COLORS[difficulty]}`}>{difficulty}</span>
+                 <div className="w-1 h-1 rounded-full bg-slate-700" />
+                 <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{formatTime(elapsed)}</span>
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="hidden sm:flex text-sm font-mono text-slate-300 bg-dark-600 px-3 py-1 rounded-lg items-center gap-2">
-              <Clock size={12}/> {formatTime(elapsed)}
-            </div>
-            <button onClick={() => setTtsEnabled(p => !p)} className={`p-2 rounded-lg ${ttsEnabled ? 'text-primary-400 bg-primary-500/10' : 'text-slate-500'}`}>
-              {ttsEnabled ? <Volume2 size={16}/> : <VolumeX size={16}/>}
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setTtsEnabled(!ttsEnabled)} 
+              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${ttsEnabled ? 'bg-primary-500/20 text-primary-400' : 'bg-dark-950 text-slate-500'}`}
+            >
+              {ttsEnabled ? <Volume2 size={18}/> : <VolumeX size={18}/>}
             </button>
-            <button onClick={() => setShowEndConfirm(true)} className="btn-primary py-1.5 px-3 text-[10px] sm:text-xs bg-red-500/20 hover:bg-red-500/30 text-red-400 border-none">
-              End
+            <button 
+               onClick={() => setShowEndConfirm(true)} 
+               className="btn-primary bg-accent-rose hover:bg-accent-rose/80 text-white border-none py-2 px-5 text-xs font-black uppercase tracking-widest shadow-glow"
+            >
+              End Mission
             </button>
           </div>
-        </div>
-
-        {/* Roles bar */}
-        <div className="px-4 py-2 bg-dark-600/40 border-b border-white/5 text-[10px] text-slate-500 uppercase tracking-wider flex items-center gap-3">
-          <span>You: <span className="text-white">{scenario.userRole || 'Job Candidate'}</span></span>
-          <span className="text-slate-700">•</span>
-          <span>AI: <span className="text-primary-400">{scenario.role?.split(' at ')[0] || 'Interviewer'}</span></span>
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-8 space-y-8 no-scrollbar scroll-smooth">
           {messages.map((msg, i) => (
-            <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} gap-2`}>
-              {msg.role === 'assistant' && <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center text-xs shrink-0 mt-1">🎭</div>}
-              <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm ${msg.role === 'user' ? 'bg-primary-600 text-white rounded-tr-sm' : 'bg-dark-600/80 border border-white/5 text-slate-200 rounded-tl-sm'}`}>
-                {msg.content}
+            <motion.div 
+               key={i} 
+               initial={{ opacity: 0, y: 10 }}
+               animate={{ opacity: 1, y: 0 }}
+               className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} items-start gap-4`}
+            >
+              {msg.role === 'assistant' && (
+                 <div className="w-10 h-10 rounded-2xl bg-primary-500 flex items-center justify-center shrink-0 shadow-glow">
+                    <Sparkles size={20} className="text-white" />
+                 </div>
+              )}
+              <div className={`max-w-[75%] space-y-2`}>
+                 <div className={`px-6 py-4 rounded-2xl text-sm leading-relaxed font-medium shadow-sm ${msg.role === 'user' ? 'bg-primary-600 text-white rounded-tr-sm' : 'bg-dark-800/80 border border-white/5 text-slate-200 rounded-tl-sm'}`}>
+                    {msg.content}
+                 </div>
+                 <p className={`text-[10px] font-black uppercase tracking-widest text-slate-600 ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
+                    {msg.role === 'user' ? 'You' : (scenario.role?.split(' at ')[0] || 'AI Intelligence')}
+                 </p>
               </div>
-              {msg.role === 'user' && <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs shrink-0 mt-1">👤</div>}
-            </div>
+              {msg.role === 'user' && (
+                 <div className="w-10 h-10 rounded-2xl bg-dark-800 border border-white/10 flex items-center justify-center shrink-0">
+                    <User size={20} className="text-slate-400" />
+                 </div>
+              )}
+            </motion.div>
           ))}
-          {loading && <div className="flex justify-start gap-2"><div className="w-8 h-8 rounded-full bg-primary-500/20 animate-pulse"/><div className="bg-dark-600/40 w-24 h-10 rounded-2xl animate-pulse"/></div>}
+          {loading && (
+             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start gap-4">
+                <div className="w-10 h-10 rounded-2xl bg-primary-500/20 animate-pulse shrink-0"/>
+                <div className="bg-dark-800/40 w-32 h-12 rounded-2xl animate-pulse"/>
+             </motion.div>
+          )}
           <div ref={messagesEndRef} />
         </div>
 
         {/* Input */}
-        <div className="p-4 border-t border-white/5">
-          <div className="flex gap-2">
-            <button onClick={() => recognitionRef.current?.start()} className={`p-3 rounded-xl ${listening ? 'bg-red-500 text-white animate-pulse' : 'bg-white/5 text-slate-400'}`}>
-              <Mic size={20}/>
+        <div className="p-6 border-t border-white/5 bg-dark-950/20">
+          <div className="flex gap-4 bg-dark-800/80 p-2 rounded-[24px] border border-white/5 shadow-inner group focus-within:border-primary-500/30 transition-all">
+            <button 
+              onClick={() => recognitionRef.current?.start()} 
+              className={`w-12 h-12 rounded-[18px] flex items-center justify-center transition-all ${listening ? 'bg-accent-rose text-white animate-pulse shadow-glow' : 'bg-white/5 text-slate-400 hover:text-white'}`}
+            >
+              {listening ? <MicOff size={20}/> : <Mic size={20}/>}
             </button>
             <textarea
               ref={inputRef}
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage())}
-              placeholder="Type your message..."
-              className="input-field flex-1 resize-none py-3"
+              placeholder="Transmit your message..."
+              className="bg-transparent border-none focus:ring-0 flex-1 resize-none py-3 text-sm font-medium text-white placeholder-slate-600"
               rows={1}
             />
-            <button onClick={sendMessage} disabled={!input.trim()} className="btn-primary px-5 disabled:opacity-50">
+            <button 
+               onClick={sendMessage} 
+               disabled={!input.trim() || loading} 
+               className="w-12 h-12 rounded-[18px] bg-primary-500 text-white flex items-center justify-center disabled:opacity-30 disabled:grayscale transition-all shadow-glow hover:scale-105"
+            >
               <Send size={18}/>
             </button>
+          </div>
+          <div className="flex items-center gap-4 mt-3 px-2">
+             <div className="flex items-center gap-1.5">
+                <Info size={10} className="text-slate-600" />
+                <span className="text-[9px] font-black uppercase tracking-widest text-slate-600">Double click words for translation</span>
+             </div>
           </div>
         </div>
       </div>
 
-      {/* Side Panel - Hidden on mobile, shown on large screens */}
-      <div className="hidden lg:flex w-64 shrink-0 flex-col gap-3 overflow-y-auto custom-scrollbar">
-        <div className="glass-card pt-12 pb-4 px-4 flex flex-col items-center justify-center gap-4 bg-gradient-to-b from-dark-800 to-dark-900 border-primary-500/10">
+      {/* Analytics Sidebar */}
+      <div className="hidden lg:flex w-80 shrink-0 flex-col gap-6">
+        <div className="glass-card pt-12 pb-8 px-6 flex flex-col items-center justify-center gap-5 bg-gradient-to-b from-dark-900 to-dark-950 border-white/5">
           <AIAvatar isThinking={loading} isSpeaking={speaking} avatarUrl={aiAvatarImg} />
           <div className="text-center">
-            <h4 className="text-sm font-bold text-white">{scenario.role?.split(' at ')[0] || 'AI Interviewer'}</h4>
-            <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Neural Link Established</p>
+            <h4 className="text-base font-bold text-white tracking-tight">{scenario.role?.split(' at ')[0] || 'AI Interviewer'}</h4>
+            <p className="text-[10px] text-primary-400 font-black uppercase tracking-[0.2em] mt-1.5 animate-pulse">Connection Stable</p>
           </div>
         </div>
 
-        <div className="glass-card p-4">
-          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1"><Target size={12}/> Session Goals</h4>
-          <ul className="space-y-1.5">
-            {(scenario.goals || ['Communicate clearly', 'Maintain professional tone']).map((g, i) => (
-              <li key={i} className="text-xs text-slate-300 flex items-start gap-1.5"><span className="text-primary-400">•</span>{g}</li>
+        <div className="glass-card p-6 border-white/5 bg-dark-900/40">
+          <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+             <Target size={12} className="text-primary-400"/> Operational Goals
+          </h4>
+          <ul className="space-y-3">
+            {(scenario.goals || ['Maintain professional clarity', 'Structure answers logically', 'Expand on key details']).map((g, i) => (
+              <li key={i} className="text-[11px] font-bold text-slate-300 flex items-start gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary-500/50 mt-1" />
+                <span>{g}</span>
+              </li>
             ))}
           </ul>
         </div>
@@ -404,200 +480,34 @@ function ChatInterface({ conversationId, scenario, difficulty, mode, openingMess
         <LiveAnalysis errors={allErrors} messageCount={messageCount} scores={scores} />
       </div>
 
-      {showEndConfirm && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="glass-card p-6 max-w-sm w-full text-center">
-            <h3 className="text-xl font-bold text-white mb-2">End Conversation?</h3>
-            <p className="text-slate-400 text-sm mb-6">Ready to see your performance report and earn rewards?</p>
-            <div className="flex gap-3">
-              <button onClick={() => setShowEndConfirm(false)} className="btn-ghost flex-1">Keep Going</button>
-              <button onClick={handleEnd} className="btn-primary flex-1 bg-red-600 border-none">End & Analyze</button>
-            </div>
+      {/* End Confirmation Modal */}
+      <AnimatePresence>
+        {showEndConfirm && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-dark-950/80 backdrop-blur-xl">
+            <motion.div 
+               initial={{ opacity: 0, scale: 0.95 }}
+               animate={{ opacity: 1, scale: 1 }}
+               exit={{ opacity: 0, scale: 0.95 }}
+               className="glass-card p-10 max-w-sm w-full text-center relative overflow-hidden"
+            >
+              <div className="w-16 h-16 bg-accent-rose/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                 <AlertTriangle size={32} className="text-accent-rose" />
+              </div>
+              <h3 className="text-2xl font-display font-bold text-white mb-3 tracking-tight">Terminate Mission?</h3>
+              <p className="text-slate-400 text-sm font-medium leading-relaxed mb-8">Are you ready to finalize your progress and receive your performance analytics?</p>
+              <div className="flex gap-3">
+                <button onClick={() => setShowEndConfirm(false)} className="btn-ghost flex-1 py-3 text-xs font-black uppercase tracking-widest">Continue</button>
+                <button onClick={handleEnd} className="btn-primary flex-1 py-3 bg-accent-rose border-none text-xs font-black uppercase tracking-widest shadow-glow">Terminate</button>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
-function ProfessionalSetupModal({ role, onStart, onClose }) {
-  const [round, setRound] = useState('warmup');
-  const [duration, setDuration] = useState('5');
-  const [interviewer, setInterviewer] = useState(INTERVIEWERS[3]);
-  const [audioEnabled, setAudioEnabled] = useState(true);
-  const [loading, setLoading] = useState(false);
-
-  // Resume state
-  const [resumeFile, setResumeFile] = useState(null);
-  const [resumeData, setResumeData] = useState(null);
-  const [resumeLoading, setResumeLoading] = useState(false);
-  const fileInputRef = useRef(null);
-
-  const rounds = [
-    { id: 'warmup', title: 'Warm Up', sub: 'NON TECHNICAL', icon: '☕' },
-    { id: 'coding', title: 'Coding', sub: 'PROGRAMMING', icon: '💻' },
-    { id: 'technical', title: 'Role Related', sub: 'TECHNICAL', icon: '⚙️' },
-    { id: 'behavioral', title: 'Behavioral', sub: 'HR', icon: '🤝' },
-  ];
-
-  const handleResumeUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const allowed = ['application/pdf', 'text/plain', 'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-    if (!allowed.includes(file.type)) return toast.error('Please upload a PDF, DOC, DOCX, or TXT file.');
-    if (file.size > 5 * 1024 * 1024) return toast.error('File must be under 5MB.');
-
-    setResumeFile(file);
-    setResumeLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append('resume', file);
-      const { data } = await axios.post('/api/conversation/resume/parse', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      setResumeData(data.data);
-      toast.success('✅ Resume parsed! Your interview will be personalized.');
-    } catch (err) {
-      toast.error('Could not parse resume — using default questions.');
-      setResumeFile(null);
-    } finally {
-      setResumeLoading(false);
-    }
-  };
-
-  const handleStart = async () => {
-    if (!resumeData) {
-      toast.error('Please upload your resume first. The interview is personalized for you.');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { data } = await axios.post('/api/conversation/professional/start', {
-        role: role.title,
-        round,
-        duration,
-        interviewerId: interviewer.id,
-        resumeData: resumeData || null,
-        difficulty: 'intermediate'
-      });
-      onStart(
-        { ...role, isProfessional: true, round, interviewerId: interviewer.id,
-          goals: [`Complete a ${round} interview for ${role.title}`, 'Communicate clearly and professionally', 'Answer all questions confidently'] },
-        'intermediate',
-        'free',
-        data.conversationId,
-        data.openingMessage
-      );
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to start session');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-      <div className="bg-white rounded-3xl p-8 max-w-2xl w-full animate-bounce-in shadow-2xl relative max-h-[95vh] flex flex-col">
-        <button onClick={onClose} className="absolute top-6 right-6 text-slate-400 hover:text-slate-600 z-10">
-          <XCircle size={24}/>
-        </button>
-        <h2 className="text-xl font-bold text-slate-800 mb-6 border-b pb-4 shrink-0">Interview Details</h2>
-
-        <div className="space-y-6 overflow-y-auto no-scrollbar pr-1 flex-1">
-          {/* Role */}
-          <div className="bg-slate-50 border border-slate-100 rounded-xl p-4 flex items-center gap-3">
-            <div className="text-2xl">{role.icon}</div>
-            <div className="font-bold text-slate-800">{role.title}</div>
-          </div>
-
-          {/* Resume Upload */}
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              <p className="text-sm font-bold text-slate-700">Resume Based Interview <span className="text-red-500">*</span></p>
-              <p className="text-xs text-slate-400 mt-0.5">Please upload your resume to personalize the interview questions.</p>
-              {resumeFile && (
-                <p className={`text-xs mt-2 flex items-center gap-1.5 ${resumeData ? 'text-green-600' : 'text-amber-600'}`}>
-                  {resumeLoading ? <><div className="w-3 h-3 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"/> Parsing...</> : resumeData ? <><Check size={12}/>{resumeFile.name} — Personalized ✓</> : resumeFile.name}
-                </p>
-              )}
-            </div>
-            <input ref={fileInputRef} type="file" accept=".pdf,.txt,.doc,.docx" onChange={handleResumeUpload} className="hidden"/>
-            <button onClick={() => fileInputRef.current?.click()} disabled={resumeLoading}
-              className="bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-2 transition-all shrink-0 disabled:opacity-60">
-              {resumeLoading ? <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"/> : <Upload size={14}/>}
-              {resumeFile ? 'Change File' : 'Upload Resume'}
-            </button>
-          </div>
-
-          {/* Rounds */}
-          <div>
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 block">Select Round <span className="text-red-500">*</span></label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {rounds.map(r => (
-                <button key={r.id} onClick={() => setRound(r.id)}
-                  className={`p-3 rounded-2xl border text-center transition-all ${round === r.id ? 'bg-primary-50 border-primary-500 ring-2 ring-primary-500/20' : 'bg-slate-50 border-slate-100 hover:border-slate-200'}`}>
-                  <div className="text-xl mb-1">{r.icon}</div>
-                  <div className="text-[10px] font-bold text-slate-800">{r.title}</div>
-                  <div className="text-[8px] text-slate-400 uppercase">{r.sub}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Duration */}
-          <div>
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 block">Interview Duration <span className="text-red-500">*</span></label>
-            <div className="flex gap-2">
-              {['5', '15', '30'].map(d => (
-                <button key={d} onClick={() => setDuration(d)}
-                  className={`px-6 py-2.5 rounded-xl border text-xs font-bold transition-all ${duration === d ? 'bg-primary-100 border-primary-500 text-primary-700' : 'bg-slate-50 border-slate-100 text-slate-500 hover:border-slate-300'}`}>
-                  {d} mins
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Interviewer */}
-          <div>
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 block">Select Your Interviewer <span className="text-red-500">*</span></label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {INTERVIEWERS.map(i => (
-                <button key={i.id} onClick={() => setInterviewer(i)}
-                  className={`p-2 rounded-2xl border transition-all ${interviewer.id === i.id ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-500' : 'border-slate-100 hover:border-slate-200'}`}>
-                  <img src={i.img} className="w-full aspect-square object-cover object-top rounded-xl mb-1.5" alt={i.name}/>
-                  <div className="text-[10px] font-bold text-slate-800">{i.name}</div>
-                  <div className="text-[8px] text-slate-400">{i.location}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Audio */}
-          <div>
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 block">Practice Settings</label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={audioEnabled} onChange={e => setAudioEnabled(e.target.checked)} className="w-4 h-4 accent-primary-600"/>
-              <span className="text-sm text-slate-600">Enable AI Voice Responses (TTS)</span>
-            </label>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between mt-6 pt-4 border-t shrink-0">
-          <button onClick={onClose} className="text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors">CANCEL</button>
-          <button onClick={handleStart} disabled={loading}
-            className="bg-primary-600 hover:bg-primary-700 text-white font-bold px-8 py-3 rounded-xl shadow-lg shadow-primary-500/20 transition-all hover:scale-105 disabled:opacity-60 flex items-center gap-2">
-            {loading && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/>}
-            {loading ? 'Starting Interview...' : 'START PRACTICE'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── EveryDay View (Map) ──────────────────────────────────────────────────────
+// ─── EveryDay View ──────────────────────────────────────────────────────
 function EveryDayView({ onSelect }) {
   const [scenarios, setScenarios] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -608,27 +518,53 @@ function EveryDayView({ onSelect }) {
     axios.get('/api/conversation/scenarios').then(r => setScenarios(r.data)).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="py-20 text-center"><div className="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto"/></div>;
+  if (loading) return (
+     <div className="py-20 text-center space-y-4">
+        <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto"/>
+        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">Syncing Scenarios</p>
+     </div>
+  );
 
   return (
-    <div className="space-y-6 animate-slide-up">
-      <div className="flex gap-2 overflow-x-auto no-scrollbar">
+    <div className="space-y-8 animate-slide-up">
+      <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
         {categories.map(c => (
-          <button key={c} onClick={() => setFilter(c)} className={`px-4 py-1.5 rounded-full text-xs whitespace-nowrap transition-all border ${filter === c ? 'bg-primary-500 border-primary-500 text-white' : 'bg-dark-800 border-white/5 text-slate-500 hover:text-white'}`}>{c}</button>
+          <button 
+            key={c} 
+            onClick={() => setFilter(c)} 
+            className={`px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all border ${filter === c ? 'bg-primary-500 border-primary-500 text-white shadow-glow' : 'bg-dark-900/50 border-white/5 text-slate-500 hover:text-white'}`}
+          >
+            {c}
+          </button>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {scenarios.filter(s => filter === 'All' || s.category === filter).map(s => (
-          <div key={s.id} onClick={() => s.unlocked ? onSelect(s) : toast.error('Level too low!')} className={`glass-card p-5 cursor-pointer hover:scale-[1.02] transition-all group ${!s.unlocked && 'opacity-50'}`}>
-            <div className="flex items-start justify-between mb-3">
-              <div className="w-12 h-12 bg-dark-600 rounded-xl flex items-center justify-center text-2xl">{s.emoji}</div>
-              {!s.unlocked && <Lock size={14} className="text-slate-500" />}
+          <motion.div 
+            key={s.id} 
+            whileHover={{ y: -5 }}
+            onClick={() => s.unlocked ? onSelect(s) : toast.error('Level too low!')} 
+            className={`glass-card p-8 cursor-pointer border-white/5 bg-dark-900/40 relative overflow-hidden group transition-all duration-500 ${!s.unlocked ? 'opacity-40 grayscale' : 'hover:bg-white/5'}`}
+          >
+            <div className="absolute top-0 right-0 w-24 h-24 bg-primary-500/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
+            <div className="relative z-10">
+               <div className="w-16 h-16 bg-dark-950 rounded-2xl flex items-center justify-center text-4xl mb-6 border border-white/5 shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
+                  {s.emoji}
+               </div>
+               <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                     <p className="text-[9px] font-black text-primary-400 uppercase tracking-widest">{s.category}</p>
+                     {!s.unlocked && <Lock size={12} className="text-slate-600" />}
+                  </div>
+                  <h3 className="text-xl font-bold text-white tracking-tight group-hover:text-primary-400 transition-colors">{s.title}</h3>
+                  <div className="pt-6 flex items-center gap-1.5 text-slate-500 font-bold group-hover:gap-2 transition-all">
+                     <span className="text-[10px] uppercase tracking-widest">Initialize Mission</span>
+                     <ArrowRight size={14} />
+                  </div>
+               </div>
             </div>
-            <h3 className="font-bold text-white text-sm mb-1 group-hover:text-primary-400">{s.title}</h3>
-            <p className="text-[10px] text-slate-500 mb-4">{s.category}</p>
-            <button className="w-full btn-primary py-2 text-xs">Start Roleplay</button>
-          </div>
+          </motion.div>
         ))}
       </div>
     </div>
@@ -643,49 +579,56 @@ function CareerSuccessView({ onSelect }) {
   const filtered = PROFESSIONAL_ROLES.filter(r => r.title.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="space-y-8 animate-slide-up pb-20">
-      <div className="text-center max-w-2xl mx-auto space-y-4 py-6">
-        <div className="inline-flex items-center gap-2 bg-accent-yellow/10 border border-accent-yellow/20 text-accent-yellow text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
-           <Zap size={10} className="fill-accent-yellow"/> 3000+ Roles Available
-        </div>
-        <h1 className="text-4xl font-display font-bold text-white">Role-Specific <span className="text-primary-400">AI Mock Interviews</span></h1>
-        <p className="text-slate-400 text-sm">Practice role-specific interviews with real-world questions. Improve domain knowledge, articulation and communication with instant feedback report.</p>
+    <div className="space-y-12 animate-slide-up pb-20">
+      <div className="text-center max-w-3xl mx-auto space-y-6 pt-10">
+        <motion.div 
+           initial={{ opacity: 0, y: 10 }}
+           animate={{ opacity: 1, y: 0 }}
+           className="inline-flex items-center gap-2 bg-accent-amber/10 border border-accent-amber/20 text-accent-amber text-[10px] font-black px-5 py-2 rounded-full uppercase tracking-[0.2em]"
+        >
+           <Zap size={12} className="fill-accent-amber"/> Neural Engine Active
+        </motion.div>
+        <h1 className="text-5xl md:text-6xl font-display font-bold text-white tracking-tight">AI Professional <span className="shimmer-text">Simulations</span></h1>
+        <p className="text-slate-400 text-lg font-medium leading-relaxed">
+          The most advanced AI-powered role-specific interview environment. Practice domain articulation, body language and logic with real-time neural feedback.
+        </p>
       </div>
 
-      {/* Mode Tabs */}
-      <div className="flex justify-center gap-2 flex-wrap">
-        {['Role Based', 'Company Based', 'JD Based', 'Resume Toolkit', 'Create Your Own'].map(tab => (
-          <button key={tab} onClick={() => setSelectedTab(tab)}
-            className={`px-5 py-2 rounded-xl text-xs font-bold transition-all border ${selectedTab === tab ? 'bg-primary-600 border-primary-600 text-white shadow-lg shadow-primary-600/20' : 'bg-dark-800 border-white/5 text-slate-500 hover:text-white'}`}>
-            {tab}
-          </button>
-        ))}
-      </div>
-
-      {/* Search */}
-      <div className="max-w-2xl mx-auto relative group">
-        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-slate-500 group-focus-within:text-primary-400 transition-colors">
-          <Search size={20}/>
+      <div className="max-w-2xl mx-auto relative group px-4">
+        <div className="absolute inset-y-0 left-8 flex items-center pointer-events-none text-slate-500 group-focus-within:text-primary-400 transition-colors">
+          <Search size={22}/>
         </div>
         <input 
           type="text" 
-          placeholder="Search for roles (e.g. Software Engineer, Data Analyst)"
-          className="w-full bg-dark-800/80 border border-white/10 rounded-2xl py-4 pl-12 pr-32 text-white focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all shadow-2xl"
+          placeholder="Search professional designation..."
+          className="input-field py-6 pl-16 pr-36 bg-dark-900/60 shadow-2xl border-white/10"
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
-        <button className="absolute right-2 inset-y-2 px-6 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl text-sm transition-all">SEARCH</button>
+        <button className="absolute right-6 inset-y-2 px-8 bg-primary-600 hover:bg-primary-700 text-white font-black rounded-[18px] text-[10px] uppercase tracking-widest shadow-glow transition-all">Search</button>
       </div>
 
-      <div className="space-y-4">
-        <h3 className="text-lg font-bold text-white flex items-center gap-2 ml-1"><Briefcase size={20} className="text-primary-400"/> Roles</h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="space-y-8">
+        <div className="flex items-center justify-between px-2">
+           <h3 className="text-2xl font-display font-bold text-white tracking-tight flex items-center gap-3">
+              <Briefcase size={24} className="text-primary-400"/> Operational Designations
+           </h3>
+           <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{filtered.length} ROLES</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filtered.map(role => (
-            <div key={role.id} onClick={() => onSelect(role)}
-              className="bg-white hover:bg-slate-50 rounded-2xl p-6 text-center cursor-pointer transition-all hover:scale-105 shadow-xl group border-2 border-transparent hover:border-primary-500/20">
-              <div className="text-3xl mb-3 group-hover:scale-110 transition-transform">{role.icon}</div>
-              <h4 className="font-bold text-slate-800 text-sm">{role.title}</h4>
-            </div>
+            <motion.div 
+               key={role.id} 
+               whileHover={{ scale: 1.05 }}
+               onClick={() => onSelect(role)}
+               className="glass-card p-10 text-center cursor-pointer border-white/5 bg-dark-900/40 relative overflow-hidden group transition-all duration-500"
+            >
+              <div className="absolute top-0 right-0 w-24 h-24 bg-primary-500/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
+              <div className="relative z-10">
+                 <div className="text-5xl mb-6 group-hover:rotate-6 transition-transform duration-500">{role.icon}</div>
+                 <h4 className="font-bold text-white tracking-tight text-lg group-hover:text-primary-400 transition-colors">{role.title}</h4>
+              </div>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -693,13 +636,159 @@ function CareerSuccessView({ onSelect }) {
   );
 }
 
+function ProfessionalSetupModal({ role, onStart, onClose }) {
+  const [round, setRound] = useState('warmup');
+  const [duration, setDuration] = useState('5');
+  const [interviewer, setInterviewer] = useState(INTERVIEWERS[3]);
+  const [loading, setLoading] = useState(false);
+
+  const [resumeFile, setResumeFile] = useState(null);
+  const [resumeData, setResumeData] = useState(null);
+  const [resumeLoading, setResumeLoading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  const rounds = [
+    { id: 'warmup', title: 'Warm Up', sub: 'BEHAVIORAL', icon: '☕' },
+    { id: 'technical', title: 'Technical', sub: 'LOGIC', icon: '⚙️' },
+    { id: 'coding', title: 'Coding', sub: 'PRACTICAL', icon: '💻' },
+    { id: 'behavioral', title: 'HR Round', sub: 'CULTURAL', icon: '🤝' },
+  ];
+
+  const handleResumeUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setResumeFile(file);
+    setResumeLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('resume', file);
+      const { data } = await axios.post('/api/conversation/resume/parse', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setResumeData(data.data);
+      toast.success('Neural mapping successful. Content parsed.');
+    } catch (err) {
+      toast.error('Mapping failed. Using standard protocols.');
+      setResumeFile(null);
+    } finally {
+      setResumeLoading(false);
+    }
+  };
+
+  const handleStart = async () => {
+    if (!resumeData) return toast.error('Identity scan (Resume) required for personalization.');
+    setLoading(true);
+    try {
+      const { data } = await axios.post('/api/conversation/professional/start', {
+        role: role.title, round, duration, interviewerId: interviewer.id,
+        resumeData: resumeData || null, difficulty: 'intermediate'
+      });
+      onStart(
+        { ...role, isProfessional: true, round, interviewerId: interviewer.id,
+          goals: [`Excel in ${round} simulation for ${role.title}`, 'Articulate career milestones clearly', 'Demonstrate role proficiency'] },
+        'intermediate', 'free', data.conversationId, data.openingMessage
+      );
+    } catch (err) {
+      toast.error('Mission initiation failed.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-dark-950/90 backdrop-blur-xl">
+      <motion.div 
+         initial={{ opacity: 0, y: 20 }}
+         animate={{ opacity: 1, y: 0 }}
+         className="glass-card p-1 max-w-3xl w-full relative overflow-hidden"
+      >
+        <div className="p-10 bg-dark-900 flex flex-col max-h-[85vh] overflow-y-auto no-scrollbar">
+           <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-display font-bold text-white tracking-tight">Mission Configuration</h2>
+              <button onClick={onClose} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-500 hover:text-white transition-colors">
+                <XCircle size={20}/>
+              </button>
+           </div>
+
+           <div className="space-y-8">
+              <div className="bg-dark-950 border border-white/5 rounded-2xl p-6 flex items-center gap-5">
+                <div className="text-4xl">{role.icon}</div>
+                <div>
+                   <p className="text-[10px] font-black text-primary-400 uppercase tracking-widest mb-0.5">TARGET ROLE</p>
+                   <h4 className="text-xl font-bold text-white tracking-tight">{role.title}</h4>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                 <div className="flex items-center justify-between">
+                    <div>
+                       <p className="text-sm font-bold text-white">Identity Scan (Resume) <span className="text-accent-rose">*</span></p>
+                       <p className="text-xs text-slate-500 mt-1">Upload your resume to calibrate the AI persona.</p>
+                    </div>
+                    <button onClick={() => fileInputRef.current?.click()} className="btn-primary py-2.5 px-6 text-[10px] font-black uppercase tracking-widest shadow-glow">
+                       {resumeLoading ? 'SCANNING...' : resumeFile ? 'RE-UPLOAD' : 'UPLOAD PDF'}
+                    </button>
+                    <input ref={fileInputRef} type="file" onChange={handleResumeUpload} className="hidden"/>
+                 </div>
+                 {resumeFile && (
+                    <div className="p-4 rounded-xl bg-accent-emerald/5 border border-accent-emerald/20 flex items-center gap-3">
+                       <Check size={14} className="text-accent-emerald" />
+                       <span className="text-[10px] font-black text-accent-emerald uppercase tracking-widest">{resumeFile.name} Mapped ✓</span>
+                    </div>
+                 )}
+              </div>
+
+              <div className="space-y-4">
+                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Simulation Type</p>
+                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {rounds.map(r => (
+                      <button key={r.id} onClick={() => setRound(r.id)}
+                        className={`p-4 rounded-2xl border text-center transition-all duration-300 ${round === r.id ? 'bg-primary-500/10 border-primary-500 ring-2 ring-primary-500/20' : 'bg-dark-950 border-white/5 hover:border-white/10'}`}>
+                        <div className="text-2xl mb-2">{r.icon}</div>
+                        <p className="text-[10px] font-black text-white uppercase tracking-tight">{r.title}</p>
+                        <p className="text-[8px] text-slate-600 font-bold uppercase mt-0.5">{r.sub}</p>
+                      </button>
+                    ))}
+                 </div>
+              </div>
+
+              <div className="space-y-4">
+                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Neural Persona</p>
+                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {INTERVIEWERS.map(i => (
+                      <button key={i.id} onClick={() => setInterviewer(i)}
+                        className={`p-2 rounded-2xl border transition-all duration-300 ${interviewer.id === i.id ? 'border-primary-500 bg-primary-500/10' : 'border-white/5 hover:border-white/10 opacity-40 hover:opacity-100'}`}>
+                        <img src={i.img} className="w-full aspect-square object-cover object-top rounded-xl mb-2 grayscale group-hover:grayscale-0 transition-all" alt={i.name}/>
+                        <p className="text-[10px] font-black text-white tracking-tight">{i.name}</p>
+                        <p className="text-[8px] text-slate-600 font-bold uppercase">{i.location}</p>
+                      </button>
+                    ))}
+                 </div>
+              </div>
+           </div>
+
+           <div className="mt-12 flex items-center justify-between pt-8 border-t border-white/5">
+              <button onClick={onClose} className="text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-white transition-colors">Abort</button>
+              <button 
+                 onClick={handleStart} 
+                 disabled={loading}
+                 className="btn-primary py-4 px-10 text-xs font-black uppercase tracking-[0.2em] shadow-glow"
+              >
+                 {loading ? 'Initializing...' : 'Initiate Simulation'}
+              </button>
+           </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 // ─── Exported Component ──────────────────────────────────────────────────────
 export default function Conversation() {
-  const [activeTab, setActiveTab] = useState('everyday'); // everyday | professional
-  const [view, setView] = useState('home'); // home | chat | report
+  const [activeTab, setActiveTab] = useState('everyday');
+  const [view, setView] = useState('home');
   const [setupScenario, setSetupScenario] = useState(null);
   
-  // Game session states
   const [selectedScenario, setSelectedScenario] = useState(null);
   const [conversationId, setConversationId] = useState(null);
   const [openingMessage, setOpeningMessage] = useState('');
@@ -711,7 +800,6 @@ export default function Conversation() {
   const { fetchProfile } = useAuth();
 
   const handleStartSession = async (scenario, diff, m, preCreatedConvId, preCreatedOpening) => {
-    // Professional sessions create their own conversation in the modal
     if (preCreatedConvId) {
       setConversationId(preCreatedConvId);
       setOpeningMessage(preCreatedOpening);
@@ -723,7 +811,6 @@ export default function Conversation() {
       return;
     }
 
-    // Everyday roleplay — call the standard conversation/start endpoint
     try {
       const payload = { 
         scenarioId: scenario.id || scenario.title.toLowerCase().replace(/\s/g, '-'), 
@@ -739,7 +826,7 @@ export default function Conversation() {
       setSetupScenario(null);
       setView('chat');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to start session');
+      toast.error('Mission initiation failed.');
     }
   };
 
@@ -751,24 +838,24 @@ export default function Conversation() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 pt-4">
+    <div className="max-w-7xl mx-auto px-4">
       {reward && view === 'report' && <XPReward {...reward} onClose={() => setReward(null)} />}
       
       {view === 'home' && (
         <>
-          <div className="flex justify-center mb-8">
-            <div className="bg-dark-800 p-1 rounded-2xl flex gap-1 border border-white/5 shadow-2xl">
+          <div className="flex justify-center mb-12">
+            <div className="bg-dark-900/50 p-1.5 rounded-[22px] flex gap-1.5 border border-white/5 shadow-2xl backdrop-blur-xl">
               <button 
                 onClick={() => setActiveTab('everyday')}
-                className={`flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'everyday' ? 'bg-primary-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                className={`flex items-center gap-3 px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-500 ${activeTab === 'everyday' ? 'bg-primary-500 text-white shadow-glow' : 'text-slate-500 hover:text-slate-200'}`}
               >
-                <Globe size={16}/> Everyday Roleplay
+                <Globe size={14}/> Operational Missions
               </button>
               <button 
                 onClick={() => setActiveTab('professional')}
-                className={`flex items-center gap-2 px-6 py-2 rounded-xl text-sm font-bold transition-all ${activeTab === 'professional' ? 'bg-primary-600 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
+                className={`flex items-center gap-3 px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] transition-all duration-500 ${activeTab === 'professional' ? 'bg-primary-500 text-white shadow-glow' : 'text-slate-500 hover:text-slate-200'}`}
               >
-                <Briefcase size={16}/> Career Success
+                <Briefcase size={14}/> Career Simulations
               </button>
             </div>
           </div>
@@ -815,34 +902,47 @@ export default function Conversation() {
   );
 }
 
-// ScenarioSetupModal for EveryDay View (Original style)
+// ScenarioSetupModal for EveryDay View
 function ScenarioSetupModal({ scenario, onStart, onClose }) {
   const [difficulty, setDifficulty] = useState('intermediate');
-  const [loading, setLoading] = useState(false);
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-      <div className="glass-card p-8 max-w-lg w-full animate-slide-up">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-16 h-16 bg-primary-500/20 rounded-2xl flex items-center justify-center text-4xl">{scenario.emoji}</div>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-dark-950/90 backdrop-blur-xl">
+      <motion.div 
+         initial={{ opacity: 0, y: 20 }}
+         animate={{ opacity: 1, y: 0 }}
+         className="glass-card p-10 max-w-lg w-full relative overflow-hidden"
+      >
+        <div className="flex items-center gap-5 mb-10">
+          <div className="w-20 h-20 bg-dark-950 border border-white/5 rounded-[24px] flex items-center justify-center text-4xl shadow-inner group-hover:rotate-6 transition-transform">
+             {scenario.emoji}
+          </div>
           <div>
-            <h2 className="text-2xl font-bold text-white">{scenario.title}</h2>
-            <p className="text-slate-400">{scenario.category}</p>
+            <p className="text-[10px] font-black text-primary-400 uppercase tracking-widest mb-1">{scenario.category}</p>
+            <h2 className="text-2xl font-display font-bold text-white tracking-tight">{scenario.title}</h2>
           </div>
         </div>
-        <div className="space-y-6 mb-8">
-           <label className="text-xs font-bold text-slate-500 uppercase block">Difficulty</label>
-           <div className="grid grid-cols-3 gap-2">
+
+        <div className="space-y-6 mb-10">
+           <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Simulation Difficulty</p>
+           <div className="grid grid-cols-3 gap-3">
              {['beginner', 'intermediate', 'advanced'].map(d => (
-               <button key={d} onClick={() => setDifficulty(d)} className={`py-2 rounded-xl text-xs capitalize border transition-all ${difficulty === d ? 'bg-primary-500/20 border-primary-500 text-primary-400' : 'border-white/5 text-slate-500'}`}>{d}</button>
+               <button 
+                  key={d} 
+                  onClick={() => setDifficulty(d)} 
+                  className={`py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all duration-300 ${difficulty === d ? 'bg-primary-500/10 border-primary-500 text-primary-400 shadow-[0_0_15px_rgba(139,92,246,0.15)]' : 'border-white/5 text-slate-500 hover:border-white/10'}`}
+               >
+                  {d}
+               </button>
              ))}
            </div>
         </div>
-        <div className="flex gap-3">
-          <button onClick={onClose} className="btn-ghost flex-1">Cancel</button>
-          <button onClick={() => onStart(scenario, difficulty, 'free')} className="btn-primary flex-1">Start Session</button>
+
+        <div className="flex gap-4">
+          <button onClick={onClose} className="btn-ghost flex-1 py-4 text-[10px] font-black uppercase tracking-widest border-white/5">Abort</button>
+          <button onClick={() => onStart(scenario, difficulty, 'free')} className="btn-primary flex-1 py-4 text-[10px] font-black uppercase tracking-widest shadow-glow">Initiate Mission</button>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

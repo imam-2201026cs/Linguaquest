@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowLeft, Volume2, Languages, Lightbulb, RefreshCw, 
   ChevronRight, Trophy, Globe, Flame, BookOpen, Brain, 
-  Layers, CheckCircle, XCircle, ChevronUp, Zap, HelpCircle
+  Layers, CheckCircle, XCircle, ChevronUp, Zap, HelpCircle,
+  Sparkles, Target, Activity, Shield, Award
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -19,14 +21,12 @@ const TOPICS = [
 ];
 
 const TOPIC_COLORS = [
-  "from-blue-500 to-indigo-600",
-  "from-purple-500 to-pink-600",
-  "from-orange-500 to-red-600",
-  "from-green-500 to-teal-600",
-  "from-amber-500 to-orange-600",
-  "from-cyan-500 to-blue-600",
-  "from-rose-500 to-pink-600",
-  "from-emerald-500 to-teal-600"
+  "from-primary-500 to-primary-700",
+  "from-accent-indigo to-primary-600",
+  "from-accent-emerald to-primary-700",
+  "from-accent-amber to-primary-600",
+  "from-accent-rose to-primary-600",
+  "from-primary-400 to-accent-indigo",
 ];
 
 export default function VerbalAbilityTest() {
@@ -60,7 +60,7 @@ export default function VerbalAbilityTest() {
       setCorrectCount(0);
       setWrongCount(0);
     } catch (err) {
-      const errorMsg = err.response?.data?.error || err.response?.data?.message || 'Failed to generate test. Please try again.';
+      const errorMsg = err.response?.data?.error || err.response?.data?.message || 'Failed to generate test.';
       toast.error(errorMsg);
       setStage(0);
     }
@@ -96,7 +96,7 @@ export default function VerbalAbilityTest() {
 
   const finishTest = () => {
     const score = Math.round((correctCount / questions.length) * 100);
-    const xp = correctCount * 5; // 5 XP per correct answer
+    const xp = correctCount * 5; 
     setReward({ xp, coins: Math.floor(xp / 4) });
     setStage(3);
     fetchProfile();
@@ -111,56 +111,74 @@ export default function VerbalAbilityTest() {
   // 1. Topic Selection View
   if (stage === 0) {
     return (
-      <div className="max-w-4xl mx-auto pb-20 animate-slide-up">
-        <div className="flex items-center gap-4 mb-8">
-          <button onClick={() => navigate(-1)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-            <ArrowLeft size={24} className="text-white" />
-          </button>
-          <div>
-            <h1 className="text-3xl font-display font-bold text-white">Verbal Ability Test</h1>
-            <p className="text-slate-400">Master English proficiency with 20-question targeted practice</p>
-          </div>
+      <div className="max-w-6xl mx-auto pb-20 animate-slide-up space-y-10">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+           <div>
+              <div className="flex items-center gap-3 mb-2 justify-center md:justify-start">
+                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary-400">Verbal Mastery</span>
+                 <div className="h-px w-8 bg-primary-500/30" />
+              </div>
+              <h1 className="text-4xl md:text-5xl font-display font-bold text-white tracking-tight">Verbal Ability <span className="shimmer-text">Arena</span></h1>
+              <p className="text-slate-400 text-lg mt-2 font-medium">Precision practice for competitive excellence.</p>
+           </div>
+           <button onClick={() => navigate(-1)} className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-500 hover:text-white transition-colors">
+              <ArrowLeft size={24} />
+           </button>
         </div>
 
-        {/* Mixed Test Banner */}
-        <button 
+        {/* Mega Test Banner */}
+        <motion.button 
+          whileHover={{ scale: 1.01 }}
           onClick={() => startTest('Mixed')}
-          className="w-full mb-8 relative group overflow-hidden rounded-3xl p-8 text-left transition-all hover:scale-[1.01]"
+          className="w-full relative group overflow-hidden rounded-[32px] p-12 text-left border border-primary-500/20"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-accent-blue opacity-90 group-hover:opacity-100 transition-opacity"></div>
-          <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
-            <Brain size={120} />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-accent-indigo opacity-90 group-hover:opacity-100 transition-opacity"></div>
+          <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-700">
+            <Brain size={160} />
           </div>
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-              <div className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-white mb-3 inline-block">MOST CHALLENGING</div>
-              <h2 className="text-3xl font-bold text-white mb-2">Mixed Ability Test</h2>
-              <p className="text-white/80 max-w-md">A comprehensive 20-question mixture of all topics to test your overall English proficiency.</p>
-            </div>
-            <div className="bg-white text-primary-600 px-6 py-3 rounded-2xl font-bold flex items-center gap-2 shadow-xl">
-              Start Mega Test <ChevronRight size={18} />
-            </div>
-          </div>
-        </button>
-
-        <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-          <Layers size={20} className="text-primary-400" /> Practice by Topic
-        </h3>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {TOPICS.map((topic, i) => (
-            <button
-              key={topic}
-              onClick={() => startTest(topic)}
-              className="glass-card p-6 text-left group hover:border-primary-500/50 transition-all hover:-translate-y-1"
-            >
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${TOPIC_COLORS[i % TOPIC_COLORS.length]} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
-                <BookOpen size={20} className="text-white" />
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] font-black text-white uppercase tracking-widest border border-white/20">
+                 <Sparkles size={12} className="animate-pulse" /> Elite Protocol
               </div>
-              <h4 className="font-bold text-white mb-1 group-hover:text-primary-400 transition-colors">{topic}</h4>
-              <p className="text-xs text-slate-500">20 Questions • Advanced</p>
-            </button>
-          ))}
+              <h2 className="text-4xl font-display font-bold text-white tracking-tight">Ultimate Mixed Assessment</h2>
+              <p className="text-white/80 text-lg font-medium max-w-xl">A comprehensive 20-objective circuit spanning all linguistic domains. The definitive test of your proficiency.</p>
+            </div>
+            <div className="bg-white text-primary-700 px-10 py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl group-hover:px-12 transition-all">
+              Initiate Mega Mission
+            </div>
+          </div>
+        </motion.button>
+
+        <div className="space-y-8">
+           <div className="flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-primary-500 shadow-glow" />
+              <h3 className="text-xl font-display font-bold text-white tracking-tight uppercase tracking-widest">Targeted Domain Practice</h3>
+           </div>
+
+           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+             {TOPICS.map((topic, i) => (
+               <motion.button
+                 key={topic}
+                 whileHover={{ y: -5 }}
+                 onClick={() => startTest(topic)}
+                 className="glass-card p-8 text-left border-white/5 bg-dark-900/40 relative overflow-hidden group transition-all duration-500"
+               >
+                 <div className="absolute top-0 right-0 w-24 h-24 bg-primary-500/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
+                 <div className="relative z-10">
+                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${TOPIC_COLORS[i % TOPIC_COLORS.length]} flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`}>
+                      <BookOpen size={24} className="text-white" />
+                    </div>
+                    <h4 className="text-lg font-bold text-white mb-2 tracking-tight group-hover:text-primary-400 transition-colors">{topic}</h4>
+                    <div className="flex items-center gap-2">
+                       <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">20 Objectives</span>
+                       <div className="w-1 h-1 rounded-full bg-slate-700" />
+                       <span className="text-[10px] font-black text-primary-400 uppercase tracking-widest">Advanced</span>
+                    </div>
+                 </div>
+               </motion.button>
+             ))}
+           </div>
         </div>
       </div>
     );
@@ -169,16 +187,18 @@ export default function VerbalAbilityTest() {
   // 2. Loading View
   if (stage === 1) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center">
-        <div className="relative w-24 h-24 mb-8">
-          <div className="absolute inset-0 border-4 border-primary-500/20 rounded-full"></div>
-          <div className="absolute inset-0 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-          <div className="absolute inset-0 flex items-center justify-center text-primary-500">
-            <Brain size={32} />
-          </div>
+      <div className="min-h-[70vh] flex flex-col items-center justify-center text-center space-y-8">
+        <div className="relative">
+           <div className="w-24 h-24 rounded-full border-[6px] border-white/5 flex items-center justify-center">
+              <div className="w-24 h-24 rounded-full border-[6px] border-primary-500 border-t-transparent animate-spin absolute" />
+              <Brain size={32} className="text-primary-500 animate-pulse" />
+           </div>
+           <div className="absolute -inset-4 bg-primary-500/10 rounded-full blur-2xl animate-pulse" />
         </div>
-        <h2 className="text-2xl font-display font-bold text-white mb-2">Generating Your Test</h2>
-        <p className="text-slate-400">Our AI is hand-picking 20 high-quality questions for <br/><strong className="text-primary-400">{selectedTopic}</strong>...</p>
+        <div className="space-y-3">
+           <h2 className="text-3xl font-display font-bold text-white tracking-tight">Syncing Mission Data</h2>
+           <p className="text-slate-400 text-lg font-medium">Calibrating 20 high-fidelity objectives for <br/><span className="text-primary-400 font-bold">{selectedTopic}</span></p>
+        </div>
       </div>
     );
   }
@@ -187,117 +207,130 @@ export default function VerbalAbilityTest() {
   if (stage === 2) {
     const currentQ = questions[currentIndex];
     return (
-      <div className="max-w-xl mx-auto min-h-[90vh] flex flex-col pb-10 animate-slide-up">
+      <div className="max-w-2xl mx-auto flex flex-col min-h-[80vh] text-white">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sticky top-0 bg-dark-900/80 backdrop-blur-md z-20 border-b border-white/5 mb-6">
-          <button onClick={() => setStage(0)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-            <ArrowLeft size={24} className="text-white" />
+        <header className="flex items-center justify-between p-6 bg-dark-950/20 sticky top-0 z-30 backdrop-blur-xl border-b border-white/5">
+          <button onClick={() => setStage(0)} className="w-11 h-11 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors border border-white/5">
+            <ArrowLeft size={20} />
           </button>
-          <div className="flex gap-2">
-            <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/20 px-3 py-1 rounded-full">
-              <span className="w-5 h-5 bg-green-500 text-dark-900 rounded-full flex items-center justify-center text-[10px] font-bold">{correctCount}</span>
-              <span className="text-xs font-bold text-green-400">Correct</span>
+          <div className="flex gap-4">
+            <div className="flex items-center gap-3 bg-accent-emerald/10 border border-accent-emerald/20 px-4 py-2 rounded-2xl">
+              <div className="w-2 h-2 rounded-full bg-accent-emerald animate-pulse shadow-glow" />
+              <span className="text-xs font-black text-accent-emerald uppercase tracking-widest">{correctCount}</span>
             </div>
-            <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 px-3 py-1 rounded-full">
-              <span className="w-5 h-5 bg-red-500 text-dark-900 rounded-full flex items-center justify-center text-[10px] font-bold">{wrongCount}</span>
-              <span className="text-xs font-bold text-red-400">Wrong</span>
+            <div className="flex items-center gap-3 bg-accent-rose/10 border border-accent-rose/20 px-4 py-2 rounded-2xl">
+              <div className="w-2 h-2 rounded-full bg-accent-rose shadow-glow" />
+              <span className="text-xs font-black text-accent-rose uppercase tracking-widest">{wrongCount}</span>
             </div>
           </div>
-        </div>
+        </header>
 
-        {/* Progress Bar */}
-        <div className="px-6 mb-8">
-          <div className="flex justify-between text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">
-            <span>{selectedTopic}</span>
-            <span>{currentIndex + 1} / {questions.length}</span>
-          </div>
-          <div className="w-full h-2 bg-dark-700 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-primary-500 transition-all duration-500 ease-out shadow-[0_0_10px_rgba(99,102,241,0.5)]" 
-              style={{ width: `${((currentIndex + (isAnswered ? 1 : 0)) / questions.length) * 100}%` }}
-            />
-          </div>
-        </div>
-
-        <div className="px-6 flex-1 space-y-6">
-          {/* Question Card */}
-          <div className="glass-card border-primary-500/20">
-            <div className="p-8">
-              <h2 className="text-xl font-medium text-center text-white mb-8 leading-relaxed">
-                {currentQ.question}
-              </h2>
-              <div className="flex justify-center gap-4">
-                <button onClick={() => speak(currentQ.question)} className="p-3 bg-white/5 rounded-2xl text-slate-400 hover:text-white hover:bg-white/10 transition-all">
-                  <Volume2 size={20} />
-                </button>
-                <button className="p-3 bg-white/5 rounded-2xl text-slate-400 hover:text-white hover:bg-white/10 transition-all">
-                  <Languages size={20} />
-                </button>
+        {/* Progress System */}
+        <div className="px-6 py-8">
+           <div className="flex justify-between items-end mb-4 px-1">
+              <div>
+                 <p className="text-[10px] font-black text-primary-400 uppercase tracking-[0.2em] mb-1">{selectedTopic} Domain</p>
+                 <h2 className="text-2xl font-display font-bold text-white tracking-tight">Active Assessment</h2>
               </div>
-            </div>
-          </div>
+              <div className="text-right">
+                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Progress</p>
+                 <p className="text-sm font-black text-white">{currentIndex + 1} / {questions.length}</p>
+              </div>
+           </div>
+           <div className="h-2 bg-dark-900 rounded-full overflow-hidden p-0.5 border border-white/5">
+             <motion.div 
+               initial={{ width: 0 }}
+               animate={{ width: `${((currentIndex + (isAnswered ? 1 : 0)) / questions.length) * 100}%` }}
+               transition={{ duration: 0.5 }}
+               className="h-full bg-gradient-to-r from-primary-600 to-primary-400 rounded-full shadow-glow" 
+             />
+           </div>
+        </div>
 
-          {/* Options */}
-          <div className="space-y-3">
+        <div className="px-6 space-y-8 pb-20">
+          {/* Question Card */}
+          <AnimatePresence mode="wait">
+             <motion.div 
+               key={currentIndex}
+               initial={{ opacity: 0, x: 20 }}
+               animate={{ opacity: 1, x: 0 }}
+               exit={{ opacity: 0, x: -20 }}
+               className="glass-card p-1 border-white/5 bg-gradient-to-br from-primary-500/10 to-transparent"
+             >
+               <div className="p-10 text-center space-y-6">
+                 <h2 className="text-2xl font-display font-bold text-white leading-relaxed tracking-tight">
+                   {currentQ.question}
+                 </h2>
+                 <div className="flex justify-center gap-6">
+                    <button onClick={() => speak(currentQ.question)} className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-slate-500 hover:text-white transition-all border border-white/5">
+                      <Volume2 size={22} />
+                    </button>
+                    <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-slate-500 border border-white/5">
+                      <Languages size={22} />
+                    </div>
+                 </div>
+               </div>
+             </motion.div>
+          </AnimatePresence>
+
+          {/* Options Grid */}
+          <div className="grid grid-cols-1 gap-4">
             {currentQ.options.map((option, idx) => {
-              let statusClass = "border-white/10 text-slate-300 hover:border-primary-500/30 hover:bg-primary-500/5";
+              const isCorrect = idx === currentQ.correct;
+              const isSelected = idx === selectedOption;
+              
+              let variant = "bg-dark-900/50 border-white/5 text-slate-400 hover:border-white/10 hover:bg-white/5";
               if (isAnswered) {
-                if (idx === currentQ.correct) {
-                  statusClass = "border-green-500 bg-green-500/10 text-green-400 font-bold";
-                } else if (idx === selectedOption) {
-                  statusClass = "border-red-500 bg-red-500/10 text-red-400 font-bold";
-                } else {
-                  statusClass = "border-white/5 text-slate-500 opacity-50";
-                }
+                if (isCorrect) variant = "bg-accent-emerald/20 border-accent-emerald/40 text-accent-emerald shadow-glow";
+                else if (isSelected) variant = "bg-accent-rose/20 border-accent-rose/40 text-accent-rose shadow-glow";
+                else variant = "bg-dark-950 border-white/5 text-slate-600 opacity-40";
               }
 
               return (
-                <button
+                <motion.button
                   key={idx}
+                  whileHover={!isAnswered ? { scale: 1.02 } : {}}
                   disabled={isAnswered}
                   onClick={() => handleOptionSelect(idx)}
-                  className={`w-full text-left p-4 rounded-2xl border transition-all duration-300 flex items-center gap-4 ${statusClass}`}
+                  className={`group relative text-left p-5 rounded-2xl border transition-all duration-300 flex items-center gap-5 ${variant}`}
                 >
-                  <div className={`w-8 h-8 rounded-xl border flex items-center justify-center text-sm font-bold shrink-0 transition-colors ${isAnswered && idx === currentQ.correct ? 'bg-green-500 border-green-500 text-white' : isAnswered && idx === selectedOption ? 'bg-red-500 border-red-500 text-white' : 'border-slate-500 text-slate-500 group-hover:border-primary-400'}`}>
-                    {isAnswered && idx === currentQ.correct ? '✓' : isAnswered && idx === selectedOption ? '✕' : String.fromCharCode(65 + idx)}
+                  <div className={`w-10 h-10 rounded-xl border flex items-center justify-center text-xs font-black shrink-0 transition-all ${isAnswered && (isCorrect || isSelected) ? 'bg-white/10 border-white/20' : 'bg-white/5 border-white/10'}`}>
+                    {isAnswered && isCorrect ? <CheckCircle size={18} /> : isAnswered && isSelected ? <XCircle size={18} /> : String.fromCharCode(65 + idx)}
                   </div>
-                  <span className="flex-1 text-base">{option}</span>
-                </button>
+                  <span className="flex-1 font-bold tracking-tight">{option}</span>
+                </motion.button>
               );
             })}
           </div>
 
           {/* Explanation Box */}
-          {isAnswered && (
-            <div className="animate-slide-up">
-              <div className="bg-primary-500/5 border border-primary-500/20 p-6 rounded-3xl relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform">
-                  <Lightbulb size={48} />
-                </div>
-                <div className="flex items-center gap-2 text-primary-400 font-bold text-sm mb-3">
-                  <div className="w-8 h-8 rounded-lg bg-primary-500/10 flex items-center justify-center">
-                    <Lightbulb size={16} />
-                  </div>
-                  <span>Detailed Explanation</span>
-                </div>
-                <p className="text-slate-300 text-sm leading-relaxed relative z-10">
-                  {currentQ.explanation}
-                </p>
-              </div>
-            </div>
-          )}
+          <AnimatePresence>
+             {isAnswered && (
+               <motion.div 
+                 initial={{ opacity: 0, y: 10 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 className="space-y-6"
+               >
+                 <div className="glass-card p-8 bg-primary-500/5 border-primary-500/20 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-primary-500/5 rounded-full -mr-12 -mt-12" />
+                    <div className="flex items-center gap-3 text-primary-400 font-black text-[10px] uppercase tracking-widest mb-4">
+                      <Lightbulb size={16} />
+                      <span>Neural Analysis</span>
+                    </div>
+                    <p className="text-slate-300 text-sm leading-relaxed font-medium">
+                      {currentQ.explanation}
+                    </p>
+                 </div>
 
-          {/* Next Button */}
-          {isAnswered && (
-            <div className="pt-6">
-              <button 
-                onClick={handleNext}
-                className="w-full btn-primary py-5 flex items-center justify-center gap-2 rounded-2xl shadow-xl shadow-primary-500/20 text-lg font-bold"
-              >
-                {currentIndex === questions.length - 1 ? 'Finish Test' : 'Next Question'} <ChevronRight size={20} />
-              </button>
-            </div>
-          )}
+                 <button 
+                    onClick={handleNext}
+                    className="w-full btn-primary py-5 flex items-center justify-center gap-3 rounded-2xl shadow-glow text-base uppercase font-black tracking-widest"
+                  >
+                    {currentIndex === questions.length - 1 ? 'Terminate Mission' : 'Next Objective'} <ChevronRight size={20} />
+                  </button>
+               </motion.div>
+             )}
+          </AnimatePresence>
         </div>
       </div>
     );
@@ -307,50 +340,58 @@ export default function VerbalAbilityTest() {
   if (stage === 3) {
     const score = Math.round((correctCount / questions.length) * 100);
     return (
-      <div className="max-w-2xl mx-auto space-y-6 pb-20 animate-slide-up">
+      <div className="max-w-4xl mx-auto py-10 px-6 space-y-10 animate-slide-up">
         {reward && <XPReward {...reward} onClose={() => setReward(null)} />}
         
-        <div className="glass-card p-12 text-center border-primary-500/20 bg-gradient-to-b from-primary-500/10 to-transparent">
-          <div className="w-24 h-24 bg-dark-700/50 rounded-3xl flex items-center justify-center mx-auto mb-8 border border-white/5 shadow-2xl relative group">
-             <div className="absolute inset-0 bg-gradient-to-br from-primary-500 to-accent-blue opacity-20 rounded-3xl group-hover:opacity-40 transition-opacity"></div>
-             <Trophy size={48} className="text-primary-400 relative z-10" />
-          </div>
-          
-          <h2 className="text-4xl font-display font-bold text-white mb-3">Test Complete!</h2>
-          <p className="text-slate-400 mb-10 text-lg">You completed the <strong className="text-white">{selectedTopic}</strong> Verbal Ability Test.</p>
-          
-          <div className="grid grid-cols-2 gap-6 mb-12">
-            <div className="bg-dark-800/50 border border-white/5 rounded-3xl p-8 transition-transform hover:scale-105">
-              <p className="text-xs text-primary-400 uppercase font-black tracking-widest mb-2">Accuracy</p>
-              <p className="text-5xl font-bold text-white">{score}%</p>
+        <div className="glass-card p-1 border-white/5 bg-gradient-to-br from-primary-500/10 to-transparent shadow-2xl">
+          <div className="p-12 text-center flex flex-col items-center">
+            <div className="w-24 h-24 bg-dark-950 rounded-[32px] flex items-center justify-center mb-8 border border-white/5 shadow-inner relative group overflow-hidden">
+               <div className="absolute inset-0 bg-primary-500/10 group-hover:bg-primary-500/20 transition-colors" />
+               <Trophy size={48} className="text-primary-400 shadow-glow relative z-10" />
             </div>
-            <div className="bg-dark-800/50 border border-white/5 rounded-3xl p-8 transition-transform hover:scale-105">
-              <p className="text-xs text-green-400 uppercase font-black tracking-widest mb-2">Correct</p>
-              <p className="text-5xl font-bold text-white">{correctCount}</p>
+            
+            <h2 className="text-4xl md:text-5xl font-display font-bold text-white tracking-tight mb-4">
+              Mission <span className="shimmer-text">Finalized</span>
+            </h2>
+            <p className="text-slate-400 text-lg font-medium max-w-sm mb-10 leading-relaxed">
+              Domain Mastery in <span className="text-white font-bold">{selectedTopic}</span> authenticated. Performance analytics captured.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-lg mb-12">
+              <div className="bg-dark-950 border border-white/5 rounded-3xl p-8 transition-transform hover:scale-105">
+                <p className="text-[10px] text-primary-400 uppercase font-black tracking-widest mb-2">Accuracy Rate</p>
+                <p className="text-5xl font-black text-white leading-none">{score}%</p>
+              </div>
+              <div className="bg-dark-950 border border-white/5 rounded-3xl p-8 transition-transform hover:scale-105">
+                <p className="text-[10px] text-accent-emerald uppercase font-black tracking-widest mb-2">Objectives Met</p>
+                <p className="text-5xl font-black text-white leading-none">{correctCount}</p>
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-4 max-w-sm mx-auto">
-            <button onClick={() => startTest(selectedTopic)} className="btn-primary w-full py-4 flex items-center justify-center gap-2 rounded-2xl text-lg">
-              <RefreshCw size={20} /> Retake Test
-            </button>
-            <button onClick={() => setStage(0)} className="btn-ghost w-full py-4 rounded-2xl text-lg">
-              Practice Other Topics
-            </button>
-            <button onClick={() => navigate('/dashboard')} className="text-slate-500 hover:text-white transition-colors text-sm font-medium">
-              Return to Dashboard
-            </button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+              <button onClick={() => startTest(selectedTopic)} className="btn-primary py-5 flex items-center justify-center gap-3 rounded-2xl shadow-glow font-black text-xs uppercase tracking-[0.2em]">
+                <RefreshCw size={18} /> Re-Initiate
+              </button>
+              <button onClick={() => setStage(0)} className="btn-ghost py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] border-white/5">
+                Practice Domain
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Info Card */}
-        <div className="glass-card p-8 border-blue-500/20 bg-blue-500/5 flex items-start gap-4">
-          <div className="p-3 bg-blue-500/20 rounded-2xl text-blue-400">
-            <Zap size={24} />
-          </div>
-          <div>
-            <h4 className="font-bold text-white mb-1">XP & Learning</h4>
-            <p className="text-sm text-slate-400">Consistent practice on various topics is the key to mastering verbal ability. You've earned <strong>{reward?.xp} XP</strong> for this session!</p>
+        {/* Learning Insight */}
+        <div className="glass-card p-10 border-white/5 bg-dark-900/40 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
+          <div className="flex items-start gap-6">
+            <div className="w-14 h-14 bg-primary-500/10 rounded-2xl flex items-center justify-center text-primary-400 shrink-0 border border-primary-500/20">
+              <Zap size={24} />
+            </div>
+            <div>
+              <h4 className="text-xl font-display font-bold text-white mb-2 tracking-tight">Neural Reward: +{reward?.xp} XP</h4>
+              <p className="text-slate-400 text-sm leading-relaxed font-medium">
+                Cognitive patterns for <strong className="text-white">{selectedTopic}</strong> have been reinforced. Regular engagement with diverse domains ensures a robust linguistic foundation.
+              </p>
+            </div>
           </div>
         </div>
       </div>

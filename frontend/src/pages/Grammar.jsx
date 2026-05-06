@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckSquare, Send, AlertTriangle, Check, RefreshCw, Zap, BookOpen,
-  ChevronRight, XCircle, CheckCircle, Clock, Lightbulb, Shield, HelpCircle, Trophy
+  ChevronRight, XCircle, CheckCircle, Clock, Lightbulb, Shield, HelpCircle, Trophy,
+  Sparkles, Target, Activity, Wand2, Info, ArrowLeft, MoreHorizontal, MessageSquare
 } from 'lucide-react';
 import XPReward from '../components/XPReward';
 import { useAuth } from '../context/AuthContext';
@@ -18,12 +20,12 @@ const DAILY_TIPS = [
   "Their = belonging to them, There = a place, They're = they are."
 ];
 
-const SEVERITY_COLORS = { high: 'border-red-500/30 bg-red-500/5', medium: 'border-yellow-500/30 bg-yellow-500/5', low: 'border-blue-500/30 bg-blue-500/5' };
-const SEVERITY_BADGE = { high: 'text-red-400 bg-red-500/10', medium: 'text-yellow-400 bg-yellow-500/10', low: 'text-blue-400 bg-blue-500/10' };
+const SEVERITY_COLORS = { high: 'border-accent-rose/30 bg-accent-rose/5', medium: 'border-accent-amber/30 bg-accent-amber/5', low: 'border-primary-500/30 bg-primary-500/5' };
+const SEVERITY_BADGE = { high: 'text-accent-rose bg-accent-rose/10', medium: 'text-accent-amber bg-accent-amber/10', low: 'text-primary-400 bg-primary-500/10' };
 
 /* ── Inline Diff View ── */
 function InlineDiff({ originalText, errors }) {
-  if (!errors || errors.length === 0) return <p className="text-slate-300 leading-relaxed whitespace-pre-wrap">{originalText}</p>;
+  if (!errors || errors.length === 0) return <p className="text-slate-300 leading-relaxed whitespace-pre-wrap font-medium">{originalText}</p>;
   
   let parts = [originalText];
   errors.forEach(err => {
@@ -35,10 +37,10 @@ function InlineDiff({ originalText, errors }) {
       if (idx !== -1) {
         if (idx > 0) newParts.push(part.slice(0, idx));
         newParts.push(
-          <span key={Math.random()} className="mx-1 inline-flex items-center gap-1 bg-white/5 rounded px-1 border border-white/10">
-            <del className="text-red-400 decoration-red-500/50">{err.original}</del>
-            <span className="text-slate-500 text-[10px]">→</span>
-            <ins className="text-green-400 no-underline font-medium">{err.correction}</ins>
+          <span key={Math.random()} className="mx-1 inline-flex items-center gap-2 bg-dark-950/80 rounded-xl px-2.5 py-1 border border-white/5 shadow-inner">
+            <del className="text-accent-rose decoration-accent-rose/50 no-underline opacity-50">{err.original}</del>
+            <span className="text-slate-600 text-[10px] font-black tracking-widest">→</span>
+            <ins className="text-accent-emerald no-underline font-black">{err.correction}</ins>
           </span>
         );
         const rem = part.slice(idx + err.original.length);
@@ -50,7 +52,7 @@ function InlineDiff({ originalText, errors }) {
     parts = newParts;
   });
 
-  return <p className="text-sm leading-loose whitespace-pre-wrap">{parts}</p>;
+  return <p className="text-sm md:text-base leading-loose whitespace-pre-wrap font-medium text-slate-300">{parts}</p>;
 }
 
 export default function Grammar() {
@@ -77,7 +79,6 @@ export default function Grammar() {
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [quizStats, setQuizStats] = useState(null);
   
-  // Quiz mechanics
   const [timeLeft, setTimeLeft] = useState(30);
   const [streakCount, setStreakCount] = useState(0);
   const [lifelines, setLifelines] = useState({ fiftyFifty: 1, askAI: 1 });
@@ -88,7 +89,7 @@ export default function Grammar() {
   /* ── Checker Logic ── */
   const handleCheck = async (recheckText = null) => {
     const txt = recheckText || text;
-    if (!txt.trim()) return toast.error('Enter some text to check!');
+    if (!txt.trim()) return toast.error('Enter a linguistic string to analyze.');
     setLoading(true);
     if (result) setPrevScore(result.overallScore);
     
@@ -98,7 +99,7 @@ export default function Grammar() {
       if (recheckText) setText(recheckText);
       setReward({ xp: data.xpEarned, coins: data.coinsEarned, score: data.overallScore });
       await fetchProfile();
-    } catch (err) { toast.error('Check failed'); }
+    } catch (err) { toast.error('Neural analysis failed.'); }
     finally { setLoading(false); }
   };
 
@@ -114,7 +115,7 @@ export default function Grammar() {
       const { data } = await axios.post('/api/grammar/quiz/generate', { level: quizLevel });
       setQuiz(data);
       startTimer();
-    } catch { toast.error('Failed to generate quiz'); }
+    } catch { toast.error('Failed to initiate quiz protocol.'); }
     finally { setLoading(false); }
   };
 
@@ -123,7 +124,7 @@ export default function Grammar() {
     clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
       setTimeLeft(t => {
-        if (t <= 1) { handleQuizNext(null); return 30; } // Auto-skip on timeout
+        if (t <= 1) { handleQuizNext(null); return 30; }
         return t - 1;
       });
     }, 1000);
@@ -133,18 +134,17 @@ export default function Grammar() {
     if (lifelines.fiftyFifty <= 0 || hiddenOptions.length > 0) return;
     const q = quiz.questions[currentQ];
     const wrongs = q.options.map((_, i) => i).filter(i => i !== q.correct);
-    // Hide 2 random wrong options
     const hide = wrongs.sort(() => 0.5 - Math.random()).slice(0, 2);
     setHiddenOptions(hide);
     setLifelines(l => ({ ...l, fiftyFifty: 0 }));
-    toast.success('Removed 2 wrong answers!');
+    toast.success('Linguistic noise reduced.');
   };
 
   const useAskAI = () => {
     if (lifelines.askAI <= 0) return;
     setShowHint(true);
     setLifelines(l => ({ ...l, askAI: 0 }));
-    toast('AI Hint revealed!', { icon: '🤖' });
+    toast('Neural hint revealed.', { icon: '🤖' });
   };
 
   const handleQuizNext = (ansIdx) => {
@@ -152,9 +152,8 @@ export default function Grammar() {
     const q = quiz.questions[currentQ];
     const isCorrect = ansIdx === q.correct;
     
-    // Save answer & time bonus
     const timeBonus = isCorrect && timeLeft > 15 ? 5 : 0;
-    const streakBonus = isCorrect && streakCount >= 2 ? 10 : 0; // 2x XP effectively
+    const streakBonus = isCorrect && streakCount >= 2 ? 10 : 0;
     
     setQuizAnswers(p => ({ 
       ...p, 
@@ -163,7 +162,7 @@ export default function Grammar() {
 
     if (isCorrect) {
       setStreakCount(s => s + 1);
-      if (streakCount >= 2) toast.success('🔥 Streak Multiplier Active!');
+      if (streakCount >= 2) toast.success('🔥 Neural Streak Multiplier!');
     } else {
       setStreakCount(0);
     }
@@ -174,9 +173,9 @@ export default function Grammar() {
         setHiddenOptions([]);
         setShowHint(false);
         startTimer();
-      }, 1500); // Brief pause to show correct answer
+      }, 1200);
     } else {
-      setTimeout(finishQuiz, 1500);
+      setTimeout(finishQuiz, 1200);
     }
   };
 
@@ -191,7 +190,6 @@ export default function Grammar() {
       const ans = quizAnswers[idx];
       totalXp += ans.xp;
       if (ans.isCorrect) correctCount++;
-      
       if (!topicStats[q.topic]) topicStats[q.topic] = { c: 0, t: 0 };
       topicStats[q.topic].t++;
       if (ans.isCorrect) topicStats[q.topic].c++;
@@ -200,8 +198,6 @@ export default function Grammar() {
     setQuizStats(topicStats);
     setReward({ xp: totalXp, coins: Math.floor(totalXp / 3), score: Math.round((correctCount/5)*100) });
     fetchProfile();
-
-    // Local Leaderboard
     const best = parseInt(localStorage.getItem('lq_best_quiz') || '0');
     if (totalXp > best) localStorage.setItem('lq_best_quiz', totalXp.toString());
   };
@@ -213,155 +209,189 @@ export default function Grammar() {
   ];
 
   return (
-    <div className="max-w-3xl mx-auto animate-slide-up">
+    <div className="max-w-4xl mx-auto space-y-10 pb-20">
       {reward && <XPReward {...reward} onClose={() => setReward(null)} />}
 
-      {/* Header & Daily Tip */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-400 rounded-xl flex items-center justify-center">
-            <CheckSquare size={22} className="text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-display font-bold text-white">Grammar Tools</h1>
-            {user?.streak >= 5 && (
-              <span className="text-xs font-bold text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded-full inline-flex items-center gap-1 mt-1">
-                🔥 Grammar Master Badge ({user.streak} days!)
-              </span>
-            )}
-          </div>
+      {/* Premium Header */}
+      <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-8 animate-slide-up">
+        <div className="flex-1">
+           <div className="flex items-center gap-3 mb-2">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-accent-amber">Syntactic Shield</span>
+              <div className="h-px w-8 bg-accent-amber/30" />
+           </div>
+           <h1 className="text-4xl md:text-5xl font-display font-bold text-white tracking-tight">Grammar <span className="shimmer-text">Nexus</span></h1>
+           <p className="text-slate-400 text-lg mt-2 font-medium">Neural error detection & competitive linguistics.</p>
         </div>
-        <div className="bg-dark-600/50 border border-white/5 p-3 rounded-xl max-w-sm w-full">
-          <div className="flex items-center gap-1.5 text-orange-400 mb-1 text-xs font-bold uppercase tracking-wider">
-            <Lightbulb size={12} /> Tip of the Day
-          </div>
-          <p className="text-sm text-slate-300 italic">"{tipOfDay}"</p>
+
+        <div className="glass-card p-6 border-accent-amber/20 bg-accent-amber/5 max-w-sm w-full relative overflow-hidden group">
+           <div className="absolute top-0 right-0 w-24 h-24 bg-accent-amber/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
+           <div className="relative z-10">
+              <div className="flex items-center gap-2 text-accent-amber mb-2 text-[10px] font-black uppercase tracking-widest">
+                 <Lightbulb size={12} className="animate-pulse" /> Neural Insight
+              </div>
+              <p className="text-sm text-slate-300 italic font-medium leading-relaxed">"{tipOfDay}"</p>
+           </div>
         </div>
       </div>
 
-      {/* Mode toggle */}
-      <div className="flex gap-2 mb-6">
-        <button onClick={() => setMode('checker')} className={`flex-1 py-3 rounded-xl font-medium text-sm transition-all ${mode === 'checker' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' : 'bg-white/5 text-slate-400 hover:bg-white/10'}`}>
-          ✍️ Grammar Checker
+      {/* Mode Navigation */}
+      <div className="flex p-1.5 bg-dark-900/50 rounded-[24px] border border-white/5 gap-1.5 backdrop-blur-xl animate-slide-up">
+        <button 
+          onClick={() => setMode('checker')} 
+          className={`flex-1 flex items-center justify-center gap-3 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${mode === 'checker' ? 'bg-primary-500 text-white shadow-glow' : 'text-slate-500 hover:text-slate-200'}`}
+        >
+          <Wand2 size={14}/> Analysis Protocol
         </button>
-        <button onClick={() => setMode('quiz')} className={`flex-1 py-3 rounded-xl font-medium text-sm transition-all ${mode === 'quiz' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' : 'bg-white/5 text-slate-400 hover:bg-white/10'}`}>
-          🧠 Grammar Quiz
+        <button 
+          onClick={() => setMode('quiz')} 
+          className={`flex-1 flex items-center justify-center gap-3 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${mode === 'quiz' ? 'bg-primary-500 text-white shadow-glow' : 'text-slate-500 hover:text-slate-200'}`}
+        >
+          <Activity size={14}/> Competitive Sprint
         </button>
       </div>
 
       {/* ── CHECKER MODE ── */}
       {mode === 'checker' && (
-        <div className="space-y-6">
-          <div className="glass-card p-6">
-            <div className="flex items-center justify-between mb-3">
-              <label className="text-sm font-medium text-slate-300">Paste your text here</label>
-              <span className="text-xs text-slate-500">{text.trim().split(/\s+/).filter(Boolean).length} words</span>
-            </div>
-            <textarea
-              value={text}
-              onChange={e => { setText(e.target.value); setResult(null); setPrevScore(null); }}
-              placeholder="Type or paste your text here to check for grammar mistakes..."
-              className="input-field min-h-[160px] resize-y font-body leading-relaxed"
-            />
-            {/* Examples */}
-            <div className="mt-3">
-              <p className="text-xs text-slate-500 mb-2">Try an example:</p>
-              <div className="flex flex-wrap gap-2">
-                {EXAMPLE_TEXTS.map((ex, i) => (
-                  <button key={i} onClick={() => { setText(ex); setResult(null); setPrevScore(null); }}
-                    className="text-xs bg-dark-600 border border-white/10 rounded-lg px-3 py-1.5 text-slate-400 hover:text-slate-200 hover:border-white/20 transition-all text-left max-w-xs truncate">
-                    Example {i + 1}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <button onClick={() => handleCheck()} disabled={loading || !text.trim()} className="btn-primary w-full mt-4 flex items-center justify-center gap-2">
-              {loading ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Analyzing...</> : <><Send size={16} /> Check Grammar</>}
-            </button>
+        <div className="space-y-8 animate-slide-up">
+          <div className="glass-card p-1 border-white/5 bg-dark-900 shadow-2xl relative">
+             <div className="p-8 space-y-6">
+                <div className="flex items-center justify-between px-2">
+                   <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">TRANSMISSION INPUT</p>
+                   <span className="text-[10px] font-black text-primary-400 uppercase tracking-widest">{text.trim().split(/\s+/).filter(Boolean).length} WORDS</span>
+                </div>
+                <textarea
+                  value={text}
+                  onChange={e => { setText(e.target.value); setResult(null); setPrevScore(null); }}
+                  placeholder="Paste your linguistic composition for neural analysis..."
+                  className="w-full bg-transparent border-none focus:ring-0 min-h-[220px] p-6 font-medium text-lg leading-relaxed text-slate-200 placeholder-slate-700 resize-none"
+                />
+                <div className="space-y-4">
+                  <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest ml-2">Seed Protocols (Examples)</p>
+                  <div className="flex flex-wrap gap-2 px-1">
+                    {EXAMPLE_TEXTS.map((ex, i) => (
+                      <button key={i} onClick={() => { setText(ex); setResult(null); setPrevScore(null); }}
+                        className="text-[10px] font-black uppercase tracking-tight bg-dark-950 border border-white/5 rounded-xl px-4 py-2.5 text-slate-500 hover:text-white hover:border-white/10 transition-all">
+                        Sample {i + 1}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+             </div>
+             <div className="p-4 bg-dark-950/40 border-t border-white/5 rounded-b-[24px]">
+                <button onClick={() => handleCheck()} disabled={loading || !text.trim()} className="btn-primary w-full py-4 flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] shadow-glow">
+                  {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <><Send size={16} /> Execute Neural Scan</>}
+                </button>
+             </div>
           </div>
 
           {result && (
-            <div className="space-y-4 animate-slide-up">
-              {/* Score Card */}
-              <div className={`glass-card p-5 ${result.hasErrors ? 'border-yellow-500/20' : 'border-green-500/20'}`}>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-display font-bold text-white text-lg">Grammar Score</h3>
-                    {prevScore && <p className="text-sm text-green-400 mt-1">📈 Improved by {result.overallScore - prevScore} points!</p>}
-                    {!prevScore && <p className="text-slate-400 text-sm mt-1">{result.errors?.length || 0} issue{(result.errors?.length || 0) !== 1 ? 's' : ''} found</p>}
-                  </div>
-                  <div className={`text-5xl font-display font-bold ${result.overallScore >= 80 ? 'text-green-400' : result.overallScore >= 60 ? 'text-yellow-400' : 'text-red-400'}`}>
-                    {result.overallScore}%
-                  </div>
-                </div>
+            <div className="space-y-8 animate-slide-up pb-10">
+              {/* Score Statistics */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                 <div className="md:col-span-1 glass-card p-8 border-white/5 bg-dark-900/40 text-center flex flex-col items-center justify-center">
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Neural Accuracy</p>
+                    <div className="relative mb-4">
+                       <svg width="100" height="100" className="-rotate-90">
+                          <circle cx="50" cy="50" r="45" stroke="rgba(255,255,255,0.05)" strokeWidth="6" fill="none" />
+                          <motion.circle 
+                             initial={{ strokeDashoffset: 283 }}
+                             animate={{ strokeDashoffset: 283 - (result.overallScore / 100) * 283 }}
+                             transition={{ duration: 1.5 }}
+                             cx="50" cy="50" r="45" stroke={result.overallScore >= 80 ? '#10b981' : '#f59e0b'} strokeWidth="6" fill="none"
+                             strokeDasharray="283"
+                             strokeLinecap="round" 
+                             className="shadow-glow"
+                          />
+                       </svg>
+                       <div className="absolute inset-0 flex items-center justify-center font-black text-2xl text-white">
+                          {result.overallScore}%
+                       </div>
+                    </div>
+                    {prevScore && <span className="text-[10px] font-black text-accent-emerald uppercase animate-pulse">+{result.overallScore - prevScore}% Improvement</span>}
+                 </div>
+
+                 <div className="md:col-span-2 glass-card p-10 border-white/5 bg-dark-900/40">
+                    <div className="flex items-center justify-between mb-8">
+                       <h3 className="text-xl font-display font-bold text-white tracking-tight">Decoded composition</h3>
+                       <div className="flex items-center gap-2 bg-dark-950 px-3 py-1 rounded-full border border-white/5">
+                          <span className="text-[9px] font-black text-primary-400 uppercase tracking-widest">{result.errors?.length || 0} Flags Found</span>
+                       </div>
+                    </div>
+                    <div className="p-8 bg-dark-950 rounded-3xl border border-white/5 shadow-inner">
+                       <InlineDiff originalText={text} errors={result.errors} />
+                    </div>
+                    {result.hasErrors && (
+                      <button onClick={() => handleCheck(result.correctedText)} className="btn-primary w-full mt-8 py-4 flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest shadow-glow">
+                        <RefreshCw size={16} /> Normalize & Re-Scan
+                      </button>
+                    )}
+                 </div>
               </div>
 
-              {/* Inline Diff View */}
-              <div className="glass-card p-6 border-white/10">
-                <h3 className="font-semibold text-white mb-4">Document Edits</h3>
-                <div className="p-4 bg-dark-700/50 rounded-xl border border-white/5 font-body">
-                  <InlineDiff originalText={text} errors={result.errors} />
-                </div>
-                {result.hasErrors && (
-                  <button onClick={() => handleCheck(result.correctedText)} className="btn-primary w-full mt-4 flex items-center justify-center gap-2">
-                    <RefreshCw size={16} /> Apply Corrections & Recheck
-                  </button>
-                )}
-              </div>
-
-              {/* Errors List & Filters */}
+              {/* Error Breakdown */}
               {result.errors?.length > 0 && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-white flex items-center gap-2"><AlertTriangle size={16} className="text-amber-400" /> Error Breakdown</h3>
-                    <div className="flex gap-1">
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between px-2">
+                    <h3 className="text-xl font-display font-bold text-white tracking-tight flex items-center gap-3">
+                       <AlertTriangle size={20} className="text-accent-amber" /> Neural Flags
+                    </h3>
+                    <div className="flex gap-2">
                       {categories.map(c => (
                         <button key={c} onClick={() => setFilterType(c)}
-                          className={`text-xs px-2.5 py-1 rounded-full border transition-all ${filterType === c ? 'bg-orange-500/20 border-orange-500/30 text-orange-400' : 'border-white/10 text-slate-400'}`}>
+                          className={`text-[9px] px-4 py-1.5 rounded-full border font-black uppercase tracking-widest transition-all ${filterType === c ? 'bg-primary-500 border-primary-500 text-white shadow-glow' : 'border-white/10 text-slate-500 hover:text-white'}`}>
                           {c}
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  {filteredErrors.map((err, i) => (
-                    <div key={i} className={`glass-card p-4 border ${SEVERITY_COLORS[err.severity] || SEVERITY_COLORS.medium}`}>
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${SEVERITY_BADGE[err.severity] || SEVERITY_BADGE.medium}`}>{err.type}</span>
-                          <span className="text-xs text-slate-500 capitalize">{err.severity} severity</span>
+                  <div className="grid grid-cols-1 gap-4">
+                    {filteredErrors.map((err, i) => (
+                      <div key={i} className={`glass-card p-8 border-white/5 bg-dark-900/40 relative overflow-hidden group ${SEVERITY_COLORS[err.severity] || SEVERITY_COLORS.medium}`}>
+                        <div className="flex items-center justify-between mb-6">
+                          <div className="flex items-center gap-3">
+                            <span className={`text-[10px] font-black px-4 py-1.5 rounded-xl uppercase tracking-widest ${SEVERITY_BADGE[err.severity] || SEVERITY_BADGE.medium}`}>{err.type}</span>
+                            <div className="w-1 h-1 rounded-full bg-slate-700" />
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest capitalize">{err.severity} Priority</span>
+                          </div>
                         </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-2 text-sm mb-2 flex-wrap">
-                        <span className="line-through text-red-400 bg-red-500/10 px-1.5 rounded">"{err.original}"</span>
-                        <ChevronRight size={12} className="text-slate-500" />
-                        <span className="text-green-400 bg-green-500/10 px-1.5 rounded font-medium">"{err.correction}"</span>
-                      </div>
-                      
-                      <p className="text-xs text-slate-300 leading-relaxed mb-3">{err.explanation}</p>
-                      
-                      {/* Rule Library / Examples */}
-                      {err.ruleExamples && err.ruleExamples.length > 0 && (
-                        <div>
-                          <button onClick={() => setExpandedRules(p => ({ ...p, [i]: !p[i] }))} className="text-xs text-orange-400 hover:text-orange-300 flex items-center gap-1 font-medium transition-all">
-                            <BookOpen size={12} /> {expandedRules[i] ? 'Hide Rule Examples' : 'Learn Rule'}
-                          </button>
-                          {expandedRules[i] && (
-                            <div className="mt-2 p-3 bg-dark-700/80 rounded-xl border border-white/5 space-y-1.5">
-                              <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Correct Usage Examples:</p>
-                              {err.ruleExamples.map((ex, j) => (
-                                <p key={j} className="text-xs text-slate-300 flex items-start gap-1.5">
-                                  <span className="text-green-400 mt-0.5">✓</span> <span>{ex}</span>
-                                </p>
-                              ))}
-                            </div>
-                          )}
+                        
+                        <div className="flex items-center gap-4 mb-6 flex-wrap bg-dark-950/50 p-4 rounded-2xl border border-white/5">
+                          <span className="line-through text-accent-rose font-medium opacity-50 px-2 text-lg">"{err.original}"</span>
+                          <ChevronRight size={16} className="text-slate-600" />
+                          <span className="text-accent-emerald font-black px-2 text-lg">"{err.correction}"</span>
                         </div>
-                      )}
-                    </div>
-                  ))}
-                  {filteredErrors.length === 0 && <p className="text-slate-500 text-sm text-center py-4">No errors matching this category.</p>}
+                        
+                        <p className="text-sm text-slate-400 leading-relaxed font-medium mb-6 italic">"{err.explanation}"</p>
+                        
+                        {err.ruleExamples && err.ruleExamples.length > 0 && (
+                          <div className="space-y-4">
+                            <button onClick={() => setExpandedRules(p => ({ ...p, [i]: !p[i] }))} className="text-[10px] font-black text-primary-400 uppercase tracking-widest hover:text-white flex items-center gap-2 transition-all">
+                              <BookOpen size={14} /> {expandedRules[i] ? 'Minimize Protocol' : 'Learn Domain Rule'}
+                            </button>
+                            <AnimatePresence>
+                               {expandedRules[i] && (
+                                 <motion.div 
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    className="p-6 bg-dark-950 rounded-2xl border border-white/5 space-y-3"
+                                 >
+                                   <p className="text-[9px] text-slate-600 uppercase font-black tracking-[0.2em] mb-2">Authenticated Usage Patterns</p>
+                                   {err.ruleExamples.map((ex, j) => (
+                                     <div key={j} className="text-sm text-slate-300 flex items-center gap-3 font-medium">
+                                       <div className="w-5 h-5 rounded-lg bg-accent-emerald/10 flex items-center justify-center text-accent-emerald text-[10px]">✓</div>
+                                       <span>{ex}</span>
+                                     </div>
+                                   ))}
+                                 </motion.div>
+                               )}
+                            </AnimatePresence>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -371,132 +401,174 @@ export default function Grammar() {
 
       {/* ── QUIZ MODE ── */}
       {mode === 'quiz' && (
-        <div className="space-y-6">
+        <div className="space-y-8 animate-slide-up">
           {!quiz && (
-            <div className="glass-card p-6 text-center">
-              <Trophy size={48} className="text-orange-400 mx-auto mb-4 opacity-50" />
-              <h3 className="font-semibold text-white mb-2">Grammar Sprint</h3>
-              <p className="text-sm text-slate-400 mb-6 max-w-sm mx-auto">30 seconds per question. Answer faster for time bonuses. Get 3 in a row for 2x XP!</p>
-              
-              <div className="flex justify-center gap-2 mb-6">
-                {['beginner', 'intermediate', 'advanced'].map(l => (
-                  <button key={l} onClick={() => setQuizLevel(l)}
-                    className={`px-4 py-2 rounded-xl text-xs capitalize border transition-all ${quizLevel === l ? 'bg-orange-500/20 border-orange-500/30 text-orange-400 font-bold' : 'border-white/10 text-slate-400'}`}>
-                    {l}
-                  </button>
-                ))}
-              </div>
-              <button onClick={generateQuiz} disabled={loading} className="btn-primary w-full max-w-xs mx-auto flex items-center justify-center gap-2">
-                {loading ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Generating...</> : <>🧠 Start Quiz</>}
-              </button>
-              
-              {localStorage.getItem('lq_best_quiz') && (
-                <p className="text-xs text-slate-500 mt-4">Your Daily Best: <span className="text-orange-400 font-bold">{localStorage.getItem('lq_best_quiz')} XP</span></p>
-              )}
+            <div className="glass-card p-12 text-center flex flex-col items-center border-white/5 bg-dark-900/40 relative overflow-hidden">
+               <div className="absolute top-0 right-0 w-48 h-48 bg-primary-500/5 rounded-full -mr-24 -mt-24" />
+               <div className="w-20 h-20 bg-dark-950 rounded-[24px] flex items-center justify-center mb-8 border border-white/5 shadow-inner">
+                  <Activity size={32} className="text-primary-500 shadow-glow" />
+               </div>
+               <h3 className="text-3xl font-display font-bold text-white tracking-tight mb-2">Linguistic Combat</h3>
+               <p className="text-slate-400 text-lg font-medium mb-10 max-w-sm leading-relaxed">30s limit. Sequential precision required. Multipliers active for streaks.</p>
+               
+               <div className="flex justify-center gap-3 mb-10">
+                 {['beginner', 'intermediate', 'advanced'].map(l => (
+                   <button key={l} onClick={() => setQuizLevel(l)}
+                     className={`px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest border transition-all duration-500 ${quizLevel === l ? 'bg-primary-500 border-primary-500 text-white shadow-glow' : 'bg-dark-950 border-white/5 text-slate-500 hover:text-white'}`}>
+                     {l}
+                   </button>
+                 ))}
+               </div>
+               <button onClick={generateQuiz} disabled={loading} className="btn-primary w-full max-w-sm py-5 flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] shadow-glow">
+                 {loading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <> Initiate Quiz Protocol</>}
+               </button>
+               
+               {localStorage.getItem('lq_best_quiz') && (
+                 <div className="mt-10 pt-6 border-t border-white/5 w-full">
+                    <p className="text-[10px] text-slate-600 font-black uppercase tracking-[0.2em]">Operational Best</p>
+                    <p className="text-2xl font-black text-white mt-1">{localStorage.getItem('lq_best_quiz')} <span className="text-primary-400 text-sm">XP</span></p>
+                 </div>
+               )}
             </div>
           )}
 
           {quiz && !quizSubmitted && (
-            <div className="glass-card p-6 animate-slide-up">
-              {/* Quiz Header: Timer & Lifelines */}
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
-                <div className="flex items-center gap-4">
-                  <div className={`flex items-center gap-1.5 font-mono text-lg font-bold ${timeLeft <= 10 ? 'text-red-400 animate-pulse' : 'text-slate-200'}`}>
-                    <Clock size={18} /> 00:{String(timeLeft).padStart(2, '0')}
+            <div className="glass-card p-10 animate-slide-up border-white/5 bg-dark-900/40">
+              {/* Quiz Header */}
+              <div className="flex items-center justify-between mb-10">
+                <div className="flex items-center gap-6">
+                  <div className={`flex items-center gap-3 font-black text-2xl ${timeLeft <= 10 ? 'text-accent-rose animate-pulse' : 'text-white'}`}>
+                    <Clock size={24} /> 00:{String(timeLeft).padStart(2, '0')}
                   </div>
-                  {streakCount >= 2 && <span className="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded-lg font-bold flex items-center gap-1 animate-bounce"><Zap size={12}/> 2x XP</span>}
+                  <AnimatePresence>
+                     {streakCount >= 2 && (
+                        <motion.div 
+                           initial={{ scale: 0, opacity: 0 }}
+                           animate={{ scale: 1, opacity: 1 }}
+                           className="text-[10px] bg-primary-500/20 text-primary-400 border border-primary-500/20 px-4 py-1.5 rounded-full font-black flex items-center gap-2 tracking-[0.2em]"
+                        >
+                           <Zap size={12} className="fill-primary-400"/> MULTIPLIER 2X
+                        </motion.div>
+                     )}
+                  </AnimatePresence>
                 </div>
-                <div className="flex gap-2">
-                  <button onClick={useFiftyFifty} disabled={lifelines.fiftyFifty <= 0} className={`text-xs px-3 py-1.5 rounded-lg border flex items-center gap-1 transition-all ${lifelines.fiftyFifty > 0 ? 'bg-dark-600 border-white/10 text-white hover:bg-white/10' : 'bg-transparent border-transparent text-slate-600'}`}>
-                    <Shield size={12} /> 50/50
+                <div className="flex gap-3">
+                  <button onClick={useFiftyFifty} disabled={lifelines.fiftyFifty <= 0} className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${lifelines.fiftyFifty > 0 ? 'bg-dark-950 border border-white/5 text-slate-400 hover:text-white' : 'opacity-20 grayscale cursor-not-allowed'}`}>
+                    <Shield size={20} />
                   </button>
-                  <button onClick={useAskAI} disabled={lifelines.askAI <= 0} className={`text-xs px-3 py-1.5 rounded-lg border flex items-center gap-1 transition-all ${lifelines.askAI > 0 ? 'bg-dark-600 border-white/10 text-white hover:bg-white/10' : 'bg-transparent border-transparent text-slate-600'}`}>
-                    <HelpCircle size={12} /> Hint
+                  <button onClick={useAskAI} disabled={lifelines.askAI <= 0} className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${lifelines.askAI > 0 ? 'bg-dark-950 border border-white/5 text-slate-400 hover:text-white' : 'opacity-20 grayscale cursor-not-allowed'}`}>
+                    <HelpCircle size={20} />
                   </button>
                 </div>
               </div>
 
               {/* Progress */}
-              <div className="flex gap-1 mb-4">
-                {quiz.questions.map((_, i) => (
-                  <div key={i} className={`flex-1 h-1.5 rounded-full transition-all ${i === currentQ ? 'bg-orange-400' : i < currentQ ? 'bg-green-500' : 'bg-white/10'}`} />
-                ))}
+              <div className="h-1.5 bg-dark-950 rounded-full overflow-hidden mb-10 p-0.5 border border-white/5">
+                <motion.div 
+                   animate={{ width: `${((currentQ + (Object.keys(quizAnswers).length > currentQ ? 1 : 0)) / quiz.questions.length) * 100}%` }}
+                   className="h-full bg-primary-500 rounded-full shadow-glow" 
+                />
               </div>
 
               {/* Question */}
-              {quiz.questions[currentQ] && (
-                <div className="space-y-4 relative">
-                  <span className="text-xs text-orange-400 font-semibold uppercase tracking-wider">{quiz.questions[currentQ].topic}</span>
-                  <p className="text-lg font-medium text-white mb-4">{quiz.questions[currentQ].question}</p>
-                  
-                  {showHint && quiz.questions[currentQ].hint && (
-                    <p className="text-sm text-yellow-300 bg-yellow-500/10 border border-yellow-500/20 p-3 rounded-xl mb-4 flex items-start gap-2">
-                      <Lightbulb size={16} className="shrink-0 mt-0.5" /> {quiz.questions[currentQ].hint}
-                    </p>
-                  )}
+              <AnimatePresence mode="wait">
+                 <motion.div 
+                    key={currentQ}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="space-y-8"
+                 >
+                   <div className="space-y-3">
+                      <p className="text-[10px] text-primary-400 font-black uppercase tracking-[0.2em]">{quiz.questions[currentQ].topic}</p>
+                      <h3 className="text-2xl font-display font-bold text-white tracking-tight leading-relaxed">{quiz.questions[currentQ].question}</h3>
+                   </div>
+                   
+                   <AnimatePresence>
+                      {showHint && quiz.questions[currentQ].hint && (
+                        <motion.div 
+                           initial={{ height: 0, opacity: 0 }}
+                           animate={{ height: 'auto', opacity: 1 }}
+                           className="text-sm text-accent-amber bg-accent-amber/5 border border-accent-amber/10 p-5 rounded-2xl flex items-start gap-3 font-medium italic"
+                        >
+                          <Lightbulb size={18} className="shrink-0 mt-0.5 text-accent-amber shadow-glow" /> 
+                          <span>"{quiz.questions[currentQ].hint}"</span>
+                        </motion.div>
+                      )}
+                   </AnimatePresence>
 
-                  <div className="grid grid-cols-1 gap-2">
-                    {quiz.questions[currentQ].options.map((opt, oi) => {
-                      if (hiddenOptions.includes(oi)) return <div key={oi} className="hidden" />;
-                      
-                      const state = quizAnswers[currentQ];
-                      const isSelected = state?.ansIdx === oi;
-                      const isCorrect = state !== undefined && oi === quiz.questions[currentQ].correct;
-                      const isWrong = state !== undefined && isSelected && !state.isCorrect;
+                   <div className="grid grid-cols-1 gap-4">
+                     {quiz.questions[currentQ].options.map((opt, oi) => {
+                       if (hiddenOptions.includes(oi)) return null;
+                       
+                       const state = quizAnswers[currentQ];
+                       const isSelected = state?.ansIdx === oi;
+                       const isCorrect = state !== undefined && oi === quiz.questions[currentQ].correct;
+                       const isWrong = state !== undefined && isSelected && !state.isCorrect;
 
-                      return (
-                        <button key={oi} onClick={() => !state && handleQuizNext(oi)} disabled={!!state}
-                          className={`w-full text-left px-5 py-4 rounded-xl border text-sm transition-all flex items-center gap-3 ${
-                            isCorrect ? 'border-green-500 bg-green-500/20 text-green-300' :
-                            isWrong ? 'border-red-500 bg-red-500/20 text-red-300' :
-                            'border-white/10 text-slate-300 hover:border-orange-500/50 hover:bg-orange-500/5'
-                          }`}>
-                          <span className="w-6 h-6 rounded-full border border-current flex items-center justify-center text-xs shrink-0 font-bold">
-                            {String.fromCharCode(65 + oi)}
-                          </span>
-                          <span className="flex-1 text-base">{opt}</span>
-                          {isCorrect && <span className="text-green-400 text-xs font-bold flex flex-col items-end">
-                            Correct!
-                            {state.timeBonus > 0 && <span className="text-yellow-400">+ {state.timeBonus} Time XP</span>}
-                            {state.streakBonus > 0 && <span className="text-orange-400">+ {state.streakBonus} Streak XP</span>}
-                          </span>}
-                          {isWrong && <XCircle size={18} className="text-red-400 shrink-0" />}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
+                       return (
+                         <motion.button 
+                            key={oi} 
+                            whileHover={!state ? { scale: 1.02 } : {}}
+                            onClick={() => !state && handleQuizNext(oi)} 
+                            disabled={!!state}
+                            className={`w-full text-left p-6 rounded-3xl border transition-all flex items-center gap-6 ${
+                              isCorrect ? 'border-accent-emerald bg-accent-emerald/10 text-accent-emerald shadow-glow' :
+                              isWrong ? 'border-accent-rose bg-accent-rose/10 text-accent-rose shadow-glow' :
+                              'border-white/5 bg-dark-950 text-slate-400 hover:border-primary-500/50 hover:bg-white/5'
+                            }`}
+                         >
+                           <div className={`w-10 h-10 rounded-2xl border border-current flex items-center justify-center text-xs font-black shrink-0 transition-all ${state ? 'bg-white/10' : ''}`}>
+                             {String.fromCharCode(65 + oi)}
+                           </div>
+                           <span className="flex-1 text-base font-bold tracking-tight">{opt}</span>
+                           {isCorrect && (
+                              <div className="flex flex-col items-end">
+                                 <span className="text-[10px] font-black uppercase tracking-widest">Verified</span>
+                                 {state.timeBonus > 0 && <span className="text-[9px] font-black text-accent-amber uppercase mt-1">+{state.timeBonus} Time</span>}
+                                 {state.streakBonus > 0 && <span className="text-[9px] font-black text-primary-400 uppercase mt-0.5">+{state.streakBonus} Multiplier</span>}
+                              </div>
+                           )}
+                           {isWrong && <XCircle size={20} className="text-accent-rose" />}
+                         </motion.button>
+                       );
+                     })}
+                   </div>
+                 </motion.div>
+              </AnimatePresence>
             </div>
           )}
 
           {/* Quiz Results */}
           {quizSubmitted && quizStats && (
-            <div className="glass-card p-6 animate-slide-up text-center border-orange-500/20 bg-gradient-to-br from-orange-500/10 to-amber-500/5">
-              <h2 className="text-2xl font-display font-bold text-white mb-2">Quiz Complete!</h2>
-              <div className="text-5xl font-display font-bold text-orange-400 mb-6">
-                {Object.values(quizAnswers).reduce((sum, a) => sum + a.xp, 0)} XP
-              </div>
-              
-              {/* Detailed topic breakdown */}
-              <div className="max-w-xs mx-auto space-y-2 mb-8 text-left bg-dark-800 p-4 rounded-xl border border-white/5">
-                <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-2">Performance by Topic</p>
-                {Object.entries(quizStats).map(([topic, stats]) => (
-                  <div key={topic} className="flex items-center justify-between text-sm">
-                    <span className="text-slate-300">{topic}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-slate-400">{stats.c}/{stats.t}</span>
-                      {stats.c === stats.t ? <CheckCircle size={14} className="text-green-400"/> : 
-                       stats.c > 0 ? <AlertTriangle size={14} className="text-yellow-400"/> : 
-                       <XCircle size={14} className="text-red-400"/>}
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <div className="glass-card p-12 text-center border-white/5 bg-dark-900/40 animate-slide-up flex flex-col items-center">
+               <div className="w-24 h-24 bg-dark-950 rounded-[32px] flex items-center justify-center mb-8 border border-white/5 shadow-inner relative group overflow-hidden">
+                  <div className="absolute inset-0 bg-primary-500/10 group-hover:bg-primary-500/20 transition-colors" />
+                  <Trophy size={48} className="text-primary-400 shadow-glow relative z-10" />
+               </div>
+               <h2 className="text-4xl font-display font-bold text-white tracking-tight mb-2">Sprint Deciphered</h2>
+               <div className="text-6xl font-black text-primary-400 mb-10 tracking-tight shimmer-text">
+                 {Object.values(quizAnswers).reduce((sum, a) => sum + a.xp, 0)} <span className="text-2xl text-slate-600">XP</span>
+               </div>
+               
+               <div className="w-full max-w-sm space-y-3 mb-12">
+                 <p className="text-[10px] text-slate-600 font-black uppercase tracking-[0.2em] text-center mb-4">Neural Topic Performance</p>
+                 {Object.entries(quizStats).map(([topic, stats]) => (
+                   <div key={topic} className="flex items-center justify-between bg-dark-950/50 p-4 rounded-2xl border border-white/5 transition-transform hover:scale-105">
+                     <span className="text-xs font-black text-slate-300 uppercase tracking-widest">{topic}</span>
+                     <div className="flex items-center gap-3">
+                       <span className="text-sm font-black text-white">{stats.c}<span className="text-slate-700 mx-1">/</span>{stats.t}</span>
+                       {stats.c === stats.t ? <CheckCircle size={16} className="text-accent-emerald"/> : 
+                        stats.c > 0 ? <Activity size={16} className="text-accent-amber"/> : 
+                        <XCircle size={16} className="text-accent-rose"/>}
+                     </div>
+                   </div>
+                 ))}
+               </div>
 
-              <button onClick={() => { setQuiz(null); setQuizAnswers({}); setQuizSubmitted(false); }} className="btn-primary w-full max-w-xs mx-auto flex items-center justify-center gap-2">
-                <RefreshCw size={16} /> Play Again
-              </button>
+               <button onClick={() => { setQuiz(null); setQuizAnswers({}); setQuizSubmitted(false); }} className="btn-primary w-full max-w-xs py-5 flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] shadow-glow">
+                 <RefreshCw size={18} /> Re-Initiate Sprint
+               </button>
             </div>
           )}
         </div>

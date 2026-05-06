@@ -17,14 +17,21 @@ import Vocabulary from './pages/Vocabulary';
 import DailyChallenge from './pages/DailyChallenge';
 import Conversation from './pages/Conversation';
 import VerbalAbilityTest from './pages/VerbalAbilityTest';
+import { motion } from 'framer-motion';
+import { Brain } from 'lucide-react';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
   if (loading) return (
-    <div className="min-h-screen bg-dark-900 flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
-        <p className="text-slate-400 font-body">Loading LinguaQuest...</p>
+    <div className="min-h-screen bg-dark-950 flex flex-col items-center justify-center p-6 space-y-8">
+      <div className="relative">
+        <div className="w-24 h-24 border-[6px] border-white/5 rounded-full" />
+        <div className="w-24 h-24 border-[6px] border-primary-500 border-t-transparent rounded-full animate-spin absolute top-0 left-0" />
+        <Brain size={32} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary-500 animate-pulse" />
+      </div>
+      <div className="text-center space-y-2">
+         <p className="text-2xl font-display font-bold text-white tracking-tight">Initializing LinguaQuest</p>
+         <p className="text-slate-500 font-medium font-black uppercase tracking-[0.2em] text-[10px]">Synchronizing Neural Framework...</p>
       </div>
     </div>
   );
@@ -45,13 +52,18 @@ export default function App() {
           position="top-right"
           toastOptions={{
             style: {
-              background: '#141d35',
-              color: '#e2e8f0',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: '12px',
+              background: '#030014',
+              color: '#f8fafc',
+              border: '1px solid rgba(255,255,255,0.05)',
+              borderRadius: '24px',
+              padding: '16px 24px',
+              fontSize: '14px',
+              fontWeight: '600',
+              backdropFilter: 'blur(16px)',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
             },
-            success: { iconTheme: { primary: '#22c55e', secondary: '#141d35' } },
-            error: { iconTheme: { primary: '#ef4444', secondary: '#141d35' } },
+            success: { iconTheme: { primary: '#10b981', secondary: '#030014' } },
+            error: { iconTheme: { primary: '#f43f5e', secondary: '#030014' } },
           }}
         />
         <Routes>
