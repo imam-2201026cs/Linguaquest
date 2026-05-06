@@ -11,8 +11,8 @@ async function getWorkingModel(genAI) {
   for (const modelName of MODELS) {
     try {
       const model = genAI.getGenerativeModel({ model: modelName });
-      // We must actually try a call to see if it exists
-      await model.generateContent({ contents: [{ role: 'user', parts: [{ text: 'hi' }] }], generationConfig: { maxOutputTokens: 1 } });
+      // Simpler test call
+      await model.generateContent("hi");
       console.log(`Successfully verified model: ${modelName}`);
       return modelName;
     } catch (e) {
@@ -70,7 +70,14 @@ export const generateJSON = async (prompt) => {
       return JSON.parse(cleanJson);
     }
   } catch (error) {
-    console.error('GEMINI JSON ERROR:', error.message);
-    throw error;
+    const errorDetails = error.response?.data?.error?.message || error.message;
+    console.error('GEMINI JSON ERROR:', errorDetails);
+    
+    // Check for specific authentication errors
+    if (errorDetails.includes('API_KEY_INVALID')) {
+      throw new Error('Invalid Gemini API Key. Please check your Render environment variables.');
+    }
+    
+    throw new Error(`Gemini Error: ${errorDetails}`);
   }
 };
