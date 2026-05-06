@@ -5,19 +5,21 @@ dotenv.config();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // List of models to try in order of preference
-const MODELS = ["gemini-1.5-flash", "gemini-1.5-flash-latest", "gemini-1.0-pro"];
+const MODELS = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-pro", "gemini-1.0-pro"];
 
-async function getAvailableModel(genAI) {
+async function getWorkingModel(genAI) {
   for (const modelName of MODELS) {
     try {
       const model = genAI.getGenerativeModel({ model: modelName });
-      // Quick test to see if model is accessible
-      return model;
+      // We must actually try a call to see if it exists
+      await model.generateContent({ contents: [{ role: 'user', parts: [{ text: 'hi' }] }], generationConfig: { maxOutputTokens: 1 } });
+      console.log(`Successfully verified model: ${modelName}`);
+      return modelName;
     } catch (e) {
-      console.log(`Model ${modelName} not available, trying next...`);
+      console.log(`Model ${modelName} not available or error: ${e.message}`);
     }
   }
-  return genAI.getGenerativeModel({ model: "gemini-pro" });
+  return "gemini-pro";
 }
 
 /**
@@ -25,7 +27,8 @@ async function getAvailableModel(genAI) {
  */
 export const generateContent = async (prompt) => {
   try {
-    const model = await getAvailableModel(genAI);
+    const modelName = await getWorkingModel(genAI);
+    const model = genAI.getGenerativeModel({ model: modelName });
     const result = await model.generateContent(prompt);
     const response = await result.response;
     return response.text();
@@ -45,11 +48,11 @@ export const generateJSON = async (prompt) => {
       throw new Error('API Configuration Missing');
     }
 
-    const model = await getAvailableModel(genAI);
+    const modelName = await getWorkingModel(genAI);
+    const model = genAI.getGenerativeModel({ model: modelName });
     
-    // Check if model name contains '1.5' for native JSON support
-    const is15 = model.model.includes('1.5');
-    
+    // 1.5 models support native JSON mode
+    const is15 = modelName.includes('1.5');
     const generationConfig = is15 ? { responseMimeType: "application/json" } : {};
     
     const result = await model.generateContent({
