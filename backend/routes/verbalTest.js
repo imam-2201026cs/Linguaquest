@@ -1,6 +1,6 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
-import { generateJSON } from '../middleware/groq.js';
+import { generateJSON } from '../middleware/gemini.js';
 
 const router = express.Router();
 
@@ -26,30 +26,35 @@ router.post('/generate', auth, async (req, res) => {
       2. The 'options' array MUST BE EXACTLY: ["Part (1)", "Part (2)", "Part (3)", "Part (4)", "No Error (5)"]
       3. The 'correct' index must be the 0-based index of the part containing the error (0 to 4).
       4. EXPLANATION: Provide a detailed explanation of why that specific part is grammatically incorrect.
-      Example Question: "The English (1)/ defeated (2)/ french (3)/ in the battle of water loo (4)/ No Error (5)"
-      Example Options: ["Part (1)", "Part (2)", "Part (3)", "Part (4)", "No Error (5)"]
-      Example Correct: 2 (since 'french' should be 'French')
       `;
     }
 
-    // Generate 30 questions using 3 parallel requests (10 each) to stay within token limits and avoid timeouts.
-    console.log(`[VerbalTest] Generating 30 questions for ${topic} in parallel...`);
-    
-    const questionChunks = await Promise.all([
-      generateJSON(getPrompt(promptTopic, patternInstruction, 1), 'llama-3.3-70b-versatile'),
-      generateJSON(getPrompt(promptTopic, patternInstruction, 2), 'llama-3.3-70b-versatile'),
-      generateJSON(getPrompt(promptTopic, patternInstruction, 3), 'llama-3.3-70b-versatile')
-    ]);
+    const seed = Math.random().toString(36).substring(7);
+    const prompt = `
+      Generate a professional 30-question English Verbal Ability Test for: "${promptTopic}".
+      PATTERN: Competitive Exams.
+      SEED: ${seed}.
+      ${patternInstruction}
 
-    const allQuestions = questionChunks.flatMap(chunk => chunk.questions || []);
+      Requirements:
+      1. EXACTLY 30 questions in a flat array called "questions".
+      2. 4 distinct options per question.
+      3. NO "A)", "B)" labels in options.
+      4. NO single-letter placeholders.
+      5. Provide clear, detailed explanations for every question.
+      6. Return ONLY a JSON object with a "questions" key.
+    `;
 
-    if (allQuestions.length === 0) {
-      throw new Error('Failed to generate any questions');
+    console.log(`[VerbalTest] Generating 30 questions for ${topic} with Gemini 1.5 Flash...`);
+    const result = await generateJSON(prompt);
+
+    if (!result || !Array.isArray(result.questions)) {
+      throw new Error('Invalid response format from AI');
     }
 
     res.json({
       topic,
-      questions: allQuestions.slice(0, 30)
+      questions: result.questions.slice(0, 30)
     });
   } catch (err) {
     console.error('Verbal Test Generation Error:', err);
@@ -60,22 +65,6 @@ router.post('/generate', auth, async (req, res) => {
   }
 });
 
-// Helper function to create the prompt
-function getPrompt(topic, pattern, part) {
-  const seed = Math.random().toString(36).substring(7);
-  return `
-    Generate 10 UNIQUE professional English Verbal Ability questions (Part ${part}) for: "${topic}".
-    PATTERN: Competitive Exams (SSC, Banking).
-    SEED: ${seed}.
-    ${pattern}
-
-    Requirements:
-    1. Exactly 10 questions.
-    2. 4 distinct options per question.
-    3. NO "A)", "B)" labels in options.
-    4. NO single-letter placeholders.
-    5. Return ONLY a JSON object with a "questions" key.
-  `;
-}
+export default router;
 
 export default router;

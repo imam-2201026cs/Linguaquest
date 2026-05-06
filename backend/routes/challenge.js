@@ -3,7 +3,7 @@ import auth from '../middleware/auth.js';
 import { DailyChallenge, ChallengeSubmission } from '../models/DailyChallenge.js';
 import User from '../models/User.js';
 import Activity from '../models/Activity.js';
-import { generateJSON } from '../middleware/groq.js';
+import { generateJSON } from '../middleware/gemini.js';
 
 const router = express.Router();
 
