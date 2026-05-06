@@ -182,18 +182,15 @@ Questions should be appropriate for ${tier.replace('_', ' ')} level English lear
 Return ONLY valid JSON with no markdown:
 {
   "questions": [
-    {"id": 1, "question": "<question about main topic>", "options": ["<A>","<B>","<C>","<D>"], "correct": 0, "explanation": "<why correct>"},
-    {"id": 2, "question": "<question about key idea>", "options": ["<A>","<B>","<C>","<D>"], "correct": 1, "explanation": "<explanation>"},
-    {"id": 3, "question": "<vocabulary question>", "options": ["<A>","<B>","<C>","<D>"], "correct": 2, "explanation": "<explanation>"},
-    {"id": 4, "question": "<inference question>", "options": ["<A>","<B>","<C>","<D>"], "correct": 3, "explanation": "<explanation>"},
-    {"id": 5, "question": "<opinion or critical thinking question>", "options": ["<A>","<B>","<C>","<D>"], "correct": 0, "explanation": "<explanation>"}
+    {"id": 1, "question": "Example question about the main topic?", "options": ["Real Choice 1", "Real Choice 2", "Real Choice 3", "Real Choice 4"], "correct": 0, "explanation": "Explain why Choice 1 is correct based on the video content."}
   ],
   "vocabulary": [
-    {"word": "<key word>", "definition": "<clear definition>", "example": "<example sentence>"}
+    {"word": "example", "definition": "representative form", "example": "This is an example sentence."}
   ],
-  "keyPoints": ["<main point 1>", "<main point 2>", "<main point 3>"],
-  "discussionQuestion": "<one open-ended discussion question about the video topic>"
-}`;
+  "keyPoints": ["Main point 1", "Main point 2", "Main point 3"],
+  "discussionQuestion": "An open-ended question about the video topic."
+}
+CRITICAL: Include exactly 5 questions. EVERY option must be a real phrase or sentence. DO NOT use "A", "B", "C", "D" as option content.`;
 
     const result = await generateJSON(prompt);
     res.json(result);

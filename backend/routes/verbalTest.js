@@ -46,12 +46,11 @@ router.post('/generate', auth, async (req, res) => {
       2. Provide exactly 4 distinct multiple-choice options for each question (unless it is Error Detection).
       3. CRITICAL: DO NOT include labels like "A)", "B.", or "1." inside the option strings.
       4. CRITICAL: DO NOT use single letters (like "A", "B", "C", "D") as the content of the options. Every option must be a valid word or phrase relevant to the topic.
-      5. RANDOMIZE CORRECT ANSWERS: Ensure the correct answer index (0, 1, 2, or 3) is evenly distributed across all 20 questions. Do not favor any specific position (like always option A).
-      6. EXPLANATIONS: Every question MUST have a clear, helpful "explanation" field describing why the answer is correct. This is especially important for Error Detection.
-      7. The "correct" field must be the 0-based index of the correct option in the "options" array (0 to 3, or 0 to 4 for Error Detection).
-      8. Format: Return ONLY a JSON object with a "questions" key.
+      5. RANDOMIZE CORRECT ANSWERS: Ensure the correct answer index (0, 1, 2, or 3) is evenly distributed across all 20 questions.
+      6. EXPLANATIONS: Every question MUST have a clear, helpful "explanation" field.
+      7. Format: Return ONLY a JSON object with a "questions" key.
       
-      Format example:
+      Example:
       {
         "questions": [
           {

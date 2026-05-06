@@ -78,22 +78,22 @@ router.post('/quiz/generate', auth, async (req, res) => {
     const { level = 'intermediate' } = req.body;
 
     const prompt = `Create a grammar quiz for ${level} English learners.
-
-Return ONLY JSON:
-{
-  "questions": [
+    
+    Return ONLY JSON:
     {
-      "id": 1,
-      "question": "<fill in the blank or choose correct sentence>",
-      "options": ["<A>", "<B>", "<C>", "<D>"],
-      "correct": 0,
-      "explanation": "<grammar rule explanation>",
-      "hint": "<a helpful hint without giving away the exact answer>",
-      "topic": "<Tense/Articles/Prepositions/etc>"
+      "questions": [
+        {
+          "id": 1,
+          "question": "Choose the correct sentence?",
+          "options": ["The cat is sitting on the table.", "The cat are sitting on the table.", "The cat sitting on the table.", "The cat is sit on the table."],
+          "correct": 0,
+          "explanation": "Subject-verb agreement: 'The cat' is singular, so it takes 'is'.",
+          "hint": "Check the verb form.",
+          "topic": "Subject-Verb Agreement"
+        }
+      ]
     }
-  ]
-}
-Include exactly 5 questions covering different grammar topics. Return ONLY the JSON.`;
+    Include exactly 5 unique, high-quality questions covering different grammar topics. Return ONLY the JSON. DO NOT use placeholders.`;
 
     const quiz = await generateJSON(prompt);
     res.json(quiz);

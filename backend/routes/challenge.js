@@ -56,11 +56,12 @@ router.get('/daily', auth, async (req, res) => {
         
         Each question object format:
         {
-          "question": "The grammar question here...",
-          "options": ["Option A", "Option B", "Option C", "Option D"],
-          "correct": 0, // Index of correct option (0-3)
-          "explanation": "Briefly explain the grammar rule in a helpful way."
+          "question": "What is the correct form of 'to be' in: He _____ happy yesterday?",
+          "options": ["is", "was", "were", "be"],
+          "correct": 1,
+          "explanation": "We use 'was' for singular third-person (He/She/It) in the past tense."
         }
+        DO NOT use single-letter placeholders for options. Use real English content.
       `;
       
       const result = await generateJSON(prompt);
