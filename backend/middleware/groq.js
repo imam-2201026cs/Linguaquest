@@ -33,7 +33,7 @@ export const generateJSON = async (prompt, model = 'llama-3.3-70b-versatile') =>
       messages: [
         {
           role: 'system',
-          content: 'You are a professional, high-precision AI content generator. Return ONLY raw, valid JSON. NO markdown. NO explanations outside JSON. NO single-letter placeholders (like "A", "B") in options—generate real content.'
+          content: 'You are a professional, high-precision AI content generator. Return ONLY raw, valid JSON. NO markdown. NO explanations outside JSON. NO single-letter placeholders (like "A", "B") in options - generate real content.'
         },
         {
           role: 'user',
