@@ -25,6 +25,7 @@ router.post('/generate', auth, async (req, res) => {
       1. Divide the 'question' into 4 parts with (1), (2), (3), (4) labels and slashes. End with "/ No Error (5)".
       2. The 'options' array MUST BE EXACTLY: ["Part (1)", "Part (2)", "Part (3)", "Part (4)", "No Error (5)"]
       3. The 'correct' index must be the 0-based index of the part containing the error (0 to 4).
+      4. EXPLANATION: Provide a detailed explanation of why that specific part is grammatically incorrect.
       Example Question: "The English (1)/ defeated (2)/ french (3)/ in the battle of water loo (4)/ No Error (5)"
       Example Options: ["Part (1)", "Part (2)", "Part (3)", "Part (4)", "No Error (5)"]
       Example Correct: 2 (since 'french' should be 'French')
@@ -45,8 +46,10 @@ router.post('/generate', auth, async (req, res) => {
       2. Provide exactly 4 distinct multiple-choice options for each question (unless it is Error Detection).
       3. CRITICAL: DO NOT include labels like "A)", "B.", or "1." inside the option strings.
       4. CRITICAL: DO NOT use single letters (like "A", "B", "C", "D") as the content of the options. Every option must be a valid word or phrase relevant to the topic.
-      5. The "correct" field must be the 0-based index of the correct option in the "options" array (0 to 3).
-      6. Format: Return ONLY a JSON object with a "questions" key.
+      5. RANDOMIZE CORRECT ANSWERS: Ensure the correct answer index (0, 1, 2, or 3) is evenly distributed across all 20 questions. Do not favor any specific position (like always option A).
+      6. EXPLANATIONS: Every question MUST have a clear, helpful "explanation" field describing why the answer is correct. This is especially important for Error Detection.
+      7. The "correct" field must be the 0-based index of the correct option in the "options" array (0 to 3, or 0 to 4 for Error Detection).
+      8. Format: Return ONLY a JSON object with a "questions" key.
       
       Format example:
       {
