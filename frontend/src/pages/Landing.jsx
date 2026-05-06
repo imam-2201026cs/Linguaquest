@@ -518,8 +518,9 @@ export default function Landing() {
             <Trophy size={80} className="text-accent-gold mx-auto mb-10 drop-shadow-[0_0_20px_rgba(252,211,77,0.5)]" />
             <h2 className="text-4xl md:text-6xl font-display font-bold text-white mb-6">Ready to Conquer?</h2>
             <p className="text-xl text-slate-300 max-w-2xl mx-auto mb-12 font-medium">Join 50,000+ learners who have already started their quest to English mastery. 100% free, forever.</p>
-            <Link to="/register" className="btn-primary text-xl px-12 py-6 group shadow-2xl">
-              Launch Your Quest Now <ArrowRight size={24} className="inline-block ml-2 group-hover:translate-x-2 transition-transform" />
+            <Link to="/register" className="btn-primary py-4 md:py-6 px-8 md:px-12 text-sm md:text-xl group shadow-2xl flex items-center justify-center gap-3 w-full sm:w-auto mx-auto">
+              Launch Your Quest Now 
+              <ArrowRight size={24} className="group-hover:translate-x-2 transition-transform" />
             </Link>
           </div>
         </motion.div>

@@ -181,11 +181,11 @@ export default function DailyChallenge() {
         </header>
 
         {/* Progress System */}
-        <div className="px-6 py-8">
+        <div className="px-6 py-6 md:py-8">
            <div className="flex justify-between items-end mb-4 px-1">
               <div>
                  <p className="text-[10px] font-black text-primary-400 uppercase tracking-[0.2em] mb-1">Current Protocol</p>
-                 <h2 className="text-2xl font-display font-bold text-white tracking-tight">Daily Global Objective</h2>
+                 <h2 className="text-xl md:text-2xl font-display font-bold text-white tracking-tight">Daily Global Objective</h2>
               </div>
               <div className="text-right">
                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Question</p>
@@ -202,7 +202,7 @@ export default function DailyChallenge() {
            </div>
         </div>
 
-        <div className="px-6 space-y-8 pb-20">
+        <div className="px-6 space-y-6 md:space-y-8 pb-20">
           {/* Question Card */}
           <AnimatePresence mode="wait">
              <motion.div 
@@ -212,8 +212,8 @@ export default function DailyChallenge() {
                exit={{ opacity: 0, x: -20 }}
                className="glass-card p-1 border-white/5 bg-gradient-to-br from-primary-500/10 to-transparent"
              >
-               <div className="p-10 text-center space-y-6">
-                 <h2 className="text-2xl font-display font-bold text-white leading-relaxed tracking-tight">
+               <div className="p-6 md:p-10 text-center space-y-4 md:space-y-6">
+                 <h2 className="text-lg md:text-2xl font-display font-bold text-white leading-tight md:leading-relaxed tracking-tight">
                    {currentQ.question}
                  </h2>
                  <div className="flex justify-center gap-6">
@@ -229,7 +229,7 @@ export default function DailyChallenge() {
           </AnimatePresence>
 
           {/* Options Grid */}
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-3 md:gap-4">
             {currentQ.options.map((option, idx) => {
               const isCorrect = idx === currentQ.correct;
               const isSelected = idx === selectedOption;
@@ -247,12 +247,12 @@ export default function DailyChallenge() {
                   whileHover={!isAnswered ? { scale: 1.02 } : {}}
                   disabled={isAnswered}
                   onClick={() => handleOptionSelect(idx)}
-                  className={`group relative text-left p-5 rounded-2xl border transition-all duration-300 flex items-center gap-5 ${variant}`}
+                  className={`group relative text-left p-4 md:p-5 rounded-2xl border transition-all duration-300 flex items-center gap-4 md:gap-5 ${variant}`}
                 >
                   <div className={`w-10 h-10 rounded-xl border flex items-center justify-center text-xs font-black shrink-0 transition-all ${isAnswered && (isCorrect || isSelected) ? 'bg-white/10 border-white/20' : 'bg-white/5 border-white/10'}`}>
                     {isAnswered && isCorrect ? <CheckCircle size={18} /> : isAnswered && isSelected ? <XCircle size={18} /> : String.fromCharCode(65 + idx)}
                   </div>
-                  <span className="flex-1 font-bold tracking-tight">{option}</span>
+                  <span className="flex-1 font-bold tracking-tight text-sm md:text-base">{option}</span>
                 </motion.button>
               );
             })}
@@ -266,13 +266,13 @@ export default function DailyChallenge() {
                  animate={{ opacity: 1, y: 0 }}
                  className="space-y-4"
                >
-                 <div className="glass-card p-8 bg-primary-500/5 border-primary-500/20 relative overflow-hidden">
+                 <div className="glass-card p-6 md:p-8 bg-primary-500/5 border-primary-500/20 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-primary-500/5 rounded-full -mr-12 -mt-12" />
-                    <div className="flex items-center gap-3 text-primary-400 font-black text-[10px] uppercase tracking-widest mb-4">
+                    <div className="flex items-center gap-3 text-primary-400 font-black text-[10px] uppercase tracking-widest mb-3 md:mb-4">
                       <Lightbulb size={16} />
                       <span>Neural Insight</span>
                     </div>
-                    <p className="text-slate-300 text-sm leading-relaxed font-medium">
+                    <p className="text-slate-300 text-xs md:text-sm leading-relaxed font-medium">
                       {currentQ.explanation}
                     </p>
                  </div>
@@ -280,7 +280,7 @@ export default function DailyChallenge() {
                  {!showStageBreak && (
                     <button 
                       onClick={handleNext}
-                      className="w-full btn-primary py-5 flex items-center justify-center gap-3 rounded-2xl shadow-glow text-base"
+                      className="w-full btn-primary py-4 md:py-5 flex items-center justify-center gap-3 rounded-2xl shadow-glow text-sm md:text-base"
                     >
                       Continue Protocol <ChevronRight size={20} />
                     </button>
@@ -295,18 +295,18 @@ export default function DailyChallenge() {
               <motion.div 
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="glass-card p-10 border-accent-amber/30 bg-accent-amber/5 text-center space-y-8"
+                className="glass-card p-8 md:p-10 border-accent-amber/30 bg-accent-amber/5 text-center space-y-6 md:space-y-8"
               >
                 <div>
-                   <div className="w-16 h-16 bg-accent-amber/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                   <div className="w-14 h-14 md:w-16 md:h-16 bg-accent-amber/10 rounded-2xl flex items-center justify-center mx-auto mb-4 md:mb-6">
                       <Activity size={32} className="text-accent-amber" />
                    </div>
-                   <h3 className="text-2xl font-display font-bold text-white tracking-tight">Phase 1 Normalized</h3>
-                   <p className="text-slate-400 text-sm mt-2">Extend the mission for 5 more objectives to <span className="text-accent-amber font-black italic">Double Rewards</span>, or extract now.</p>
+                   <h3 className="text-xl md:text-2xl font-display font-bold text-white tracking-tight">Phase 1 Normalized</h3>
+                   <p className="text-slate-400 text-xs md:text-sm mt-2">Extend the mission for 5 more objectives to <span className="text-accent-amber font-black italic">Double Rewards</span>, or extract now.</p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <button onClick={() => submitQuiz(5)} className="btn-ghost py-4 text-[10px] font-black uppercase tracking-widest border-white/5">Extract (5 XP)</button>
-                  <button onClick={() => { setShowStageBreak(false); handleNext(); }} className="btn-primary py-4 text-[10px] font-black uppercase tracking-widest shadow-glow">Advance Phase 2</button>
+                   <button onClick={() => submitQuiz(5)} className="btn-ghost py-3 md:py-4 text-[10px] font-black uppercase tracking-widest border-white/5">Extract (5 XP)</button>
+                   <button onClick={() => { setShowStageBreak(false); handleNext(); }} className="btn-primary py-3 md:py-4 text-[10px] font-black uppercase tracking-widest shadow-glow">Advance Phase 2</button>
                 </div>
               </motion.div>
             )}
@@ -320,35 +320,35 @@ export default function DailyChallenge() {
   return (
     <div className="max-w-3xl mx-auto py-10 px-6 space-y-10 animate-slide-up">
       <div className="glass-card p-1 border-white/5 bg-gradient-to-br from-primary-500/10 to-transparent shadow-2xl">
-        <div className="p-12 text-center flex flex-col items-center">
-          <div className="w-24 h-24 bg-dark-950 rounded-[32px] flex items-center justify-center mb-8 border border-white/5 shadow-inner relative group overflow-hidden">
+        <div className="p-8 md:p-12 text-center flex flex-col items-center">
+          <div className="w-20 h-20 md:w-24 md:h-24 bg-dark-950 rounded-[28px] md:rounded-[32px] flex items-center justify-center mb-6 md:mb-8 border border-white/5 shadow-inner relative group overflow-hidden">
              <div className="absolute inset-0 bg-primary-500/10 group-hover:bg-primary-500/20 transition-colors" />
-             <Trophy size={48} className="text-primary-400 shadow-glow relative z-10" />
+             <Trophy size={40} md:size={48} className="text-primary-400 shadow-glow relative z-10" />
           </div>
           
-          <h2 className="text-4xl md:text-5xl font-display font-bold text-white tracking-tight mb-4">
+          <h2 className="text-3xl md:text-5xl font-display font-bold text-white tracking-tight mb-4">
             Mission <span className="shimmer-text">Deciphered</span>
           </h2>
-          <p className="text-slate-400 text-lg font-medium max-w-sm mb-10 leading-relaxed">
+          <p className="text-slate-400 text-base md:text-lg font-medium max-w-sm mb-8 md:mb-10 leading-relaxed">
             {result?.score >= 80 ? "Exemplary performance! You've dominated today's global protocol." : "Solid progress recorded. Every mistake is a recalibration for success."}
           </p>
           
-          <div className="grid grid-cols-2 gap-6 w-full max-w-md mb-12">
-            <div className="bg-dark-950 border border-white/5 rounded-3xl p-8 transition-transform hover:scale-105">
+          <div className="grid grid-cols-2 gap-4 md:gap-6 w-full max-w-md mb-10 md:mb-12">
+            <div className="bg-dark-950 border border-white/5 rounded-2xl md:rounded-3xl p-6 md:p-8 transition-transform hover:scale-105">
               <p className="text-[10px] text-accent-emerald uppercase font-black tracking-widest mb-2">Verified</p>
-              <p className="text-5xl font-black text-white leading-none">{result?.correct}</p>
+              <p className="text-3xl md:text-5xl font-black text-white leading-none">{result?.correct}</p>
             </div>
-            <div className="bg-dark-950 border border-white/5 rounded-3xl p-8 transition-transform hover:scale-105">
+            <div className="bg-dark-950 border border-white/5 rounded-2xl md:rounded-3xl p-6 md:p-8 transition-transform hover:scale-105">
               <p className="text-[10px] text-accent-rose uppercase font-black tracking-widest mb-2">Flags</p>
-              <p className="text-5xl font-black text-white leading-none">{result?.total - result?.correct}</p>
+              <p className="text-3xl md:text-5xl font-black text-white leading-none">{result?.total - result?.correct}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-            <button onClick={resetQuiz} className="btn-primary py-5 flex items-center justify-center gap-3 rounded-2xl shadow-glow font-black text-xs uppercase tracking-[0.2em]">
+            <button onClick={resetQuiz} className="btn-primary py-4 md:py-5 flex items-center justify-center gap-3 rounded-2xl shadow-glow font-black text-xs uppercase tracking-[0.2em]">
               <RefreshCw size={18} /> Re-Initiate
             </button>
-            <button onClick={() => navigate('/dashboard')} className="btn-ghost py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] border-white/5">
+            <button onClick={() => navigate('/dashboard')} className="btn-ghost py-4 md:py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] border-white/5">
               Command Center
             </button>
           </div>
@@ -356,33 +356,33 @@ export default function DailyChallenge() {
       </div>
 
       {/* Global Analytics */}
-      <div className="glass-card p-10 border-white/5 bg-dark-900/40 relative overflow-hidden group">
+      <div className="glass-card p-8 md:p-10 border-white/5 bg-dark-900/40 relative overflow-hidden group">
         <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
         
-        <h3 className="text-xl font-display font-bold text-white mb-8 flex items-center gap-3">
+        <h3 className="text-lg md:text-xl font-display font-bold text-white mb-6 md:mb-8 flex items-center gap-3">
           <Globe size={20} className="text-primary-400" /> Global Intelligence
         </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-8">
           <div className="space-y-2">
              <div className="flex items-center gap-2 mb-1">
                 <Trophy size={14} className="text-accent-amber"/>
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Average Mastery</p>
              </div>
-             <p className="text-3xl font-black text-white tracking-tight">{Math.round(challenge.averageScore)}%</p>
+             <p className="text-2xl md:text-3xl font-black text-white tracking-tight">{Math.round(challenge.averageScore)}%</p>
           </div>
           <div className="space-y-2">
              <div className="flex items-center gap-2 mb-1">
                 <Shield size={14} className="text-primary-400"/>
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Active Operatives</p>
              </div>
-             <p className="text-3xl font-black text-white tracking-tight">{challenge.totalCompletions}</p>
+             <p className="text-2xl md:text-3xl font-black text-white tracking-tight">{challenge.totalCompletions}</p>
           </div>
           <div className="space-y-2">
              <div className="flex items-center gap-2 mb-1">
                 <Flame size={14} className="text-accent-rose"/>
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Hardcore Elite</p>
              </div>
-             <p className="text-3xl font-black text-white tracking-tight">{challenge.totalStage2Completions}</p>
+             <p className="text-2xl md:text-3xl font-black text-white tracking-tight">{challenge.totalStage2Completions}</p>
           </div>
         </div>
       </div>
