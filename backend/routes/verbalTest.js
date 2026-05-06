@@ -42,17 +42,20 @@ router.post('/generate', auth, async (req, res) => {
 
       Requirements:
       1. EXACTLY 20 questions in the array.
-      2. Unless specified otherwise, provide exactly 4 options (A, B, C, D).
-      3. Format: Return ONLY a JSON object with a "questions" key.
+      2. Provide exactly 4 distinct multiple-choice options for each question (unless it is Error Detection).
+      3. CRITICAL: DO NOT include labels like "A)", "B.", or "1." inside the option strings.
+      4. CRITICAL: DO NOT use single letters (like "A", "B", "C", "D") as the content of the options. Every option must be a valid word or phrase relevant to the topic.
+      5. The "correct" field must be the 0-based index of the correct option in the "options" array (0 to 3).
+      6. Format: Return ONLY a JSON object with a "questions" key.
       
       Format example:
       {
         "questions": [
           {
-            "question": "...",
-            "options": ["A", "B", "C", "D"],
+            "question": "The book is __________ the table.",
+            "options": ["on", "at", "in", "by"],
             "correct": 0,
-            "explanation": "..."
+            "explanation": "We use 'on' for surfaces."
           }
         ]
       }
