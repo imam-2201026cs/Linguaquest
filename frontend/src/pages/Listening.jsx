@@ -106,6 +106,12 @@ export default function Listening() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 md:space-y-10 pb-20 px-4 md:px-0">
+      <style>{`
+        .level-label-fix::before { display: none !important; }
+        .level-label-fix::after { display: none !important; }
+        .hide-redundant { display: none !important; visibility: hidden !important; }
+      `}</style>
+      
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 md:gap-8 animate-slide-up">
         <div className="text-center md:text-left">
            <div className="flex items-center gap-3 mb-2 justify-center md:justify-start">
@@ -151,10 +157,10 @@ export default function Listening() {
 
           <div className="space-y-12 md:space-y-16">
             {Object.entries(videoLibrary).map(([levelKey, levelData]) => (
-              <div key={levelKey} className="relative">
+              <div key={levelKey} className="relative level-row-v4">
                 <div className="flex items-center gap-4 md:gap-5 mb-6 md:mb-8 sticky top-0 z-20 py-3 md:py-4 bg-dark-900/80 backdrop-blur-xl border-b border-white/5 px-2">
-                  <div className="w-10 h-10 md:w-14 md:h-14 bg-dark-950 border border-white/10 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-2xl shadow-inner shrink-0">
-                     {TIER_ICONS[levelKey] || '🔥'}
+                  <div className="w-10 h-10 md:w-14 md:h-14 bg-primary-500/10 border border-primary-500/20 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-2xl shadow-glow shrink-0">
+                     {TIER_ICONS[levelKey.toLowerCase()] || '🎧'}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h2 className="text-lg md:text-2xl font-display font-bold text-white tracking-tight truncate">{levelData.label}</h2>
