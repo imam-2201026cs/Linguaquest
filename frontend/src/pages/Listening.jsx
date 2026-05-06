@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Play, CheckCircle, Lock, ArrowLeft, Headphones, 
   Youtube, Music, Activity, Target, Shield, Clock, 
-  Search, Volume2, Languages, Sparkles, Trophy, ChevronRight
+  Search, Volume2, Languages, Sparkles, Trophy, ChevronRight,
+  RefreshCw, X, Zap
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import XPReward from '../components/XPReward';
@@ -236,6 +237,133 @@ export default function Listening() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* AI PASSAGES TAB */}
+      {activeTab === "passages" && (
+        <div className="max-w-4xl mx-auto space-y-10 animate-slide-up">
+           {!passage ? (
+             <div className="glass-card p-8 md:p-12 border-white/10 bg-dark-900/40 text-center space-y-8">
+                <div className="w-20 h-20 bg-primary-500/10 rounded-3xl flex items-center justify-center mx-auto border border-primary-500/20 shadow-glow">
+                   <Sparkles size={40} className="text-primary-400" />
+                </div>
+                <div className="max-w-md mx-auto space-y-4">
+                   <h2 className="text-3xl font-display font-bold text-white tracking-tight">Neural Passage Generator</h2>
+                   <p className="text-slate-400 font-medium">Input a scenario or topic to synthesize a custom auditory training mission.</p>
+                </div>
+                
+                <div className="relative group max-w-lg mx-auto">
+                   <input 
+                      type="text"
+                      value={topic}
+                      onChange={(e) => setTopic(e.target.value)}
+                      placeholder="e.g. A job interview at a tech company..."
+                      className="w-full bg-dark-950 border border-white/10 rounded-2xl px-6 py-5 text-white placeholder:text-slate-600 focus:outline-none focus:border-primary-500/50 transition-all text-lg shadow-2xl"
+                   />
+                   <button 
+                      onClick={generatePassage}
+                      disabled={passageLoading || !topic.trim()}
+                      className="absolute right-3 top-3 bottom-3 bg-primary-500 hover:bg-primary-600 disabled:opacity-50 disabled:grayscale transition-all px-8 rounded-xl text-white font-black uppercase tracking-widest text-[10px] flex items-center gap-3 shadow-glow"
+                   >
+                      {passageLoading ? <RefreshCw size={16} className="animate-spin" /> : <Zap size={16} />}
+                      {passageLoading ? 'Synthesizing...' : 'Initialize'}
+                   </button>
+                </div>
+             </div>
+           ) : (
+             <div className="space-y-10 pb-20">
+                <div className="glass-card p-10 border-white/10 bg-dark-900/40 space-y-8">
+                   <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                         <div className="w-12 h-12 bg-primary-500/10 rounded-2xl flex items-center justify-center border border-primary-500/20">
+                            <Volume2 size={24} className="text-primary-400" />
+                         </div>
+                         <div>
+                            <h3 className="text-xl font-bold text-white tracking-tight">Auditory Stream</h3>
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Topic: {topic}</p>
+                         </div>
+                      </div>
+                      <button onClick={() => setPassage("")} className="text-slate-500 hover:text-white transition-colors">
+                         <RefreshCw size={20} />
+                      </button>
+                   </div>
+
+                   <div className="bg-dark-950/80 p-8 rounded-3xl border border-white/5 relative group">
+                      <p className="text-xl md:text-2xl text-slate-300 font-medium leading-relaxed italic">
+                         "{passage}"
+                      </p>
+                   </div>
+                </div>
+
+                <div className="space-y-6">
+                   <div className="flex items-center gap-3 px-4">
+                      <div className="w-2 h-2 rounded-full bg-primary-500 shadow-glow" />
+                      <h3 className="text-lg font-bold text-white tracking-tight uppercase tracking-widest">Comprehension Check</h3>
+                   </div>
+                   
+                   <div className="grid gap-4">
+                      {passageQuestions.map((q, qIdx) => (
+                         <div key={qIdx} className="glass-card p-8 border-white/5 bg-dark-900/40 space-y-6">
+                            <p className="text-lg font-bold text-white leading-tight">
+                               <span className="text-primary-500 mr-3">0{qIdx + 1}.</span> {q.question}
+                            </p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                               {q.options.map((opt, oIdx) => (
+                                  <button
+                                     key={oIdx}
+                                     onClick={() => setPassageAnswers(prev => ({ ...prev, [qIdx]: opt }))}
+                                     className={`p-5 rounded-2xl border text-left transition-all duration-300 font-medium ${
+                                        passageAnswers[qIdx] === opt 
+                                        ? 'bg-primary-500 border-primary-500 text-white shadow-glow' 
+                                        : 'bg-dark-950 border-white/5 text-slate-400 hover:border-primary-500/30'
+                                     }`}
+                                  >
+                                     <span className="mr-3 opacity-50">{["A","B","C","D"][oIdx]}.</span> {opt}
+                                  </button>
+                               ))}
+                            </div>
+                         </div>
+                      ))}
+                   </div>
+                   
+                   <div className="flex justify-center pt-8">
+                      <button 
+                         onClick={handleSubmitPassageAnswers}
+                         disabled={Object.keys(passageAnswers).length < passageQuestions.length || passageLoading}
+                         className="btn-primary py-5 px-16 text-xs font-black uppercase tracking-widest shadow-glow flex items-center gap-4"
+                      >
+                         {passageLoading ? <RefreshCw size={18} className="animate-spin" /> : <Shield size={18} />}
+                         Verify Comprehension
+                      </button>
+                   </div>
+                </div>
+             </div>
+           )}
+
+           {passageResult && (
+             <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-dark-950/90 backdrop-blur-xl"
+             >
+                <div className="glass-card max-w-lg w-full p-10 border-white/10 bg-dark-900 shadow-3xl text-center space-y-8">
+                   <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto border-4 ${passageResult.score >= 70 ? 'border-accent-emerald text-accent-emerald bg-accent-emerald/10' : 'border-accent-rose text-accent-rose bg-accent-rose/10'}`}>
+                      {passageResult.score >= 70 ? <Trophy size={48} /> : <X size={48} />}
+                   </div>
+                   <div className="space-y-2">
+                      <h2 className="text-4xl font-display font-black text-white">{passageResult.score}%</h2>
+                      <p className="text-slate-400 font-medium">{passageResult.feedback}</p>
+                   </div>
+                   <button 
+                      onClick={() => { setPassageResult(null); setPassage(""); }}
+                      className="btn-primary w-full py-5 text-xs font-black uppercase tracking-widest"
+                   >
+                      Acknowledge
+                   </button>
+                </div>
+             </motion.div>
+           )}
         </div>
       )}
     </div>
