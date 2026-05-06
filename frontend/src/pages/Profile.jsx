@@ -54,25 +54,38 @@ export default function Profile() {
         avatarColor: user.avatarColor || 'from-primary-500 to-primary-700',
         weeklyGoal: user.weeklyGoal || 500
       });
-      axios.get('/api/user/history').then(r => {
-        setHistory(r.data);
-        generateChartData(r.data);
-      }).catch(() => {}).finally(() => setLoading(false));
+      
+      setLoading(true);
+      axios.get('/api/user/history')
+        .then(r => {
+          const activities = Array.isArray(r.data) ? r.data : [];
+          setHistory(activities);
+          generateChartData(activities);
+        })
+        .catch(err => {
+          console.error('History fetch error:', err);
+          setHistory([]);
+          generateChartData([]);
+        })
+        .finally(() => setLoading(false));
     }
   }, [user]);
 
-  const generateChartData = (activities) => {
+  const generateChartData = (activities = []) => {
     const last30Days = [...Array(30)].map((_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - (29 - i));
       return { date: d.toISOString().split('T')[0], xp: 0 };
     });
 
-    activities.forEach(a => {
-      const dateStr = new Date(a.completedAt).toISOString().split('T')[0];
-      const dayData = last30Days.find(d => d.date === dateStr);
-      if (dayData) dayData.xp += a.xpEarned;
-    });
+    if (Array.isArray(activities)) {
+      activities.forEach(a => {
+        if (!a.completedAt) return;
+        const dateStr = new Date(a.completedAt).toISOString().split('T')[0];
+        const dayData = last30Days.find(d => d.date === dateStr);
+        if (dayData) dayData.xp += (a.xpEarned || 0);
+      });
+    }
 
     const formatted = last30Days.map(d => ({
       name: new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
@@ -110,12 +123,27 @@ export default function Profile() {
     toast.success('Communication link copied.');
   };
 
-  if (!user) return null;
+  if (!user || loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6">
+        <div className="relative">
+          <div className="w-16 h-16 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin" />
+          <div className="absolute inset-0 blur-xl bg-primary-500/20 animate-pulse" />
+        </div>
+        <p className="text-slate-500 font-black text-xs uppercase tracking-[0.3em] animate-pulse">Synchronizing Neural Profile</p>
+      </div>
+    );
+  }
 
   const stats = user.stats || {};
   const totalActivities = (stats.writingCompleted || 0) + (stats.listeningCompleted || 0) + (stats.readingCompleted || 0) + (stats.grammarChecked || 0) + (stats.conversationsCompleted || 0);
-  const unlockedAchievements = ACHIEVEMENTS.filter(a => a.condition(stats, user));
-  const lockedAchievements = ACHIEVEMENTS.filter(a => !a.condition(stats, user));
+  const unlockedAchievements = ACHIEVEMENTS.filter(a => {
+    try {
+      return a.condition(stats, user);
+    } catch(e) {
+      return false;
+    }
+  });
 
   const radarData = [
     { subject: 'Write', A: stats.writingCompleted || 0 },
