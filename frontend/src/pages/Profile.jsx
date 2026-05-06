@@ -6,7 +6,7 @@ import {
   Zap, Flame, Trophy, Target, PenTool, Headphones, BookOpen, 
   CheckSquare, Star, Coins, TrendingUp, Calendar, Edit2, 
   Share2, Link as LinkIcon, Settings, ChevronRight, LayoutGrid, 
-  Sparkles, Shield, Award, MessageSquare, Globe, Info, X
+  Sparkles, Shield, Award, MessageSquare, Globe, Info, X, Activity
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar } from 'recharts';
 import html2canvas from 'html2canvas';
