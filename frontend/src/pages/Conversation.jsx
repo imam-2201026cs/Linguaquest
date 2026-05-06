@@ -344,7 +344,7 @@ function ChatInterface({ conversationId, scenario, difficulty, mode, openingMess
   const formatTime = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 h-[calc(100vh-160px)] max-w-7xl mx-auto" onClick={handleWordClick}>
+    <div className="flex flex-col lg:flex-row gap-8 h-full min-h-[600px] lg:h-[calc(100vh-180px)]" onClick={handleWordClick}>
       {popupWord && <WordPopup word={popupWord} onClose={() => setPopupWord(null)} source="conversation" />}
       
       {/* Main Chat Area */}

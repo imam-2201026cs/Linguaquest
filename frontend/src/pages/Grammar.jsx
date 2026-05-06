@@ -209,7 +209,7 @@ export default function Grammar() {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-10 pb-20">
+    <div className="space-y-10 pb-20">
       {reward && <XPReward {...reward} onClose={() => setReward(null)} />}
 
       {/* Premium Header */}

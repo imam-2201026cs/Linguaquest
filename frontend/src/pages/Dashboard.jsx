@@ -203,7 +203,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto space-y-10">
+    <div className="space-y-10">
       {/* Hero Welcome */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}

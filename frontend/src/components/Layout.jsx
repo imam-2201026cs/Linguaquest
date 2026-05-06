@@ -36,7 +36,7 @@ export default function Layout() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-dark-950 text-slate-100 selection:bg-primary-500/30">
+    <div className="flex h-screen overflow-hidden bg-dark-950 text-slate-100 selection:bg-primary-500/30 max-w-[2000px] mx-auto relative border-x border-white/5 shadow-2xl">
       {/* Sidebar Overlay */}
       <AnimatePresence>
         {mobileOpen && (
@@ -187,8 +187,10 @@ export default function Layout() {
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 overflow-y-auto no-scrollbar relative z-10 p-6 lg:p-10">
-          <Outlet />
+        <div className="flex-1 overflow-y-auto no-scrollbar relative z-10">
+          <div className="content-container">
+            <Outlet />
+          </div>
         </div>
       </main>
     </div>
