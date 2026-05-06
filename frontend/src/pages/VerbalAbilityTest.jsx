@@ -13,6 +13,7 @@ import XPReward from '../components/XPReward';
 const TOPICS = [
   "Antonyms", "Synonyms", "Spelling Errors", "One Word Substitution", "Verbs", "Adverbs", "Tenses",
   "Subject-Verb Agreement", "Idioms & Phrases", "Agreement", "Articles", "Error Detection",
+  "Preposition", "Conjunction",
   "Fill in the Blanks", "Sentence Correction", "Rearrangement", "Vocabulary", "Unseen Passage",
   "Narration (Direct & Indirect Speech)", "Active & Passive Voice"
 ];

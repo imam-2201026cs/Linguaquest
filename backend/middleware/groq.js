@@ -27,7 +27,7 @@ export const generateContent = async (prompt) => {
   }
 };
 
-export const generateJSON = async (prompt) => {
+export const generateJSON = async (prompt, model = 'llama-3.1-8b-instant') => {
   try {
     const completion = await groq.chat.completions.create({
       messages: [
@@ -40,7 +40,7 @@ export const generateJSON = async (prompt) => {
           content: prompt,
         },
       ],
-      model: 'llama-3.1-8b-instant',
+      model: model,
       temperature: 0.1,
       max_tokens: 4096,
       response_format: { type: 'json_object' },
