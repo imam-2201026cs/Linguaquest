@@ -12,57 +12,68 @@ export const generateAI = async (prompt, isJson = false) => {
       throw new Error('API Configuration Missing');
     }
 
-    // We use Gemini 2.0 Flash (Free) via OpenRouter for massive limits and stability
-    const model = "google/gemini-2.0-flash-exp:free";
+    // We try multiple stable free models to ensure 100% uptime
+    const models = [
+      "meta-llama/llama-3.1-8b-instruct:free",
+      "google/gemini-2.0-flash-exp:free",
+      "mistralai/mistral-7b-instruct:free",
+      "openchat/openchat-7b:free"
+    ];
 
-    const response = await axios.post(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
-        model: model,
-        messages: [
+    let lastError = null;
+
+    for (const model of models) {
+      try {
+        const response = await axios.post(
+          "https://openrouter.ai/api/v1/chat/completions",
           {
-            role: "system",
-            content: isJson 
-              ? "You are a professional AI content generator. Return ONLY raw, valid JSON. No markdown. No conversational text." 
-              : "You are a helpful English teacher."
+            model: model,
+            messages: [
+              {
+                role: "system",
+                content: isJson 
+                  ? "You are a professional AI content generator. Return ONLY raw, valid JSON. No markdown. No conversational text." 
+                  : "You are a helpful English teacher."
+              },
+              {
+                role: "user",
+                content: prompt
+              }
+            ],
+            temperature: 0.7,
+            max_tokens: 4000 
           },
           {
-            role: "user",
-            content: prompt
+            headers: {
+              "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+              "HTTP-Referer": "https://linguaquest.vercel.app",
+              "X-Title": "LinguaQuest",
+              "Content-Type": "application/json"
+            },
+            timeout: 15000 // 15s timeout per model
           }
-        ],
-        temperature: 0.7,
-        // OpenRouter's free tier handles large responses well
-        max_tokens: 4000 
-      },
-      {
-        headers: {
-          "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          "HTTP-Referer": "https://linguaquest.vercel.app", // Optional for OpenRouter
-          "X-Title": "LinguaQuest",
-          "Content-Type": "application/json"
+        );
+
+        const content = response.data.choices[0]?.message?.content || "";
+
+        if (isJson) {
+          // Cleanup markdown
+          const cleanJson = content.replace(/```json\n?|```/g, '').trim();
+          return JSON.parse(cleanJson);
         }
-      }
-    );
 
-    const content = response.data.choices[0]?.message?.content || "";
-
-    if (isJson) {
-      try {
-        // Cleanup if model returns markdown
-        const cleanJson = content.replace(/```json\n?|```/g, '').trim();
-        return JSON.parse(cleanJson);
-      } catch (parseErr) {
-        console.error('OpenRouter JSON Parse Error:', parseErr.message);
-        throw new Error('AI returned malformed data');
+        return content;
+      } catch (err) {
+        lastError = err.response?.data?.error?.message || err.message;
+        console.log(`Model ${model} failed: ${lastError}. Trying next...`);
+        continue;
       }
     }
 
-    return content;
+    throw new Error(`All AI models failed. Last error: ${lastError}`);
   } catch (error) {
-    const errorMsg = error.response?.data?.error?.message || error.message;
-    console.error('OPENROUTER ERROR:', errorMsg);
-    throw new Error(`AI Error: ${errorMsg}`);
+    console.error('OPENROUTER FINAL ERROR:', error.message);
+    throw error;
   }
 };
 
