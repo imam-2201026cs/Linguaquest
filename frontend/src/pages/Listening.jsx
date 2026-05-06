@@ -11,6 +11,11 @@ import { useAuth } from '../context/AuthContext';
 import XPReward from '../components/XPReward';
 import { useNavigate } from 'react-router-dom';
 
+const TIER_ICONS = { 
+  beginner: '🌱', elementary: '🏰', intermediate: '🔍', 
+  upper_intermediate: '🌍', advanced: '🎩', expert: '💎' 
+};
+
 export default function Listening() {
   const { user, fetchProfile } = useAuth();
   const navigate = useNavigate();
@@ -147,8 +152,8 @@ export default function Listening() {
             {Object.entries(videoLibrary).map(([levelKey, levelData]) => (
               <div key={levelKey} className="relative">
                 <div className="flex items-center gap-4 md:gap-5 mb-6 md:mb-8 sticky top-0 z-20 py-3 md:py-4 bg-dark-900/80 backdrop-blur-xl border-b border-white/5 px-2">
-                  <div className="w-10 h-10 md:w-14 md:h-14 bg-dark-950 border border-white/10 rounded-xl md:rounded-2xl flex items-center justify-center text-base md:text-xl font-black text-primary-400 shadow-inner shrink-0">
-                     {levelKey.toUpperCase()}
+                  <div className="w-10 h-10 md:w-14 md:h-14 bg-dark-950 border border-white/10 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-2xl shadow-inner shrink-0">
+                     {TIER_ICONS[levelKey] || '🔥'}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h2 className="text-lg md:text-2xl font-display font-bold text-white tracking-tight truncate">{levelData.label}</h2>
