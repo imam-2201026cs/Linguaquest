@@ -76,7 +76,9 @@ function ReadingRoadmap({ library, onSelectBook, completedCount }) {
                     <div key={tier} className="space-y-5 md:space-y-6">
                       <div className="flex items-center gap-3 md:gap-4 px-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-accent-emerald shadow-glow" />
-                        <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{tier} Protocol</span>
+                        <span className="text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">
+                          {tier === 'beginner' ? 'Initiation' : tier === 'intermediate' ? 'Expansion' : 'Mastery'} Phase
+                        </span>
                         <div className="h-px flex-1 bg-white/5" />
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">

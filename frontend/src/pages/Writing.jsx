@@ -12,6 +12,11 @@ import {
 import XPReward from '../components/XPReward';
 import { useAuth } from '../context/AuthContext';
 
+const TIER_ICONS = { 
+  beginner: '🌱', elementary: '🏰', intermediate: '🔍', 
+  upper_intermediate: '🌍', advanced: '🎩', expert: '💎' 
+};
+
 const ScoreBar = ({ label, value, color = 'bg-primary-500' }) => (
   <div className="mb-4">
     <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2">
@@ -63,11 +68,11 @@ function WritingRoadmap({ library, onSelectLesson, completedCount }) {
           return (
             <div key={lvl} className="relative">
               <div className="flex items-center gap-5 mb-8 sticky top-0 z-20 py-4 bg-dark-900/80 backdrop-blur-xl border-b border-white/5">
-                <div className="w-14 h-14 bg-dark-950 border border-white/10 rounded-2xl flex items-center justify-center text-xl font-black text-primary-400 shadow-inner">
-                   {lvl.toUpperCase()}
+                <div className="w-10 h-10 md:w-14 md:h-14 bg-dark-950 border border-white/10 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-2xl shadow-inner shrink-0">
+                   {TIER_ICONS[lvl] || '✍️'}
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-2xl font-display font-bold text-white tracking-tight">{section.label}</h2>
+                  <h2 className="text-2xl font-display font-bold text-white tracking-tight">{section.label.replace(/^[A-C][1-2]\s*/, '')}</h2>
                   <div className="flex items-center gap-3 mt-2">
                     <div className="flex-1 h-1.5 bg-dark-950 rounded-full overflow-hidden max-w-[240px] p-0.5 border border-white/5">
                       <motion.div 
