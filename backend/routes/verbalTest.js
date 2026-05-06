@@ -1,6 +1,6 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
-import { generateJSON } from '../middleware/gemini.js';
+import { generateJSON } from '../middleware/ai.js';
 
 const router = express.Router();
 
