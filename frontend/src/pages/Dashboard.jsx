@@ -9,8 +9,8 @@ import {
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import SkillRadar from '../components/SkillRadar';
-import WeeklyChart from '../components/WeeklyChart';
+import MasterRadar from '../components/MasterRadar';
+import ActivityChart from '../components/ActivityChart';
 
 const DAILY_QUESTS = [
   { id: 1, label: 'Master 5 Grammar Errors', xp: 250, progress: 3, total: 5 },
@@ -197,7 +197,7 @@ export default function Dashboard() {
 
         {/* Right Column - Analytics & Quests */}
         <div className="space-y-8">
-          <SkillRadar stats={user?.stats} />
+          <MasterRadar stats={user?.stats} />
           
           <div className="glass-card p-6 md:p-8 border-white/5 bg-dark-900/40">
              <div className="flex items-center justify-between mb-6 md:mb-8">
@@ -226,7 +226,7 @@ export default function Dashboard() {
 
       {/* Activity Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-         <WeeklyChart history={history} />
+         <ActivityChart history={history} />
          
          <div className="glass-card p-6 md:p-8 border-white/5 bg-dark-900/40">
             <h2 className="text-lg md:text-xl font-display font-bold text-white mb-6 md:mb-8 flex items-center gap-3">
