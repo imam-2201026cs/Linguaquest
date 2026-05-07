@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+// Trigger fresh Vercel build v2
 import { motion } from 'framer-motion';
 import { 
   Zap, Trophy, Coins, Target, Sparkles, 
