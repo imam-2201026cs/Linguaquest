@@ -1,4 +1,4 @@
-// Trigger fresh Vercel build v3
+// Trigger fresh Vercel build v4 - Emergency Visibility Fix
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
@@ -21,34 +21,40 @@ const DAILY_QUESTS = [
 export default function Dashboard() {
   const { user } = useAuth();
   const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingHistory, setLoadingHistory] = useState(true);
   const [timeLeft, setTimeLeft] = useState('');
 
+  const calculateTimeLeft = () => {
+    const now = new Date();
+    const reset = new Date();
+    reset.setHours(24, 0, 0, 0);
+    const diff = reset - now;
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    setTimeLeft(`RESETS IN ${h}H ${m}M`);
+  };
+
   useEffect(() => {
+    console.log("Dashboard Mounted for user:", user?.username);
+    
     const fetchHistory = async () => {
       try {
         const res = await axios.get('/api/user/history');
         setHistory(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
-        console.error('History fetch error');
+        console.error('History fetch error:', err);
+        setHistory([]);
       } finally {
-        setLoading(false);
+        setLoadingHistory(false);
       }
     };
-    fetchHistory();
     
-    const timer = setInterval(() => {
-      const now = new Date();
-      const reset = new Date();
-      reset.setHours(24, 0, 0, 0);
-      const diff = reset - now;
-      const h = Math.floor(diff / 3600000);
-      const m = Math.floor((diff % 3600000) / 60000);
-      setTimeLeft(`RESETS IN ${h}H ${m}M`);
-    }, 60000);
+    fetchHistory();
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 60000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [user]);
 
   const modules = [
     { to: '/writing', icon: PenTool, label: 'Writing Lab', desc: 'Craft high-fidelity linguistic compositions.', gradient: 'from-primary-500 to-primary-700', xp: '100 XP/Min' },
@@ -81,8 +87,10 @@ export default function Dashboard() {
     { icon: Coins,  label: 'Treasury', value: user?.coins || 0, color: 'text-accent-emerald', bg: 'bg-accent-emerald/10' },
   ];
 
+  if (!user) return null; // Let ProtectedRoute handle this, but safety first
+
   return (
-    <div className="space-y-8 md:space-y-10 px-4 md:px-0">
+    <div className="space-y-8 md:space-y-10 px-4 md:px-0 pb-12 min-h-screen">
       {/* Hero Welcome */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -254,10 +262,15 @@ export default function Dashboard() {
                     </div>
                  </div>
                ))}
-               {history.length === 0 && (
+               {!loadingHistory && history.length === 0 && (
                  <div className="py-10 md:py-12 text-center">
                     <div className="w-14 h-14 md:w-16 md:h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl md:text-3xl">🚀</div>
                     <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px] md:text-xs">No records found</p>
+                 </div>
+               )}
+               {loadingHistory && (
+                 <div className="py-10 text-center animate-pulse">
+                    <p className="text-slate-600 font-bold uppercase tracking-widest text-[10px]">Loading history...</p>
                  </div>
                )}
             </div>

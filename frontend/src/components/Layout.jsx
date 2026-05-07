@@ -164,7 +164,7 @@ export default function Layout() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 bg-dark-950 relative overflow-hidden">
+      <main className="flex-1 flex flex-col min-w-0 bg-dark-950 relative">
         {/* Ambient Background Glows */}
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-500/5 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-accent-indigo/5 rounded-full blur-[100px] pointer-events-none" />
@@ -187,8 +187,8 @@ export default function Layout() {
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 overflow-y-auto no-scrollbar relative z-10">
-          <div className="content-container">
+        <div className="flex-1 overflow-y-auto no-scrollbar relative z-10" id="main-content-scroll">
+          <div className="content-container min-h-full">
             <Outlet />
           </div>
         </div>

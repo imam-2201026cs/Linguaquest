@@ -22,6 +22,7 @@ import { Brain } from 'lucide-react';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
+  console.log("ProtectedRoute status:", { user: !!user, loading });
   if (loading) return (
     <div className="min-h-screen bg-dark-950 flex flex-col items-center justify-center p-6 space-y-8">
       <div className="relative">
