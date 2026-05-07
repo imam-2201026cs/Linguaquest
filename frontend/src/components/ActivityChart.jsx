@@ -10,7 +10,7 @@ export default function ActivityChart({ history }) {
     <div className="glass-card p-6 md:p-8 border-white/5 bg-dark-900/40">
       <div className="flex items-center justify-between mb-10">
         <h2 className="text-lg md:text-xl font-display font-bold text-white flex items-center gap-3">
-          <BarChart3 size={18} md:size={20} className="text-primary-400" /> Weekly Activity
+          <BarChart3 size={20} className="text-primary-400" /> Weekly Activity
         </h2>
       </div>
 

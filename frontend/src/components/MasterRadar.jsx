@@ -3,11 +3,11 @@ import { Target } from 'lucide-react';
 
 export default function MasterRadar({ stats }) {
   const data = [
-    { label: 'Grammar', value: stats?.grammar || 75 },
-    { label: 'Vocab', value: stats?.vocabulary || 80 },
-    { label: 'Listening', value: stats?.listening || 65 },
-    { label: 'Writing', value: stats?.writing || 70 },
-    { label: 'Fluency', value: stats?.fluency || 85 },
+    { label: 'Grammar', value: Number(stats?.grammar) || 75 },
+    { label: 'Vocab', value: Number(stats?.vocabulary) || 80 },
+    { label: 'Listening', value: Number(stats?.listening) || 65 },
+    { label: 'Writing', value: Number(stats?.writing) || 70 },
+    { label: 'Fluency', value: Number(stats?.fluency) || 85 },
   ];
 
   const size = 280;

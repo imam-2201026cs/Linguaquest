@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 // Trigger fresh Vercel build v2
 import { motion } from 'framer-motion';
 import { 
-  Zap, Trophy, Coins, Target, Sparkles, 
+  Zap, Trophy, Coins, Target, Sparkles, Flame,
   LayoutGrid, ArrowRight, ChevronRight, Clock,
-  Star, PenTool, Headphones, BookOpen, CheckSquare, MessageSquare, BarChart3
+  Star, PenTool, Headphones, BookOpen, CheckSquare, MessageSquare
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -118,7 +118,7 @@ export default function Dashboard() {
         <div className="p-6 md:p-12 flex flex-col md:flex-row items-center gap-8 md:gap-10">
           <div className="relative shrink-0">
              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-[8px] md:border-[10px] border-white/5 flex flex-col items-center justify-center relative">
-                 <svg className="absolute inset-0 w-full h-full -rotate-90">
+                 <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 160 160">
                     <circle cx="80" cy="80" r="70" fill="none" stroke="currentColor" strokeWidth="10" className="text-primary-500/20" />
                     <motion.circle 
                       initial={{ strokeDasharray: "0, 440" }}
