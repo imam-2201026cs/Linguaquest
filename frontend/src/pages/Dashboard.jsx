@@ -102,7 +102,7 @@ export default function Dashboard() {
               <p className="text-white font-bold text-base md:text-lg leading-none">Elite Scholar</p>
             </div>
             <div className="w-10 h-10 md:w-12 md:h-12 bg-primary-500/10 rounded-xl md:rounded-2xl flex items-center justify-center border border-primary-500/20">
-              <Sparkles size={18} md:size={20} className="text-primary-400" />
+              <Sparkles size={20} className="text-primary-400" />
             </div>
           </div>
         </div>
@@ -118,16 +118,16 @@ export default function Dashboard() {
         <div className="p-6 md:p-12 flex flex-col md:flex-row items-center gap-8 md:gap-10">
           <div className="relative shrink-0">
              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-[8px] md:border-[10px] border-white/5 flex flex-col items-center justify-center relative">
-                <svg className="absolute inset-0 w-full h-full -rotate-90">
-                   <circle cx="64 md:80" cy="64 md:80" r="54 md:70" fill="none" stroke="currentColor" strokeWidth="8 md:10" className="text-primary-500/20" />
-                   <motion.circle 
-                     initial={{ strokeDasharray: "0, 440" }}
-                     animate={{ strokeDasharray: `${(levelProgress / 100) * 440}, 440` }}
-                     transition={{ duration: 1.5, ease: "easeOut" }}
-                     cx="64 md:80" cy="64 md:80" r="54 md:70" fill="none" stroke="currentColor" strokeWidth="8 md:10" 
-                     className="text-primary-500 shadow-glow" strokeLinecap="round" 
-                   />
-                </svg>
+                 <svg className="absolute inset-0 w-full h-full -rotate-90">
+                    <circle cx="80" cy="80" r="70" fill="none" stroke="currentColor" strokeWidth="10" className="text-primary-500/20" />
+                    <motion.circle 
+                      initial={{ strokeDasharray: "0, 440" }}
+                      animate={{ strokeDasharray: `${(levelProgress / 100) * 440}, 440` }}
+                      transition={{ duration: 1.5, ease: "easeOut" }}
+                      cx="80" cy="80" r="70" fill="none" stroke="currentColor" strokeWidth="10" 
+                      className="text-primary-500 shadow-glow" strokeLinecap="round" 
+                    />
+                 </svg>
                 <span className="text-4xl md:text-5xl font-display font-black text-white">{currentLevel}</span>
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Tier</span>
              </div>
@@ -141,7 +141,7 @@ export default function Dashboard() {
               {stats.map(({ icon: Icon, label, value, color, bg }) => (
                 <div key={label} className="space-y-1">
                   <div className="flex items-center gap-2 mb-1 justify-center md:justify-start">
-                    <Icon size={12} md:size={14} className={color} />
+                    <Icon size={14} className={color} />
                     <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-slate-500">{label}</span>
                   </div>
                   <p className="text-base md:text-xl font-display font-bold text-white">{value}</p>
@@ -163,12 +163,12 @@ export default function Dashboard() {
         <div className="lg:col-span-2 space-y-8">
           <div className="flex items-center justify-between px-1">
             <h3 className="text-xl md:text-2xl font-display font-bold text-white tracking-tight flex items-center gap-3">
-               <LayoutGrid size={22} md:size={24} className="text-primary-400" /> Training Grounds
+               <LayoutGrid size={24} className="text-primary-400" /> Training Grounds
             </h3>
             <Link to="/dashboard" className="text-xs font-bold text-slate-500 hover:text-white transition-colors">View All</Link>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            {modules.map(({ to, icon: Icon, label, desc, gradient, glow, stat, xp }, i) => (
+            {modules.map(({ to, icon: Icon, label, desc, gradient, xp }, i) => (
               <motion.div
                 key={to}
                 initial={{ opacity: 0, y: 20 }}
@@ -177,7 +177,7 @@ export default function Dashboard() {
               >
                 <Link to={to} className="glass-card p-5 md:p-6 flex items-start gap-4 md:gap-5 hover:bg-white/5 border-white/5 group relative overflow-hidden transition-all duration-500">
                   <div className={`w-12 h-12 md:w-14 md:h-14 bg-gradient-to-br ${gradient} rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`}>
-                    <Icon size={20} md:size={24} className="text-white" />
+                    <Icon size={24} className="text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
@@ -202,7 +202,7 @@ export default function Dashboard() {
           <div className="glass-card p-6 md:p-8 border-white/5 bg-dark-900/40">
              <div className="flex items-center justify-between mb-6 md:mb-8">
                 <h2 className="text-lg md:text-xl font-display font-bold text-white flex items-center gap-3">
-                   <Target size={18} md:size={20} className="text-accent-amber" /> Active Quests
+                   <Target size={20} className="text-accent-amber" /> Active Quests
                 </h2>
                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{timeLeft}</span>
              </div>
@@ -230,7 +230,7 @@ export default function Dashboard() {
          
          <div className="glass-card p-6 md:p-8 border-white/5 bg-dark-900/40">
             <h2 className="text-lg md:text-xl font-display font-bold text-white mb-6 md:mb-8 flex items-center gap-3">
-               <Clock size={18} md:size={20} className="text-primary-400" /> Recent Log
+               <Clock size={20} className="text-primary-400" /> Recent Log
             </h2>
             <div className="space-y-4">
                {history.slice(0, 4).map(activity => (
