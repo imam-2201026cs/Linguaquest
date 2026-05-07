@@ -1,3 +1,4 @@
+// Premium Verbal Ability Arena Overhaul - Elite Protocol Edition
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
@@ -6,7 +7,8 @@ import {
   ArrowLeft, Volume2, Languages, Lightbulb, RefreshCw, 
   ChevronRight, Trophy, Globe, Flame, BookOpen, Brain, 
   Layers, CheckCircle, XCircle, ChevronUp, Zap, HelpCircle,
-  Sparkles, Target, Activity, Shield, Award
+  Sparkles, Target, Activity, Shield, Award, Terminal, Cpu,
+  BarChart2, ShieldCheck, ZapOff
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -21,12 +23,12 @@ const TOPICS = [
 ];
 
 const TOPIC_COLORS = [
-  "from-primary-500 to-primary-700",
-  "from-accent-indigo to-primary-600",
-  "from-accent-emerald to-primary-700",
-  "from-accent-amber to-primary-600",
-  "from-accent-rose to-primary-600",
-  "from-primary-400 to-accent-indigo",
+  "from-primary-500 to-primary-700 shadow-primary-500/20",
+  "from-accent-indigo to-primary-600 shadow-accent-indigo/20",
+  "from-accent-emerald to-primary-700 shadow-accent-emerald/20",
+  "from-accent-amber to-primary-600 shadow-accent-amber/20",
+  "from-accent-rose to-primary-600 shadow-accent-rose/20",
+  "from-primary-400 to-accent-indigo shadow-primary-400/20",
 ];
 
 export default function VerbalAbilityTest() {
@@ -111,69 +113,76 @@ export default function VerbalAbilityTest() {
   // 1. Topic Selection View
   if (stage === 0) {
     return (
-      <div className="max-w-6xl mx-auto pb-20 animate-slide-up space-y-10 px-4 md:px-0">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-           <div className="text-center md:text-left">
-              <div className="flex items-center gap-3 mb-2 justify-center md:justify-start">
-                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary-400">Verbal Mastery</span>
-                 <div className="h-px w-8 bg-primary-500/30" />
+      <div className="max-w-7xl mx-auto pb-32 animate-slide-up space-y-16 px-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
+           <div className="max-w-2xl">
+              <div className="flex items-center gap-3 mb-4 justify-center md:justify-start">
+                 <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary-400">Verbal Mastery Matrix</span>
+                 <div className="h-px w-12 bg-primary-500/30" />
               </div>
-              <h1 className="text-3xl md:text-5xl font-display font-bold text-white tracking-tight">Verbal Ability <span className="shimmer-text">Arena</span></h1>
-              <p className="text-slate-400 text-sm md:text-lg mt-2 font-medium">Precision practice for competitive excellence.</p>
+              <h1 className="text-4xl md:text-6xl font-display font-black text-white tracking-tighter leading-none mb-4">
+                Verbal <span className="shimmer-text">Arena</span>
+              </h1>
+              <p className="text-slate-400 text-lg font-medium leading-relaxed">
+                Precision practice modules designed for competitive linguistic excellence and neural reinforcement.
+              </p>
            </div>
-           <button onClick={() => navigate(-1)} className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-500 hover:text-white transition-colors mx-auto md:mx-0">
-              <ArrowLeft size={24} />
+           <button onClick={() => navigate(-1)} className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 transition-all shadow-premium">
+              <ArrowLeft size={28} />
            </button>
         </div>
 
         {/* Mega Test Banner */}
         <motion.button 
-          whileHover={{ scale: 1.01 }}
+          whileHover={{ scale: 1.01, y: -5 }}
           onClick={() => startTest('Mixed')}
-          className="w-full relative group overflow-hidden rounded-[24px] md:rounded-[32px] p-8 md:p-12 text-left border border-primary-500/20"
+          className="w-full relative group overflow-hidden rounded-[3rem] p-12 md:p-16 text-left border border-primary-500/20 shadow-premium"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-accent-indigo opacity-90 group-hover:opacity-100 transition-opacity"></div>
-          <div className="absolute top-0 right-0 p-12 opacity-10 group-hover:scale-110 transition-transform duration-700 hidden md:block">
-            <Brain size={160} />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary-600 via-primary-700 to-accent-indigo opacity-90 group-hover:opacity-100 transition-all duration-1000"></div>
+          <div className="absolute top-0 right-0 p-16 opacity-10 group-hover:scale-110 group-hover:rotate-6 transition-transform duration-1000 hidden lg:block">
+            <Brain size={240} />
           </div>
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-8">
-            <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] font-black text-white uppercase tracking-widest border border-white/20">
-                 <Sparkles size={12} className="animate-pulse" /> Elite Protocol
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-12">
+            <div className="space-y-6 max-w-2xl">
+              <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-6 py-2 rounded-full text-[10px] font-black text-white uppercase tracking-[0.3em] border border-white/20 shadow-glow-sm">
+                 <Sparkles size={16} className="animate-pulse" /> Elite Protocol Activated
               </div>
-              <h2 className="text-2xl md:text-4xl font-display font-bold text-white tracking-tight">Ultimate Mixed Assessment</h2>
-              <p className="text-white/80 text-sm md:text-lg font-medium max-w-xl">A comprehensive 30-objective circuit spanning all linguistic domains. The definitive test of your proficiency.</p>
+              <h2 className="text-4xl md:text-6xl font-display font-black text-white tracking-tighter uppercase leading-none">Ultimate Mixed Assessment</h2>
+              <p className="text-white/90 text-xl font-medium leading-relaxed">
+                A comprehensive 30-objective circuit spanning all linguistic domains. The definitive benchmark of your proficiency.
+              </p>
             </div>
-            <div className="bg-white text-primary-700 px-8 md:px-10 py-4 md:py-5 rounded-xl md:rounded-2xl font-black text-[10px] md:text-xs uppercase tracking-widest shadow-2xl group-hover:px-10 md:group-hover:px-12 transition-all">
+            <div className="bg-white text-primary-700 px-12 py-6 rounded-[2rem] font-black text-xs uppercase tracking-[0.4em] shadow-2xl group-hover:px-16 transition-all duration-700 shrink-0 text-center">
               Initiate Mega Mission
             </div>
           </div>
         </motion.button>
 
-        <div className="space-y-8">
-           <div className="flex items-center gap-3">
-              <div className="w-2 h-2 rounded-full bg-primary-500 shadow-glow" />
-              <h3 className="text-lg md:text-xl font-display font-bold text-white tracking-tight uppercase tracking-widest">Targeted Domain Practice</h3>
+        <div className="space-y-12">
+           <div className="flex items-center gap-6 px-4">
+              <div className="w-3 h-3 rounded-full bg-primary-500 shadow-glow" />
+              <h3 className="text-2xl font-display font-black text-white tracking-tighter uppercase tracking-[0.2em]">Targeted Domain Practice</h3>
+              <div className="h-px flex-1 bg-white/5" />
            </div>
 
-           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
              {TOPICS.map((topic, i) => (
                <motion.button
                  key={topic}
-                 whileHover={{ y: -5 }}
+                 whileHover={{ y: -10, scale: 1.02 }}
                  onClick={() => startTest(topic)}
-                 className="glass-card p-6 md:p-8 text-left border-white/5 bg-dark-900/40 relative overflow-hidden group transition-all duration-500"
+                 className="glass-card p-10 text-left border-white/5 bg-dark-900/40 relative overflow-hidden group transition-all duration-700 shadow-premium"
                >
-                 <div className="absolute top-0 right-0 w-24 h-24 bg-primary-500/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
+                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-1000 blur-2xl" />
                  <div className="relative z-10">
-                    <div className={`w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br ${TOPIC_COLORS[i % TOPIC_COLORS.length]} flex items-center justify-center mb-4 md:mb-6 shadow-lg group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`}>
-                      <BookOpen size={20} md:size={24} className="text-white" />
+                    <div className={`w-16 h-16 rounded-[2rem] bg-gradient-to-br ${TOPIC_COLORS[i % TOPIC_COLORS.length]} flex items-center justify-center mb-8 shadow-glow-sm group-hover:scale-110 group-hover:rotate-6 transition-all duration-700`}>
+                      <BookOpen size={28} className="text-white" />
                     </div>
-                    <h4 className="text-base md:text-lg font-bold text-white mb-2 tracking-tight group-hover:text-primary-400 transition-colors">{topic}</h4>
-                    <div className="flex items-center gap-2">
-                       <span className="text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest">30 Objectives</span>
-                       <div className="w-1 h-1 rounded-full bg-slate-700" />
-                       <span className="text-[9px] md:text-[10px] font-black text-primary-400 uppercase tracking-widest">Advanced</span>
+                    <h4 className="text-xl font-display font-black text-white mb-3 tracking-tighter group-hover:text-primary-400 transition-colors uppercase">{topic}</h4>
+                    <div className="flex items-center gap-3 pt-4 border-t border-white/5">
+                       <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em]">30 Objectives</span>
+                       <div className="w-1.5 h-1.5 rounded-full bg-slate-800" />
+                       <span className="text-[10px] font-black text-primary-500 uppercase tracking-[0.2em]">High Impact</span>
                     </div>
                  </div>
                </motion.button>
@@ -187,17 +196,17 @@ export default function VerbalAbilityTest() {
   // 2. Loading View
   if (stage === 1) {
     return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center text-center space-y-8 px-6">
+      <div className="h-[80vh] flex flex-col items-center justify-center text-center gap-12 px-6">
         <div className="relative">
-           <div className="w-20 h-20 md:w-24 md:h-24 rounded-full border-[6px] border-white/5 flex items-center justify-center">
-              <div className="w-20 h-20 md:w-24 md:h-24 rounded-full border-[6px] border-primary-500 border-t-transparent animate-spin absolute" />
-              <Brain size={28} md:size={32} className="text-primary-500 animate-pulse" />
+           <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-[8px] border-white/5 flex items-center justify-center">
+              <div className="w-32 h-32 md:w-40 md:h-40 rounded-full border-[8px] border-primary-500 border-t-transparent animate-spin absolute" />
+              <Brain size={48} className="text-primary-500 animate-pulse" />
            </div>
-           <div className="absolute -inset-4 bg-primary-500/10 rounded-full blur-2xl animate-pulse" />
+           <div className="absolute -inset-10 bg-primary-500/10 rounded-full blur-3xl animate-pulse" />
         </div>
-        <div className="space-y-3">
-           <h2 className="text-2xl md:text-3xl font-display font-bold text-white tracking-tight">Syncing Mission Data</h2>
-           <p className="text-slate-400 text-base md:text-lg font-medium">Calibrating 30 high-fidelity objectives for <br/><span className="text-primary-400 font-bold">{selectedTopic}</span></p>
+        <div className="space-y-6">
+           <h2 className="text-4xl md:text-5xl font-display font-black text-white tracking-tighter uppercase leading-none">Syncing Mission Data</h2>
+           <p className="text-slate-500 text-xl font-medium">Calibrating 30 high-fidelity objectives for <br/><span className="text-primary-400 font-black uppercase tracking-widest">{selectedTopic}</span></p>
         </div>
       </div>
     );
@@ -210,129 +219,132 @@ export default function VerbalAbilityTest() {
     const selectedOption = answers[currentIndex];
 
     return (
-      <div className="fixed inset-0 flex flex-col bg-dark-950 text-white overflow-hidden">
+      <div className="fixed inset-0 flex flex-col bg-dark-950 text-white overflow-hidden z-50">
         {reward && <XPReward {...reward} onClose={() => setReward(null)} />}
 
-        {/* Header - Compact */}
-        <header className="flex items-center justify-between px-6 py-3 bg-dark-950/20 border-b border-white/5 shrink-0">
-          <button onClick={() => setStage(0)} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-colors border border-white/5">
-            <ArrowLeft size={18} />
+        {/* Header */}
+        <header className="flex items-center justify-between px-10 py-6 bg-dark-950/40 border-b border-white/5 backdrop-blur-3xl shrink-0">
+          <button onClick={() => setStage(0)} className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center hover:bg-white/10 transition-all border border-white/5 shadow-premium">
+            <ArrowLeft size={24} />
           </button>
-          <div className="flex gap-3">
-            <div className="flex items-center gap-2 bg-accent-emerald/10 border border-accent-emerald/20 px-3 py-1.5 rounded-xl">
-              <div className="w-1.5 h-1.5 rounded-full bg-accent-emerald animate-pulse shadow-glow" />
-              <span className="text-[10px] font-black text-accent-emerald uppercase tracking-widest">{correctCount}</span>
+          
+          <div className="flex items-center gap-8">
+            <div className="hidden md:flex items-center gap-4 bg-dark-900 px-6 py-2 rounded-full border border-white/5 shadow-inner">
+               <Terminal size={14} className="text-primary-500" />
+               <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Sector: {selectedTopic}</span>
             </div>
-            <div className="flex items-center gap-2 bg-accent-rose/10 border border-accent-rose/20 px-3 py-1.5 rounded-xl">
-              <div className="w-1.5 h-1.5 rounded-full bg-accent-rose shadow-glow" />
-              <span className="text-[10px] font-black text-accent-rose uppercase tracking-widest">{wrongCount}</span>
+            <div className="flex gap-4">
+              <div className="flex items-center gap-3 bg-accent-emerald/10 border border-accent-emerald/20 px-6 py-3 rounded-2xl shadow-glow-emerald/10">
+                <ShieldCheck size={18} className="text-accent-emerald shadow-glow" />
+                <span className="text-lg font-black text-accent-emerald">{correctCount}</span>
+              </div>
+              <div className="flex items-center gap-3 bg-accent-rose/10 border border-accent-rose/20 px-6 py-3 rounded-2xl shadow-glow-rose/10">
+                <ZapOff size={18} className="text-accent-rose" />
+                <span className="text-lg font-black text-accent-rose">{wrongCount}</span>
+              </div>
             </div>
           </div>
         </header>
 
-        {/* Main Content Area - Scroll-free Flex */}
-        <main className="flex-1 flex flex-col max-w-4xl mx-auto w-full overflow-hidden">
+        <main className="flex-1 flex flex-col max-w-5xl mx-auto w-full overflow-hidden px-10">
           
-          {/* Progress Indicator - Slim */}
-          <div className="px-6 py-4 shrink-0">
-             <div className="h-1.5 bg-dark-900 rounded-full overflow-hidden p-0.5 border border-white/5">
+          {/* Progress Indicator */}
+          <div className="py-10 shrink-0">
+             <div className="flex items-center justify-between mb-4">
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-slate-600">Trajectory Mapping</span>
+                <span className="text-[10px] font-black text-primary-400 uppercase tracking-[0.4em]">{currentIndex + 1} / {questions.length} Units</span>
+             </div>
+             <div className="h-2 bg-dark-900 rounded-full overflow-hidden p-0.5 border border-white/5">
                <motion.div 
                  initial={{ width: 0 }}
                  animate={{ width: `${((currentIndex + (isAnswered ? 1 : 0)) / questions.length) * 100}%` }}
-                 transition={{ duration: 0.5 }}
-                 className="h-full bg-gradient-to-r from-primary-600 to-primary-400 rounded-full shadow-glow" 
+                 transition={{ duration: 0.8, ease: "circOut" }}
+                 className="h-full bg-gradient-to-r from-primary-600 via-primary-500 to-accent-indigo rounded-full shadow-glow" 
                />
              </div>
           </div>
 
-          <div className="flex-1 flex flex-col px-6 gap-4 md:gap-6 overflow-hidden">
-            {/* Question Card - Adaptive Height */}
+          <div className="flex-1 flex flex-col gap-10 overflow-hidden pb-10">
+            {/* Question Card */}
             <AnimatePresence mode="wait">
                <motion.div 
                  key={currentIndex}
-                 initial={{ opacity: 0, scale: 0.98 }}
-                 animate={{ opacity: 1, scale: 1 }}
-                 exit={{ opacity: 0, scale: 0.98 }}
-                 className="glass-card overflow-hidden border-white/5 bg-gradient-to-br from-primary-600/20 to-primary-900/40 shadow-2xl shrink-0"
+                 initial={{ opacity: 0, x: 20 }}
+                 animate={{ opacity: 1, x: 0 }}
+                 exit={{ opacity: 0, x: -20 }}
+                 className="glass-card overflow-hidden border-white/5 bg-dark-900/40 shadow-premium shrink-0 relative group"
                >
-                 <div className="bg-dark-950/40 px-4 py-2 border-b border-white/5 text-center">
-                    <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary-200 opacity-60">
-                      Objective {currentIndex + 1} / {questions.length}
-                    </span>
+                 <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-transparent opacity-50" />
+                 <div className="bg-dark-950/60 px-6 py-3 border-b border-white/5 flex justify-between items-center relative z-10">
+                    <span className="text-[9px] font-black uppercase tracking-[0.4em] text-primary-400">Objective Module {currentIndex + 1}</span>
+                    <div className="flex gap-4">
+                       <button onClick={() => speak(currentQ.question)} className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-slate-500 hover:text-white hover:bg-white/10 transition-all border border-white/10">
+                         <Volume2 size={18} />
+                       </button>
+                    </div>
                  </div>
-                 <div className="p-5 md:p-8 text-center space-y-4">
-                   <h2 className="text-sm md:text-xl font-display font-bold text-white leading-relaxed tracking-tight max-h-[100px] overflow-y-auto scrollbar-hide">
+                 <div className="p-10 md:p-16 text-center relative z-10">
+                   <h2 className="text-2xl md:text-4xl font-display font-black text-white leading-tight tracking-tighter uppercase max-h-[160px] overflow-y-auto scrollbar-hide">
                      {currentQ.question}
                    </h2>
-                   <div className="flex justify-center gap-3">
-                      <button onClick={() => speak(currentQ.question)} className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center text-white/40 hover:text-white transition-all border border-white/5">
-                        <Volume2 size={16} />
-                      </button>
-                      <button className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center text-white/40 border border-white/5">
-                        <Languages size={16} />
-                      </button>
-                   </div>
                  </div>
                </motion.div>
             </AnimatePresence>
 
-            {/* Options Area - Grid on Tablet/PC, Stack on Mobile */}
-            <div className="flex-1 flex flex-col justify-center gap-2 md:gap-4 overflow-y-auto scrollbar-hide pb-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
+            {/* Options Area */}
+            <div className="flex-1 flex flex-col justify-start gap-6 overflow-y-auto scrollbar-hide">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6">
                 {currentQ.options.map((option, idx) => {
                   const isCorrect = idx === currentQ.correct;
                   const isSelected = idx === selectedOption;
                   
-                  let variant = "bg-dark-900/50 border-white/5 text-slate-400 hover:border-white/10 hover:bg-white/5";
+                  let variant = "bg-dark-900/60 border-white/5 text-slate-500 hover:border-primary-500/30 hover:bg-white/5 hover:scale-[1.02]";
                   if (isAnswered) {
-                    if (isCorrect) variant = "bg-accent-emerald/20 border-accent-emerald/40 text-accent-emerald";
-                    else if (isSelected) variant = "bg-accent-rose/20 border-accent-rose/40 text-accent-rose";
-                    else variant = "bg-dark-950/30 border-white/5 text-slate-600 opacity-40";
+                    if (isCorrect) variant = "bg-accent-emerald/20 border-accent-emerald/50 text-accent-emerald shadow-glow-emerald scale-[1.02]";
+                    else if (isSelected) variant = "bg-accent-rose/20 border-accent-rose/50 text-accent-rose shadow-glow-rose scale-[1.02] animate-shake";
+                    else variant = "bg-dark-950 border-white/5 text-slate-700 opacity-40 grayscale";
                   }
 
                   return (
                     <motion.button
                       key={idx}
-                      whileHover={!isAnswered ? { scale: 1.01 } : {}}
+                      whileHover={!isAnswered ? { scale: 1.02 } : {}}
                       disabled={isAnswered}
                       onClick={() => handleOptionSelect(idx)}
-                      className={`group relative text-left p-3 md:p-5 rounded-xl md:rounded-2xl border transition-all duration-300 flex flex-col gap-2 ${variant}`}
+                      className={`group relative text-left p-8 rounded-[2.5rem] border transition-all duration-500 flex items-center gap-8 ${variant} shadow-premium`}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-6 h-6 rounded-full border flex items-center justify-center text-[9px] font-black shrink-0 ${isAnswered && (isCorrect || isSelected) ? 'border-white/40 bg-white/10' : 'border-white/10 bg-white/5'}`}>
-                          {isAnswered && isCorrect ? <CheckCircle size={12} /> : isAnswered && isSelected ? <XCircle size={12} /> : String.fromCharCode(65 + idx)}
-                        </div>
-                        <span className="flex-1 font-bold tracking-tight text-xs md:text-base leading-snug line-clamp-2">{option}</span>
+                      <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center text-sm font-display font-black shrink-0 transition-all ${isAnswered && (isCorrect || isSelected) ? 'bg-white/10 border-current' : 'border-white/10 bg-dark-950 shadow-inner'}`}>
+                        {isAnswered && isCorrect ? <CheckCircle size={20} /> : isAnswered && isSelected ? <XCircle size={20} /> : String.fromCharCode(65 + idx)}
                       </div>
-                      
-                      <div className="flex gap-2 px-1 opacity-10 group-hover:opacity-40 transition-opacity">
-                        <Volume2 size={10} />
-                        <Languages size={10} />
-                      </div>
+                      <span className="flex-1 font-bold tracking-tight text-lg leading-tight uppercase">{option}</span>
                     </motion.button>
                   );
                 })}
               </div>
 
-              {/* Explanation/Next - Only if answered */}
+              {/* Explanation/Next */}
               <AnimatePresence>
                 {isAnswered && (
                   <motion.div 
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="space-y-3"
+                    className="space-y-6 pb-12"
                   >
-                    <div className="glass-card p-4 bg-primary-500/5 border-primary-500/10">
-                       <p className="text-slate-300 text-[11px] md:text-sm leading-relaxed line-clamp-2 overflow-y-auto max-h-[60px] scrollbar-hide">
-                         {currentQ.explanation}
-                       </p>
+                    <div className="glass-card p-10 bg-dark-900/60 border-primary-500/20 shadow-premium relative overflow-hidden group">
+                       <div className="absolute top-0 left-0 w-1 h-full bg-primary-500" />
+                       <div className="flex items-start gap-6">
+                          <Lightbulb size={24} className="text-primary-500 shrink-0 mt-1 shadow-glow" />
+                          <p className="text-slate-400 text-lg leading-relaxed font-medium">
+                            {currentQ.explanation}
+                          </p>
+                       </div>
                     </div>
 
                     <button 
                       onClick={handleNext}
-                      className="w-full btn-primary py-3 md:py-4 flex items-center justify-center gap-3 rounded-xl shadow-glow text-xs md:text-base"
+                      className="w-full btn-primary py-8 flex items-center justify-center gap-6 rounded-[2.5rem] shadow-glow text-[10px] font-black uppercase tracking-[0.5em] hover:scale-[1.02] transition-transform"
                     >
-                      Next Objective <ChevronRight size={16} />
+                      Next Objective Sector <ChevronRight size={24} />
                     </button>
                   </motion.div>
                 )}
@@ -348,56 +360,57 @@ export default function VerbalAbilityTest() {
   if (stage === 3) {
     const score = Math.round((correctCount / questions.length) * 100);
     return (
-      <div className="max-w-4xl mx-auto py-10 px-6 space-y-10 animate-slide-up">
+      <div className="max-w-5xl mx-auto py-16 px-6 space-y-16 animate-slide-up pb-32">
         {reward && <XPReward {...reward} onClose={() => setReward(null)} />}
         
-        <div className="glass-card p-1 border-white/5 bg-gradient-to-br from-primary-500/10 to-transparent shadow-2xl">
-          <div className="p-8 md:p-12 text-center flex flex-col items-center">
-            <div className="w-20 h-20 md:w-24 md:h-24 bg-dark-950 rounded-[28px] md:rounded-[32px] flex items-center justify-center mb-6 md:mb-8 border border-white/5 shadow-inner relative group overflow-hidden">
-               <div className="absolute inset-0 bg-primary-500/10 group-hover:bg-primary-500/20 transition-colors" />
-               <Trophy size={40} md:size={48} className="text-primary-400 shadow-glow relative z-10" />
+        <div className="glass-card p-1.5 border-white/5 bg-dark-900 shadow-premium relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-primary-500/5 rounded-full -mr-48 -mt-48 blur-3xl" />
+          <div className="p-16 text-center flex flex-col items-center relative z-10">
+            <div className="w-32 h-32 bg-dark-950 rounded-[3rem] flex items-center justify-center mb-12 border border-white/10 shadow-inner relative group overflow-hidden">
+               <div className="absolute inset-0 bg-primary-500/10 group-hover:bg-primary-500/20 transition-colors duration-700" />
+               <Trophy size={64} className="text-primary-400 shadow-glow relative z-10 animate-bounce-slow" />
             </div>
             
-            <h2 className="text-3xl md:text-5xl font-display font-bold text-white tracking-tight mb-4">
-              Mission <span className="shimmer-text">Finalized</span>
+            <h2 className="text-5xl md:text-7xl font-display font-black text-white tracking-tighter uppercase leading-none mb-6">
+              Arena <span className="shimmer-text">Deciphered</span>
             </h2>
-            <p className="text-slate-400 text-base md:text-lg font-medium max-w-sm mb-8 md:mb-10 leading-relaxed">
-              Domain Mastery in <span className="text-white font-bold">{selectedTopic}</span> authenticated. Performance analytics captured.
+            <p className="text-slate-500 text-xl font-medium max-w-xl mb-16 leading-relaxed">
+              Linguistic patterns for <strong className="text-white uppercase tracking-widest">{selectedTopic}</strong> successfully mapped and authenticated.
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 w-full max-w-lg mb-10 md:mb-12">
-              <div className="bg-dark-950 border border-white/5 rounded-2xl md:rounded-3xl p-6 md:p-8 transition-transform hover:scale-105">
-                <p className="text-[10px] text-primary-400 uppercase font-black tracking-widest mb-2">Accuracy Rate</p>
-                <p className="text-3xl md:text-5xl font-black text-white leading-none">{score}%</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-2xl mb-16">
+              <div className="bg-dark-950 border border-white/5 rounded-[3rem] p-10 transition-all hover:scale-105 shadow-inner">
+                <p className="text-[10px] text-primary-500 font-black uppercase tracking-[0.4em] mb-4">Accuracy Rate</p>
+                <p className="text-6xl font-display font-black text-white leading-none tracking-tighter">{score}%</p>
               </div>
-              <div className="bg-dark-950 border border-white/5 rounded-2xl md:rounded-3xl p-6 md:p-8 transition-transform hover:scale-105">
-                <p className="text-[10px] text-accent-emerald uppercase font-black tracking-widest mb-2">Objectives Met</p>
-                <p className="text-3xl md:text-5xl font-black text-white leading-none">{correctCount}</p>
+              <div className="bg-dark-950 border border-white/5 rounded-[3rem] p-10 transition-all hover:scale-105 shadow-inner">
+                <p className="text-[10px] text-accent-emerald font-black uppercase tracking-[0.4em] mb-4">Objectives Met</p>
+                <p className="text-6xl font-display font-black text-white leading-none tracking-tighter">{correctCount}</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
-              <button onClick={() => startTest(selectedTopic)} className="btn-primary py-4 md:py-5 flex items-center justify-center gap-3 rounded-2xl shadow-glow font-black text-xs uppercase tracking-[0.2em]">
-                <RefreshCw size={18} /> Re-Initiate
+            <div className="flex flex-col md:flex-row gap-6 w-full max-w-2xl">
+              <button onClick={() => startTest(selectedTopic)} className="btn-primary flex-1 py-7 flex items-center justify-center gap-6 rounded-[2.5rem] shadow-glow font-black text-[10px] uppercase tracking-[0.4em] hover:scale-105 transition-transform">
+                <RefreshCw size={24} className="animate-spin-slow" /> Re-Initiate Mission
               </button>
-              <button onClick={() => setStage(0)} className="btn-ghost py-4 md:py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] border-white/5">
-                Practice Domain
+              <button onClick={() => setStage(0)} className="btn-ghost flex-1 py-7 rounded-[2.5rem] font-black text-[10px] uppercase tracking-[0.4em] border-white/10 hover:bg-white/5 transition-all">
+                Switch Domain Sector
               </button>
             </div>
           </div>
         </div>
 
         {/* Learning Insight */}
-        <div className="glass-card p-8 md:p-10 border-white/5 bg-dark-900/40 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
-          <div className="flex items-start gap-4 md:gap-6">
-            <div className="w-12 h-12 md:w-14 md:h-14 bg-primary-500/10 rounded-xl md:rounded-2xl flex items-center justify-center text-primary-400 shrink-0 border border-primary-500/20">
-              <Zap size={24} />
+        <div className="glass-card p-12 border-white/5 bg-dark-900/40 relative overflow-hidden group shadow-premium">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/5 rounded-full -mr-32 -mt-32 blur-2xl" />
+          <div className="flex items-start gap-10 relative z-10">
+            <div className="w-16 h-16 bg-primary-500/10 rounded-[2rem] flex items-center justify-center text-primary-400 shrink-0 border border-primary-500/20 shadow-glow-sm">
+              <Cpu size={32} />
             </div>
-            <div>
-              <h4 className="text-lg md:text-xl font-display font-bold text-white mb-2 tracking-tight">Neural Reward: +{reward?.xp} XP</h4>
-              <p className="text-slate-400 text-xs md:text-sm leading-relaxed font-medium">
-                Cognitive patterns for <strong className="text-white">{selectedTopic}</strong> have been reinforced. Regular engagement with diverse domains ensures a robust linguistic foundation.
+            <div className="space-y-4">
+              <h4 className="text-2xl font-display font-black text-white tracking-tighter uppercase">Neural Reinforcement: +{reward?.xp} XP SYNC</h4>
+              <p className="text-slate-400 text-lg leading-relaxed font-medium">
+                Cognitive patterns for <strong className="text-white uppercase tracking-widest">{selectedTopic}</strong> have been reinforced within your neural profile. High-frequency exposure to diverse verbal domains is essential for total mastery.
               </p>
             </div>
           </div>

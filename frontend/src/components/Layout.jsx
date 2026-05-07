@@ -4,28 +4,36 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, PenTool, Headphones, BookOpen, Brain, Target,
   CheckSquare, Trophy, User, LogOut, Zap, Flame, Coins, MessageCircle,
-  ChevronRight, Menu, X, Sparkles
+  ChevronRight, Menu, X, Sparkles, Bell, Settings, Search
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const navItems = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/challenge', icon: Target, label: 'Daily Challenge' },
-  { to: '/conversation', icon: MessageCircle, label: 'AI Conversation', badge: 'NEW' },
-  { to: '/vocabulary', icon: Brain, label: 'Vocabulary' },
-  { to: '/verbal-test', icon: CheckSquare, label: 'Verbal Ability', badge: 'PRO' },
-  { to: '/writing', icon: PenTool, label: 'Writing' },
-  { to: '/listening', icon: Headphones, label: 'Listening' },
-  { to: '/reading', icon: BookOpen, label: 'Reading' },
-  { to: '/grammar', icon: CheckSquare, label: 'Grammar' },
-  { to: '/leaderboard', icon: Trophy, label: 'Leaderboard' },
-  { to: '/profile', icon: User, label: 'Profile' },
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Control Center' },
+  { to: '/challenge', icon: Target, label: 'Daily Mission' },
+  { to: '/conversation', icon: MessageCircle, label: 'Neural Chat', badge: 'AI' },
+  { to: '/vocabulary', icon: Brain, label: 'Lexicon' },
+  { to: '/verbal-test', icon: Sparkles, label: 'Verbal Arena', badge: 'PRO' },
+  { to: '/writing', icon: PenTool, label: 'Writing Lab' },
+  { to: '/listening', icon: Headphones, label: 'Audio Sync' },
+  { to: '/reading', icon: BookOpen, label: 'Data Streams' },
+  { to: '/grammar', icon: CheckSquare, label: 'Logic Kernel' },
+  { to: '/leaderboard', icon: Trophy, label: 'Hierarchy' },
+  { to: '/profile', icon: User, label: 'Linguistic ID' },
 ];
 
 export default function Layout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const main = document.getElementById('main-content-scroll');
+    const handleScroll = () => setScrolled(main.scrollTop > 20);
+    main?.addEventListener('scroll', handleScroll);
+    return () => main?.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const xpForNextLevel = (user?.level || 1) * (user?.level || 1) * 100;
   const xpProgress = user ? Math.min(100, (user.xp % xpForNextLevel) / xpForNextLevel * 100) : 0;
@@ -36,7 +44,10 @@ export default function Layout() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-dark-950 text-slate-100 selection:bg-primary-500/30 max-w-[2000px] mx-auto relative border-x border-white/5 shadow-2xl">
+    <div className="flex h-screen overflow-hidden bg-dark-950 text-slate-100 selection:bg-primary-500/30 font-body relative">
+      {/* Background Mesh */}
+      <div className="fixed inset-0 bg-mesh opacity-40 pointer-events-none" />
+
       {/* Sidebar Overlay */}
       <AnimatePresence>
         {mobileOpen && (
@@ -44,7 +55,7 @@ export default function Layout() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-dark-950/80 backdrop-blur-sm lg:hidden" 
+            className="fixed inset-0 z-[60] bg-dark-950/90 backdrop-blur-md lg:hidden" 
             onClick={() => setMobileOpen(false)} 
           />
         )}
@@ -52,141 +63,165 @@ export default function Layout() {
 
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-72 flex flex-col bg-dark-900/50 backdrop-blur-3xl border-r border-white/5
-        transform transition-all duration-500 ease-in-out lg:relative lg:translate-x-0
+        fixed inset-y-0 left-0 z-[70] w-80 flex flex-col bg-dark-900/40 backdrop-blur-3xl border-r border-white/5
+        transform transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] lg:relative lg:translate-x-0
         ${mobileOpen ? 'translate-x-0' : '-translate-x-full shadow-none'}
-        ${mobileOpen ? 'shadow-[0_0_50px_rgba(0,0,0,0.5)]' : ''}
+        ${mobileOpen ? 'shadow-[40px_0_100px_rgba(0,0,0,0.8)]' : ''}
       `}>
-        {/* Logo */}
-        <div className="p-8 pb-4">
-          <div className="flex items-center gap-3.5 group cursor-pointer" onClick={() => navigate('/')}>
-            <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center font-bold text-white shadow-glow group-hover:rotate-12 transition-transform duration-500">
-              <Sparkles size={24} />
+        {/* Logo Section */}
+        <div className="p-10 pb-6">
+          <div className="flex items-center gap-4 group cursor-pointer" onClick={() => navigate('/')}>
+            <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-700 rounded-[1.2rem] flex items-center justify-center font-bold text-white shadow-glow group-hover:rotate-12 transition-transform duration-500">
+              <Sparkles size={28} />
             </div>
             <div>
-              <h1 className="font-display font-bold text-xl text-white tracking-tight">LinguaQuest</h1>
-              <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-black">Personal Tutor</p>
+              <h1 className="font-display font-black text-2xl text-white tracking-tighter">LinguaQuest</h1>
+              <div className="flex items-center gap-2">
+                 <div className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse" />
+                 <p className="text-[9px] uppercase tracking-[0.25em] text-slate-500 font-black">Core Intelligence</p>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto no-scrollbar px-4 pt-4">
-          {/* User Progress Card */}
-          <div className="mb-8 p-6 glass-card border-white/10 bg-gradient-to-br from-primary-500/10 to-transparent relative overflow-hidden group">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-primary-500/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
-            
-            <div className="flex items-center gap-4 mb-4 relative z-10">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary-400 to-primary-600 rounded-2xl flex items-center justify-center text-lg font-bold text-white shadow-lg">
-                {user?.username?.[0]?.toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-bold text-white text-base truncate">{user?.username}</p>
-                <div className="flex items-center gap-1.5">
-                   <div className="w-1.5 h-1.5 rounded-full bg-accent-emerald animate-pulse" />
-                   <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Level {user?.level || 1}</p>
+        <div className="flex-1 overflow-y-auto no-scrollbar px-6 pt-4">
+          {/* Enhanced User Identity Card */}
+          <div className="mb-10 p-1 glass-card border-white/5 bg-dark-950/40 group overflow-hidden relative">
+             <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-1000" />
+             <div className="p-6 relative z-10">
+                <div className="flex items-center gap-4 mb-6">
+                   <div className="w-14 h-14 bg-gradient-to-br from-dark-800 to-dark-950 rounded-2xl flex items-center justify-center text-xl font-black text-white border border-white/5 shadow-inner">
+                      {user?.username?.[0]?.toUpperCase()}
+                   </div>
+                   <div className="flex-1 min-w-0">
+                      <p className="font-black text-white text-lg tracking-tight truncate">{user?.username}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                         <span className="text-[8px] font-black uppercase tracking-widest text-primary-400 bg-primary-500/10 px-2 py-0.5 rounded-md border border-primary-500/20">Tier {user?.level || 1}</span>
+                         <span className="text-[8px] font-black uppercase tracking-widest text-accent-rose bg-accent-rose/10 px-2 py-0.5 rounded-md border border-accent-rose/20">{user?.streak || 0}D Streak</span>
+                      </div>
+                   </div>
                 </div>
-              </div>
-            </div>
 
-            <div className="flex gap-2 mb-6 relative z-10">
-              <div className="bg-dark-950/50 rounded-xl px-3 py-1.5 flex items-center gap-1.5 border border-white/5">
-                <Zap size={12} className="text-primary-400" />
-                <span className="text-xs font-black text-white">{user?.xp || 0}</span>
-              </div>
-              <div className="bg-dark-950/50 rounded-xl px-3 py-1.5 flex items-center gap-1.5 border border-white/5">
-                <Flame size={12} className="text-accent-rose" />
-                <span className="text-xs font-black text-white">{user?.streak || 0}</span>
-              </div>
-            </div>
-
-            <div className="relative z-10">
-              <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
-                <span>Next Milestone</span>
-                <span className="text-primary-400">{user?.xp || 0} / {xpForNextLevel}</span>
-              </div>
-              <div className="h-2 bg-dark-950 rounded-full overflow-hidden p-0.5 border border-white/5">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${xpProgress}%` }}
-                  transition={{ duration: 1, ease: "easeOut" }}
-                  className="h-full bg-gradient-to-r from-primary-500 to-primary-400 rounded-full shadow-[0_0_10px_rgba(139,92,246,0.5)]"
-                />
-              </div>
-            </div>
+                <div className="space-y-3">
+                   <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-slate-500">
+                      <span>Sync Progress</span>
+                      <span className="text-white">{user?.xp || 0} XP</span>
+                   </div>
+                   <div className="h-2 bg-dark-950 rounded-full overflow-hidden p-0.5 border border-white/5">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${xpProgress}%` }}
+                        transition={{ duration: 1.5, ease: "easeOut" }}
+                        className="h-full bg-gradient-to-r from-primary-600 to-primary-400 rounded-full shadow-glow"
+                      />
+                   </div>
+                </div>
+             </div>
           </div>
 
-          {/* Navigation */}
-          <nav className="space-y-1.5 pb-8">
-            <p className="px-4 text-[10px] uppercase tracking-[0.2em] text-slate-600 font-black mb-4">Training Grounds</p>
+          {/* Navigation Links */}
+          <nav className="space-y-1 pb-10">
+            <p className="px-5 text-[9px] uppercase tracking-[0.3em] text-slate-600 font-black mb-6">Tactical Domains</p>
             {navItems.map(({ to, icon: Icon, label, badge }, i) => (
               <motion.div
                 key={to}
-                initial={{ opacity: 0, x: -10 }}
+                initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.03 }}
+                transition={{ delay: i * 0.05, ease: "easeOut" }}
               >
                 <NavLink
                   to={to}
                   className={({ isActive }) => `
-                    flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-all duration-300 group relative
+                    flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-500 group relative
                     ${isActive 
-                      ? 'bg-primary-500/10 text-primary-400 border border-primary-500/20 shadow-glow' 
+                      ? 'bg-primary-500 text-white shadow-glow border border-primary-400/50' 
                       : 'text-slate-500 hover:text-slate-200 hover:bg-white/5 border border-transparent'}
                   `}
                   onClick={() => setMobileOpen(false)}
                 >
-                  <Icon size={20} className={`${to === '/dashboard' ? 'text-primary-400' : ''}`} />
+                  <Icon size={20} className="shrink-0 transition-transform group-hover:scale-110" />
                   <span className="flex-1 font-bold text-sm tracking-tight">{label}</span>
                   {badge && (
-                    <span className="text-[9px] font-black px-2 py-0.5 rounded-lg bg-primary-500 text-white shadow-glow">
+                    <span className={`text-[8px] font-black px-2 py-1 rounded-md shadow-lg ${to.includes('conversation') ? 'bg-accent-rose' : 'bg-primary-400'} text-white`}>
                       {badge}
                     </span>
                   )}
-                  <ChevronRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 transition-transform" />
+                  <ChevronRight size={14} className={`transition-all duration-500 ${mobileOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100 group-hover:translate-x-1'}`} />
                 </NavLink>
               </motion.div>
             ))}
           </nav>
         </div>
 
-        {/* Logout Section */}
-        <div className="p-6 border-t border-white/5 bg-dark-900/80 backdrop-blur-xl">
+        {/* Footer Actions */}
+        <div className="p-8 border-t border-white/5 bg-dark-900/40 backdrop-blur-3xl">
           <button
             onClick={handleLogout}
-            className="flex items-center gap-4 w-full px-4 py-4 rounded-2xl text-slate-500 hover:text-red-400 hover:bg-red-500/5 transition-all duration-300 font-bold text-sm"
+            className="flex items-center gap-4 w-full px-5 py-4 rounded-2xl text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-500 font-black group"
           >
-            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-red-500/10 transition-colors">
+            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center group-hover:bg-red-500/20 transition-colors shrink-0">
               <LogOut size={20} />
             </div>
-            <span>Terminate Session</span>
+            <span className="text-xs uppercase tracking-widest">Abort Mission</span>
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 bg-dark-950 relative">
-        {/* Ambient Background Glows */}
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-500/5 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-accent-indigo/5 rounded-full blur-[100px] pointer-events-none" />
-
-        {/* Mobile Header */}
-        <header className="lg:hidden flex items-center justify-between p-6 border-b border-white/5 bg-dark-900/80 backdrop-blur-xl sticky top-0 z-30">
-          <button 
-            onClick={() => setMobileOpen(true)} 
-            className="w-11 h-11 rounded-xl bg-white/5 flex items-center justify-center text-white border border-white/10"
-          >
-            <Menu size={22} />
-          </button>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center font-bold text-white text-xs">LQ</div>
-            <span className="font-display font-bold text-white text-lg">LinguaQuest</span>
+        {/* Cinematic Header */}
+        <header className={`
+          flex items-center justify-between px-8 py-6 sticky top-0 z-[40] transition-all duration-500
+          ${scrolled ? 'bg-dark-950/80 backdrop-blur-xl border-b border-white/5' : 'bg-transparent'}
+        `}>
+          <div className="flex items-center gap-6">
+             <button 
+               onClick={() => setMobileOpen(true)} 
+               className="lg:hidden w-12 h-12 rounded-[1rem] bg-white/5 flex items-center justify-center text-white border border-white/10 hover:bg-white/10 transition-all"
+             >
+               <Menu size={24} />
+             </button>
+             <div className="hidden md:flex items-center gap-3 bg-white/5 border border-white/5 rounded-2xl px-5 py-2.5 text-slate-500 hover:border-white/20 transition-all cursor-text group">
+                <Search size={16} className="group-hover:text-white transition-colors" />
+                <span className="text-xs font-bold">Search Nexus...</span>
+             </div>
           </div>
-          <div className="w-11 h-11 rounded-xl bg-primary-500/10 flex items-center justify-center text-primary-400 border border-primary-500/20">
-            <Zap size={18} />
+
+          <div className="flex items-center gap-4">
+             <div className="flex items-center gap-6 mr-4 hidden sm:flex">
+                <div className="flex flex-col items-end">
+                   <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Wallet</p>
+                   <div className="flex items-center gap-2">
+                      <Coins size={14} className="text-accent-amber" />
+                      <span className="text-sm font-black text-white">{user?.coins || 0}</span>
+                   </div>
+                </div>
+                <div className="w-px h-8 bg-white/5" />
+                <div className="flex flex-col items-end">
+                   <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Streak</p>
+                   <div className="flex items-center gap-2">
+                      <Flame size={14} className="text-accent-rose" />
+                      <span className="text-sm font-black text-white">{user?.streak || 0}D</span>
+                   </div>
+                </div>
+             </div>
+             
+             <button className="w-12 h-12 rounded-[1rem] bg-white/5 flex items-center justify-center text-slate-400 hover:text-white border border-white/10 relative group transition-all">
+                <Bell size={20} className="group-hover:rotate-12 transition-transform" />
+                <span className="absolute top-3 right-3 w-2 h-2 bg-primary-500 rounded-full border-2 border-dark-900 shadow-glow" />
+             </button>
+             <button 
+               onClick={() => navigate('/profile')}
+               className="w-12 h-12 rounded-[1rem] bg-gradient-to-br from-primary-500 to-primary-700 p-[1px] shadow-glow hover:scale-105 transition-transform"
+             >
+                <div className="w-full h-full bg-dark-950 rounded-[0.95rem] flex items-center justify-center font-black text-white text-sm">
+                   {user?.username?.[0]?.toUpperCase()}
+                </div>
+             </button>
           </div>
         </header>
 
-        {/* Page Content */}
+        {/* Page Container */}
         <div className="flex-1 overflow-y-auto no-scrollbar relative z-10" id="main-content-scroll">
           <div className="content-container min-h-full">
             <Outlet />

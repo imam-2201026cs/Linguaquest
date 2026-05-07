@@ -18,6 +18,7 @@ router.get('/', auth, async (req, res) => {
       const users = await User.find({}).select('username xp level streak stats createdAt country').sort({ xp: -1 }).lean();
       usersList = users.map((u, i) => ({
         rank: i + 1,
+        id: u._id, // Add this for frontend compatibility
         userId: u._id,
         username: u.username,
         xp: u.xp,
@@ -58,6 +59,7 @@ router.get('/', auth, async (req, res) => {
 
       usersList = agg.map((a, i) => ({
         rank: i + 1,
+        id: a._id, // Add this for frontend compatibility
         userId: a._id,
         username: a.user.username,
         xp: a.totalXp, // only XP from this period/module
