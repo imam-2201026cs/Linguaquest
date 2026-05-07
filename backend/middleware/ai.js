@@ -27,15 +27,29 @@ export const generateAI = async (prompt, isJson = false) => {
 
     if (isJson) {
       try {
-        // Aggressive JSON cleanup for reliable parsing
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          content = jsonMatch[0];
+        // Deep Clean: Remove markdown code blocks and find the first { and last }
+        let cleanJson = content.replace(/```json|```/g, '').trim();
+        const firstBrace = cleanJson.indexOf('{');
+        const lastBrace = cleanJson.lastIndexOf('}');
+        
+        if (firstBrace !== -1 && lastBrace !== -1) {
+            cleanJson = cleanJson.substring(firstBrace, lastBrace + 1);
         }
-        return JSON.parse(content);
+
+        return JSON.parse(cleanJson);
       } catch (parseErr) {
-        console.error("Puter sent invalid JSON:", content);
-        throw new Error("Failed to parse AI response as JSON");
+        console.warn("Puter JSON Parse Attempt 1 failed. Trying aggressive cleanup...");
+        try {
+            // Aggressive fallback: just find anything between braces
+            const fallbackMatch = content.match(/\{[\s\S]*\}/);
+            if (fallbackMatch) {
+                return JSON.parse(fallbackMatch[0]);
+            }
+            throw new Error("No JSON structure found in response");
+        } catch (finalErr) {
+            console.error("AI Response was not JSON:", content);
+            throw new Error("AI returned invalid data format");
+        }
       }
     }
 
