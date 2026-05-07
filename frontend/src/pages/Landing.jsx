@@ -321,7 +321,7 @@ function LiveDemo() {
             </AnimatePresence>
             <p className="text-center mt-8 text-slate-500 text-sm font-medium">
               <Sparkles size={14} className="inline-block mr-2 text-primary-400" /> 
-              Real-time Groq AI processing • 99.8% Latency Reliability
+              Real-time Puter.js Intelligence • Instant Neural Processing
             </p>
           </div>
         </div>
@@ -419,9 +419,9 @@ export default function Landing() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-6 py-2.5 mb-10 text-sm font-bold text-primary-400 shadow-2xl backdrop-blur-md"
+          className="inline-flex items-center gap-2 bg-primary-500/10 border border-primary-500/20 rounded-full px-6 py-2.5 mb-10 text-sm font-bold text-primary-400 shadow-glow backdrop-blur-md"
         >
-          <Zap size={14} className="fill-primary-400" /> Accelerated Learning with Groq AI
+          <Zap size={14} className="fill-primary-400" /> Powered by Puter.js High-Performance AI
         </motion.div>
         
         <motion.h1 
@@ -504,6 +504,52 @@ export default function Landing() {
 
       <QuizTeaser />
       <Testimonials />
+
+      {/* Puter Instant Demo Section */}
+      <section className="py-24 relative overflow-hidden">
+        <div className="max-w-4xl mx-auto px-6">
+          <SectionHeader title="Instant Intelligence" subtitle="Try our Puter.js-powered neural engine right now." />
+          <div className="glass-card p-1 bg-gradient-to-br from-primary-500/20 to-accent-indigo/20 rounded-[2.5rem]">
+            <div className="bg-dark-950/80 backdrop-blur-xl rounded-[2.4rem] p-8 md:p-12 border border-white/5 space-y-8">
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="flex-1 space-y-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-primary-400">Input Stream</p>
+                  <textarea 
+                    id="demo-input"
+                    className="w-full h-32 bg-dark-900 border border-white/5 rounded-2xl p-6 text-white placeholder:text-slate-600 focus:outline-none focus:border-primary-500/50 transition-all text-lg"
+                    placeholder="Type anything in English (e.g. I have went to market yesterday)..."
+                  ></textarea>
+                </div>
+                <div className="flex-1 space-y-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-accent-emerald">Neural Analysis</p>
+                  <div id="demo-output" className="w-full h-32 bg-dark-950 border border-white/5 rounded-2xl p-6 text-slate-400 overflow-y-auto italic font-medium">
+                    Neural engine standby...
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-center">
+                <button 
+                  onClick={async () => {
+                    const input = document.getElementById('demo-input').value;
+                    const output = document.getElementById('demo-output');
+                    if (!input) return;
+                    output.innerHTML = "Analyzing via Puter.js...";
+                    try {
+                      const response = await window.puter.ai.chat(`Act as an English teacher. Briefly correct this sentence and explain why: "${input}"`);
+                      output.innerHTML = response;
+                    } catch (err) {
+                      output.innerHTML = "Connection timeout. Please try again.";
+                    }
+                  }}
+                  className="btn-primary py-4 px-12 text-xs font-black uppercase tracking-widest shadow-glow flex items-center gap-3"
+                >
+                  <Sparkles size={16} /> Process with Puter.js
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* CTA Final */}
       <section className="py-32 px-6">

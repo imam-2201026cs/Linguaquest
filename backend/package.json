@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
+    "@heyputer/puter.js": "^2.3.2",
     "axios": "^1.16.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
