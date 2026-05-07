@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-// Trigger fresh Vercel build v2
+// Trigger fresh Vercel build v3
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Zap, Trophy, Coins, Target, Sparkles, Flame,
@@ -68,8 +68,12 @@ export default function Dashboard() {
     'verbal-test': '⚡'
   };
 
-  const currentLevel = user?.level || 1;
-  const levelProgress = user?.xp ? (user.xp % 1000) / 10 : 45;
+  const currentLevel = Number(user?.level) || 1;
+  const levelProgress = useMemo(() => {
+    if (!user?.xp) return 45;
+    const xp = Number(user.xp) || 0;
+    return (xp % 1000) / 10;
+  }, [user?.xp]);
 
   const stats = [
     { icon: Flame,  label: 'Daily Streak', value: `${user?.streak || 0}d`, color: 'text-accent-rose', bg: 'bg-accent-rose/10' },
@@ -141,10 +145,10 @@ export default function Dashboard() {
               {stats.map(({ icon: Icon, label, value, color, bg }) => (
                 <div key={label} className="space-y-1">
                   <div className="flex items-center gap-2 mb-1 justify-center md:justify-start">
-                    <Icon size={14} className={color} />
+                    {Icon && <Icon size={14} className={color} />}
                     <span className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-slate-500">{label}</span>
                   </div>
-                  <p className="text-base md:text-xl font-display font-bold text-white">{value}</p>
+                  <p className="text-base md:text-xl font-display font-bold text-white">{value || 0}</p>
                 </div>
               ))}
             </div>
@@ -233,20 +237,20 @@ export default function Dashboard() {
                <Clock size={20} className="text-primary-400" /> Recent Log
             </h2>
             <div className="space-y-4">
-               {history.slice(0, 4).map(activity => (
-                 <div key={activity._id} className="flex items-center gap-4 p-4 rounded-xl md:rounded-2xl hover:bg-white/5 transition-all border border-transparent hover:border-white/5">
+               {Array.isArray(history) && history.slice(0, 4).map((activity, idx) => (
+                 <div key={activity?._id || idx} className="flex items-center gap-4 p-4 rounded-xl md:rounded-2xl hover:bg-white/5 transition-all border border-transparent hover:border-white/5">
                     <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-dark-950 flex items-center justify-center text-xl md:text-2xl border border-white/5 shrink-0">
-                       {typeIcon[activity.type] || '📝'}
+                       {typeIcon[activity?.type] || '📝'}
                     </div>
                     <div className="flex-1 min-w-0">
-                       <p className="text-sm font-bold text-white truncate uppercase tracking-tight">{activity.topic || activity.type}</p>
+                       <p className="text-sm font-bold text-white truncate uppercase tracking-tight">{activity?.topic || activity?.type || 'Activity'}</p>
                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.1em] mt-1 truncate">
-                          {activity.type} • {new Date(activity.completedAt).toLocaleDateString()}
+                          {activity?.type || 'Misc'} • {activity?.completedAt ? new Date(activity.completedAt).toLocaleDateString() : 'Recent'}
                        </p>
                     </div>
                     <div className="text-right shrink-0">
-                       <p className="text-base md:text-lg font-black text-white leading-none">{activity.score}%</p>
-                       <p className="text-[10px] font-black text-primary-400 mt-1">+{activity.xpEarned} XP</p>
+                       <p className="text-base md:text-lg font-black text-white leading-none">{activity?.score ?? 0}%</p>
+                       <p className="text-[10px] font-black text-primary-400 mt-1">+{activity?.xpEarned ?? 0} XP</p>
                     </div>
                  </div>
                ))}
