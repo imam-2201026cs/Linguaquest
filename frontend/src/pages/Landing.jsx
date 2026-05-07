@@ -51,10 +51,10 @@ function SectionHeader({ title, subtitle, centered = true }) {
       viewport={{ once: true }}
       className={`mb-16 ${centered ? 'text-center' : ''}`}
     >
-      <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-4 tracking-tight">
+      <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold text-white mb-4 tracking-tight">
         {title}
       </h2>
-      {subtitle && <p className="text-slate-400 text-lg max-w-2xl mx-auto leading-relaxed">{subtitle}</p>}
+      {subtitle && <p className="text-slate-400 text-sm sm:text-base md:text-lg max-w-2xl mx-auto leading-relaxed">{subtitle}</p>}
     </motion.div>
   );
 }
@@ -119,7 +119,7 @@ function Testimonials() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="glass-card p-10 md:p-16 flex flex-col md:flex-row gap-10 items-center"
+            className="glass-card p-6 sm:p-10 md:p-16 flex flex-col md:flex-row gap-8 md:gap-10 items-center"
           >
             <div className="relative">
               <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-primary-500 to-accent-indigo flex items-center justify-center text-3xl font-bold text-white shadow-glow relative z-10">
@@ -428,7 +428,7 @@ export default function Landing() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="font-display text-6xl md:text-8xl lg:text-9xl font-bold text-white leading-[0.9] mb-8 tracking-tighter"
+          className="font-display text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-bold text-white leading-[0.9] mb-8 tracking-tighter"
         >
           Unleash Your<br />
           <span className="shimmer-text">English Potential</span>
@@ -477,14 +477,14 @@ export default function Landing() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="glass-card p-10 group hover:scale-[1.02] transition-all duration-500 relative overflow-hidden"
+              className="glass-card p-6 sm:p-10 group hover:scale-[1.02] transition-all duration-500 relative overflow-hidden"
             >
               <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
-              <div className={`w-16 h-16 bg-gradient-to-br ${color} rounded-2xl flex items-center justify-center mb-8 shadow-lg group-hover:rotate-6 transition-transform`}>
+              <div className={`w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br ${color} rounded-2xl flex items-center justify-center mb-6 sm:mb-8 shadow-lg group-hover:rotate-6 transition-transform`}>
                 <Icon size={28} className="text-white" />
               </div>
-              <h3 className="text-2xl font-display font-bold text-white mb-4">{title}</h3>
-              <p className="text-slate-400 text-lg leading-relaxed">{desc}</p>
+              <h3 className="text-xl sm:text-2xl font-display font-bold text-white mb-4">{title}</h3>
+              <p className="text-slate-400 text-sm sm:text-base md:text-lg leading-relaxed">{desc}</p>
             </motion.div>
           ))}
         </div>
@@ -557,13 +557,13 @@ export default function Landing() {
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="max-w-5xl mx-auto glass-card p-12 md:p-24 text-center relative overflow-hidden"
+          className="max-w-5xl mx-auto glass-card p-8 sm:p-12 md:p-24 text-center relative overflow-hidden"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-primary-600/20 to-accent-indigo/20" />
           <div className="relative z-10">
-            <Trophy size={80} className="text-accent-gold mx-auto mb-10 drop-shadow-[0_0_20px_rgba(252,211,77,0.5)]" />
-            <h2 className="text-4xl md:text-6xl font-display font-bold text-white mb-6">Ready to Conquer?</h2>
-            <p className="text-xl text-slate-300 max-w-2xl mx-auto mb-12 font-medium">Join 50,000+ learners who have already started their quest to English mastery. 100% free, forever.</p>
+            <Trophy size={60} className="text-accent-gold mx-auto mb-8 sm:mb-10 drop-shadow-[0_0_20px_rgba(252,211,77,0.5)]" />
+            <h2 className="text-3xl sm:text-4xl md:text-6xl font-display font-bold text-white mb-6">Ready to Conquer?</h2>
+            <p className="text-base sm:text-lg md:text-xl text-slate-300 max-w-2xl mx-auto mb-12 font-medium">Join 50,000+ learners who have already started their quest to English mastery. 100% free, forever.</p>
             <Link to="/register" className="btn-primary py-4 md:py-6 px-8 md:px-12 text-sm md:text-xl group shadow-2xl flex items-center justify-center gap-3 w-full sm:w-auto mx-auto">
               Launch Your Quest Now 
               <ArrowRight size={24} className="group-hover:translate-x-2 transition-transform" />

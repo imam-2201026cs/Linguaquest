@@ -69,7 +69,7 @@ function OnboardingQuiz({ onFinish }) {
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="glass-card p-10 max-w-md w-full relative overflow-hidden"
+        className="glass-card p-6 sm:p-10 max-w-md w-full relative overflow-hidden"
       >
         <div className="flex gap-2 mb-8">
           {QUIZ_STEPS.map((_, i) => (
@@ -166,7 +166,7 @@ export default function Register() {
           <p className="text-slate-400 font-medium tracking-wide">Join 50k+ learners on the path to excellence.</p>
         </div>
 
-        <div className="glass-card p-10 border-white/5 bg-dark-900/40 shadow-2xl relative overflow-hidden">
+        <div className="glass-card p-6 sm:p-10 border-white/5 bg-dark-900/40 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full -mr-16 -mt-16" />
           
           <form onSubmit={handleSubmit} className="space-y-6 relative z-10">

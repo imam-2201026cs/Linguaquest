@@ -163,7 +163,7 @@ export default function Profile() {
         animate={{ opacity: 1, y: 0 }}
         className="glass-card p-1 border-white/5 bg-gradient-to-br from-primary-500/10 to-transparent relative overflow-hidden"
       >
-        <div className="p-10 md:p-12 flex flex-col md:flex-row items-center gap-10">
+        <div className="p-6 sm:p-10 md:p-12 flex flex-col md:flex-row items-center gap-8 md:gap-10">
            <div className="relative group">
               <div className={`w-32 h-32 bg-gradient-to-br ${user.avatarColor || 'from-primary-500 to-primary-700'} rounded-[40px] flex items-center justify-center text-5xl shadow-glow relative z-10 group-hover:rotate-6 transition-transform duration-500`}>
                 {user.avatarEmoji || user.username[0].toUpperCase()}
@@ -183,8 +183,8 @@ export default function Profile() {
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary-400">Verified Scholar</span>
                     <div className="h-px w-8 bg-primary-500/30" />
                  </div>
-                 <h1 className="text-4xl md:text-5xl font-display font-bold text-white tracking-tight">{user.username}</h1>
-                 <p className="text-slate-400 text-lg mt-2 font-medium italic">"{user.bio || 'Architect of own excellence.'}"</p>
+                 <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold text-white tracking-tight">{user.username}</h1>
+                 <p className="text-slate-400 text-sm sm:text-base md:text-lg mt-2 font-medium italic">"{user.bio || 'Architect of own excellence.'}"</p>
               </div>
 
               <div className="flex flex-wrap justify-center md:justify-start gap-4">
@@ -252,7 +252,7 @@ export default function Profile() {
          </div>
 
          {/* Right: Growth Chart */}
-         <div className="lg:col-span-2 glass-card p-10 border-white/5 bg-dark-900/40 flex flex-col">
+         <div className="lg:col-span-2 glass-card p-6 sm:p-10 border-white/5 bg-dark-900/40 flex flex-col overflow-hidden">
             <div className="flex justify-between items-center mb-10">
                <h3 className="text-xl font-display font-bold text-white flex items-center gap-3">
                   <TrendingUp className="text-accent-emerald" size={20}/> Growth Trajectory

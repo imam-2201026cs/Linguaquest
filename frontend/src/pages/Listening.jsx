@@ -138,14 +138,14 @@ export default function Listening() {
       {/* VIDEO LIBRARY ROADMAP */}
       {activeTab === "videos" && !selectedVideo && (
         <div className="space-y-10 md:space-y-12 animate-slide-up">
-          <div className="glass-card p-6 md:p-10 border-white/10 bg-dark-900/40 relative overflow-hidden group">
+          <div className="glass-card p-6 sm:p-10 border-white/10 bg-dark-900/40 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-150 transition-transform duration-700" />
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 md:gap-8">
                <div className="space-y-3 md:space-y-4 text-center md:text-left">
                   <div className="inline-flex items-center gap-2 bg-primary-500/10 px-3 md:px-4 py-1 rounded-full text-[10px] font-black text-primary-400 uppercase tracking-widest border border-primary-500/20">
                      <Activity size={12} className="animate-pulse" /> Trajectory Active
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-display font-bold text-white tracking-tight">{completedCount} Missions Deciphered</h2>
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-display font-bold text-white tracking-tight">{completedCount} Missions Deciphered</h2>
                   <p className="text-slate-400 text-sm md:text-lg font-medium max-w-xl">Progressing through curated authentic audio missions from A1 to C2 Mastery.</p>
                </div>
                <div className="text-center md:text-right">
@@ -250,7 +250,7 @@ export default function Listening() {
       {activeTab === "passages" && (
         <div className="max-w-4xl mx-auto space-y-10 animate-slide-up">
            {!passage ? (
-             <div className="glass-card p-8 md:p-12 border-white/10 bg-dark-900/40 text-center space-y-8">
+             <div className="glass-card p-6 sm:p-8 md:p-12 border-white/10 bg-dark-900/40 text-center space-y-8">
                 <div className="w-20 h-20 bg-primary-500/10 rounded-3xl flex items-center justify-center mx-auto border border-primary-500/20 shadow-glow">
                    <Sparkles size={40} className="text-primary-400" />
                 </div>
