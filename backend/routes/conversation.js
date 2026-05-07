@@ -350,7 +350,7 @@ At the VERY END of your response, add a JSON analysis block for the USER's last 
     }
 
     prompt += `
-Use this exact JSON structure:
+Use this exact JSON structure for evaluation:
 \`\`\`json
 {
   "errors": [
@@ -363,10 +363,13 @@ Use this exact JSON structure:
   ],
   "grammarScore": 85,
   "vocabularyScore": 80,
+  "fluencyScore": 85,
   "formalityScore": 75,
-  "relevanceScore": 90
+  "relevanceScore": 90,
+  "articulationFeedback": "Feedback on how natural or clear the speech was (e.g. 'Excellent clarity' or 'A bit fast')"
 }
 \`\`\`
+NOTE: The user is currently SPEAKING via Voice-to-Text. Evaluate their FLUENCY and ARTICULATION specifically.
 If no errors, use "errors": []. Stay in character for the response text.`;
 
     const rawResponse = await generateContent(prompt);
@@ -402,8 +405,10 @@ If no errors, use "errors": []. Stay in character for the response text.`;
         analysis = {
           grammarScore: Math.min(100, Math.max(0, Number(parsed.grammarScore) || 85)),
           vocabularyScore: Math.min(100, Math.max(0, Number(parsed.vocabularyScore) || 80)),
+          fluencyScore: Math.min(100, Math.max(0, Number(parsed.fluencyScore) || 85)),
           formalityScore: Math.min(100, Math.max(0, Number(parsed.formalityScore) || 80)),
-          relevanceScore: Math.min(100, Math.max(0, Number(parsed.relevanceScore) || 85))
+          relevanceScore: Math.min(100, Math.max(0, Number(parsed.relevanceScore) || 85)),
+          articulationFeedback: String(parsed.articulationFeedback || 'Normal pace')
         };
 
         // Clean up aiMessage by removing the JSON block and any prefixes

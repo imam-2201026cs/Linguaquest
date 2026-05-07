@@ -226,6 +226,29 @@ function ReportCard({ report, scenario, duration, xpEarned, coinsEarned, onResta
   );
 }
 
+function VoiceWaveform() {
+  return (
+    <div className="flex items-center justify-center gap-1.5 h-12">
+      {[...Array(12)].map((_, i) => (
+        <motion.div
+          key={i}
+          animate={{ 
+            height: [12, 32, 16, 28, 12],
+            opacity: [0.3, 1, 0.5, 1, 0.3]
+          }}
+          transition={{ 
+            duration: 0.8, 
+            repeat: Infinity, 
+            delay: i * 0.08,
+            ease: "easeInOut"
+          }}
+          className="w-1.5 bg-primary-400 rounded-full shadow-[0_0_10px_rgba(139,92,246,0.5)]"
+        />
+      ))}
+    </div>
+  );
+}
+
 // ─── Main Chat Interface ─────────────────────────────────────────────────────
 function ChatInterface({ conversationId, scenario, difficulty, mode, openingMessage, onEnd }) {
   const [messages, setMessages] = useState(
@@ -282,13 +305,39 @@ function ChatInterface({ conversationId, scenario, difficulty, mode, openingMess
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SR) {
       const r = new SR();
-      r.continuous = false; r.interimResults = false; r.lang = 'en-US';
-      r.onresult = (e) => { setInput(p => p + e.results[0][0].transcript + ' '); setListening(false); };
-      r.onend = () => setListening(false);
+      r.continuous = true; 
+      r.interimResults = true; 
+      r.lang = 'en-US';
+
+      r.onresult = (e) => {
+        let transcript = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          transcript += e.results[i][0].transcript;
+        }
+        setInput(transcript);
+        
+        // Auto-submit logic: if user stops speaking for 1.5s
+        if (recognitionRef.current.timer) clearTimeout(recognitionRef.current.timer);
+        recognitionRef.current.timer = setTimeout(() => {
+          if (transcript.trim()) {
+            r.stop();
+            sendMessage(transcript.trim());
+          }
+        }, 1500);
+      };
+
+      r.onstart = () => setListening(true);
+      r.onend = () => {
+        setListening(false);
+        if (recognitionRef.current.timer) clearTimeout(recognitionRef.current.timer);
+      };
       r.onerror = () => setListening(false);
       recognitionRef.current = r;
     }
-    return () => recognitionRef.current?.abort();
+    return () => {
+      recognitionRef.current?.abort();
+      if (recognitionRef.current?.timer) clearTimeout(recognitionRef.current.timer);
+    };
   }, []);
 
   const handleWordClick = (e) => {
@@ -298,9 +347,10 @@ function ChatInterface({ conversationId, scenario, difficulty, mode, openingMess
     }
   };
 
-  const sendMessage = async () => {
-    if (!input.trim() || loading) return;
-    const userMsg = input.trim();
+  const sendMessage = async (overrideInput) => {
+    const userMsg = (overrideInput || input).trim();
+    if (!userMsg || loading) return;
+    
     setInput('');
     setLoading(true);
     setMessages(prev => [...prev, { role: 'user', content: userMsg, errors: [] }]);
@@ -314,6 +364,7 @@ function ChatInterface({ conversationId, scenario, difficulty, mode, openingMess
         setScores(prev => ({
           grammar: [...prev.grammar, data.analysis.grammarScore].slice(-10),
           vocabulary: [...prev.vocabulary, data.analysis.vocabularyScore].slice(-10),
+          fluency: [...prev.fluency || [], data.analysis.fluencyScore].slice(-10),
           formality: [...prev.formality, data.analysis.formalityScore].slice(-10),
           relevance: [...prev.relevance, data.analysis.relevanceScore].slice(-10),
         }));
@@ -427,15 +478,21 @@ function ChatInterface({ conversationId, scenario, difficulty, mode, openingMess
             >
               {listening ? <MicOff size={20}/> : <Mic size={20}/>}
             </button>
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage())}
-              placeholder="Transmit your message..."
-              className="bg-transparent border-none focus:ring-0 flex-1 resize-none py-3 text-sm font-medium text-white placeholder-slate-600"
-              rows={1}
-            />
+            {listening ? (
+              <div className="flex-1 px-4">
+                <VoiceWaveform />
+              </div>
+            ) : (
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage())}
+                placeholder="Transmit your message..."
+                className="bg-transparent border-none focus:ring-0 flex-1 resize-none py-3 text-sm font-medium text-white placeholder-slate-600"
+                rows={1}
+              />
+            )}
             <button 
                onClick={sendMessage} 
                disabled={!input.trim() || loading} 
