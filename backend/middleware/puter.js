@@ -1,117 +1,83 @@
 /**
  * puter.js AI Middleware
- * Replaces Groq / Gemini — no API key required.
- * Uses puter.ai REST endpoint (works server-side and client-side).
- *
- * Puter AI docs: https://docs.puter.com/ai/chat/
- * Model used: claude-sonnet-4-5 (free via puter.com)
+ * Replaces Groq / Gemini.
+ * Uses official @heyputer/puter.js library initialized with PUTER_AUTH_TOKEN.
  */
 
-const PUTER_AI_URL = 'https://api.puter.com/ai/chat';
-const MODEL = 'claude-sonnet-4-5'; // Free, high-quality model on puter
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const { init } = require("@heyputer/puter.js/src/init.cjs");
+
+import dotenv from 'dotenv';
+dotenv.config();
+
+// Initialize puter with the token from .env
+const puter = init(process.env.PUTER_AUTH_TOKEN);
+
+const MODEL = 'claude-3-5-sonnet'; 
 
 /**
  * Call puter.ai chat completion
- * @param {string} prompt
- * @param {object} opts
- * @param {number} [opts.temperature]
- * @param {boolean} [opts.jsonMode]
- * @returns {Promise<string>}
  */
 async function callPuterAI(prompt, { temperature = 0.7, jsonMode = false } = {}) {
-  const systemPrompt = jsonMode
-    ? 'You are a helpful assistant. Respond ONLY with valid JSON and nothing else — no markdown, no code fences, no explanation.'
-    : 'You are an expert English language learning assistant.';
+  try {
+    if (!process.env.PUTER_AUTH_TOKEN) {
+      throw new Error('PUTER_AUTH_TOKEN is missing in .env');
+    }
 
-  const body = {
-    model: MODEL,
-    messages: [
-      { role: 'system', content: systemPrompt },
-      { role: 'user', content: prompt },
-    ],
-    temperature,
-    max_tokens: 1024,
-  };
+    const finalPrompt = jsonMode
+      ? `${prompt}\n\nIMPORTANT: Respond ONLY with a valid JSON object. No markdown, no explanations.`
+      : prompt;
 
-  const res = await fetch(PUTER_AI_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
+    const response = await puter.ai.chat(finalPrompt, {
+      model: MODEL,
+      temperature: temperature,
+      stream: false
+    });
 
-  if (!res.ok) {
-    const errText = await res.text().catch(() => res.statusText);
-    throw new Error(`Puter AI error ${res.status}: ${errText}`);
+    const content = typeof response === 'string' ? response : response?.message?.content || response?.toString() || '';
+
+    if (!content) throw new Error('Empty response from Puter AI');
+    return content;
+  } catch (err) {
+    console.error('Puter AI Call Error:', err.message || err);
+    throw err;
   }
-
-  const data = await res.json();
-
-  // Handle both OpenAI-style and puter-style responses
-  const content =
-    data?.choices?.[0]?.message?.content ||
-    data?.message?.content ||
-    data?.content ||
-    '';
-
-  if (!content) throw new Error('Empty response from Puter AI');
-  return content;
 }
 
 /**
- * Generate text content (matches old groq/gemini interface)
- * @param {string} prompt
- * @returns {Promise<string>}
+ * Generate text content
  */
 export const generateContent = async (prompt) => {
-  try {
-    return await callPuterAI(prompt, { temperature: 0.7 });
-  } catch (error) {
-    console.error('Puter generateContent Error:', error.message || error);
-    throw error;
-  }
+  return await callPuterAI(prompt, { temperature: 0.7 });
 };
 
 /**
- * Generate and parse JSON (matches old groq/gemini interface)
- * @param {string} prompt
- * @returns {Promise<object>}
+ * Generate and parse JSON
  */
 export const generateJSON = async (prompt) => {
   try {
-    const text = await callPuterAI(prompt, { temperature: 0.2, jsonMode: true });
+    const text = await callPuterAI(prompt, { temperature: 0.1, jsonMode: true });
 
-    // Strip any accidental markdown fences
     const clean = text.replace(/```json|```/gi, '').trim();
 
-    const start = clean.indexOf('{');
-    const end = clean.lastIndexOf('}');
-    if (start === -1 || end === -1) throw new Error('No JSON object found in response');
+    const startObj = clean.indexOf('{');
+    const startArr = clean.indexOf('[');
+    const start = (startObj !== -1 && (startArr === -1 || startObj < startArr)) ? startObj : startArr;
+
+    const endObj = clean.lastIndexOf('}');
+    const endArr = clean.lastIndexOf(']');
+    const end = (endObj !== -1 && (endArr === -1 || endObj > endArr)) ? endObj : endArr;
+
+    if (start === -1 || end === -1) throw new Error('No JSON structure found in response');
 
     return JSON.parse(clean.substring(start, end + 1));
   } catch (error) {
     console.error('Puter generateJSON Error:', error.message || error);
-
-    // Fallback: ask again without JSON mode
-    try {
-      const fallback = await callPuterAI(
-        prompt + '\n\nIMPORTANT: Respond ONLY with a raw JSON object.',
-        { temperature: 0.1 }
-      );
-      const start = fallback.indexOf('{');
-      const end = fallback.lastIndexOf('}');
-      if (start !== -1 && end !== -1) {
-        return JSON.parse(fallback.substring(start, end + 1));
-      }
-    } catch (e) {
-      console.error('Puter Fallback JSON Error:', e.message);
-    }
-
     throw new Error('Failed to generate AI analysis');
   }
 };
 
-// Legacy Gemini-compatible exports (some routes import getGeminiModel)
 export const getGeminiModel = () => {
-  console.warn('[puter.js] getGeminiModel() is a no-op shim. Use generateContent/generateJSON instead.');
   return { generateContent: async (prompt) => ({ response: { text: () => generateContent(prompt) } }) };
 };

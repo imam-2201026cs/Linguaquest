@@ -1,6 +1,6 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
-import { generateJSON, generateContent } from '../middleware/puter.js';
+import { generateJSON, generateContent } from '../middleware/openrouter.js';
 import Activity from '../models/Activity.js';
 import User from '../models/User.js';
 import { updateStreak } from '../middleware/streak.js';

@@ -1,6 +1,6 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
-import { generateJSON } from '../middleware/puter.js';
+import { generateJSON } from '../middleware/openrouter.js';
 
 const router = express.Router();
 
@@ -17,11 +17,10 @@ router.post('/generate', auth, async (req, res) => {
   try {
     let promptTopic = topic === 'Mixed' ? `a mixture of these topics: ${TOPICS.join(', ')}` : topic;
     
-    // We'll ask for 30 questions. To handle potential JSON size limits, 
-    // we'll instruct the AI to be concise but thorough.
+    // Requesting 15 questions for optimal performance and reliability.
     const prompt = `
-      Generate a high-quality 30-question English Verbal Ability Test for the topic: "${promptTopic}".
-      Return a JSON object with a "questions" key containing an array of 30 objects.
+      Generate a high-quality 15-question English Verbal Ability Test for the topic: "${promptTopic}".
+      Return a JSON object with a "questions" key containing an array of 15 objects.
       Each question object format:
       {
         "question": "The question text",
@@ -34,10 +33,18 @@ router.post('/generate', auth, async (req, res) => {
     `;
 
     const result = await generateJSON(prompt);
-    let questions = result.questions || [];
-
-    // If result is an array directly
-    if (Array.isArray(result)) questions = result;
+    
+    // Handle different possible AI response structures
+    let questions = [];
+    if (result.questions && Array.isArray(result.questions)) {
+      questions = result.questions;
+    } else if (Array.isArray(result)) {
+      questions = result;
+    } else if (typeof result === 'object' && result !== null) {
+      // Try to find any array inside the object
+      const arrays = Object.values(result).filter(v => Array.isArray(v));
+      if (arrays.length > 0) questions = arrays[0];
+    }
 
     if (!Array.isArray(questions) || questions.length === 0) {
       throw new Error('AI failed to generate a valid question array');
@@ -46,7 +53,7 @@ router.post('/generate', auth, async (req, res) => {
     res.json({ 
       topic,
       count: questions.length,
-      questions 
+      questions: questions.slice(0, 15) // Ensure we don't exceed expectations
     });
   } catch (err) {
     console.error('Verbal Test Generation Error:', err);
