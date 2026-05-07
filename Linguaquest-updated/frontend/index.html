@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LinguaQuest – Master English</title>
+
+    <!-- ── PWA ────────────────────────────────────────────────────── -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0ea5e9" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="LinguaQuest" />
+
+    <!-- Apple touch icons -->
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180.png" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png" />
+
+    <!-- SEO / Open Graph -->
+    <meta name="description" content="LinguaQuest – AI-powered English learning with conversation, grammar, listening, reading, writing and vocabulary practice." />
+    <meta property="og:title" content="LinguaQuest – Master English" />
+    <meta property="og:description" content="AI-powered English learning app" />
+    <meta property="og:image" content="/icons/icon-512.png" />
+    <meta property="og:type" content="website" />
+
+    <!-- ── Fonts ───────────────────────────────────────────────────── -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+    <!-- ── puter.js (AI, no API key needed) ───────────────────────── -->
+    <script src="https://js.puter.com/v2/"></script>
+
+    <style>
+      @font-face {
+        font-family: 'Clash Display';
+        src: url('https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap');
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { background: #0a0e1a; color: #e2e8f0; font-family: 'Plus Jakarta Sans', sans-serif; }
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: #0f1629; }
+      ::-webkit-scrollbar-thumb { background: #0ea5e9; border-radius: 3px; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
