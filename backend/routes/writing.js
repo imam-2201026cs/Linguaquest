@@ -1,6 +1,6 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
-import { generateJSON, generateContent } from '../middleware/ai.js';
+import { generateJSON, generateContent } from '../middleware/puter.js';
 import Activity from '../models/Activity.js';
 import User from '../models/User.js';
 import { updateStreak } from '../middleware/streak.js';
@@ -42,7 +42,7 @@ export const WRITING_MODES = [
 
 // ── 90-Lesson Structured Roadmap (15 per Level) ──────────────────────────────
 const CEFR_LEVELS = ['a1', 'a2', 'b1', 'b2', 'c1', 'c2'];
-const LEVEL_LABELS = { a1: 'Beginner', a2: 'Elementary', b1: 'Intermediate', b2: 'Upper Intermediate', c1: 'Advanced', c2: 'Expert' };
+const LEVEL_LABELS = { a1: 'A1 Beginner', a2: 'A2 Elementary', b1: 'B1 Intermediate', b2: 'B2 Upper', c1: 'C1 Advanced', c2: 'C2 Expert' };
 
 const WRITING_ROADMAP = {};
 

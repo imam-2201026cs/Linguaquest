@@ -1,13 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Zap, Flame, Trophy, Target, PenTool, Headphones, BookOpen, 
-  CheckSquare, Star, Coins, TrendingUp, Calendar, Edit2, 
-  Share2, Link as LinkIcon, Settings, ChevronRight, LayoutGrid, 
-  Sparkles, Shield, Award, MessageSquare, Globe, Info, X, Activity
-} from 'lucide-react';
+import { Zap, Flame, Trophy, Target, PenTool, Headphones, BookOpen, CheckSquare, Star, Coins, TrendingUp, Calendar, Edit2, Share2, Link as LinkIcon, Settings } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar } from 'recharts';
 import html2canvas from 'html2canvas';
 import toast from 'react-hot-toast';
@@ -34,15 +28,29 @@ const ACHIEVEMENTS = [
   { id: 'all_5_modules', icon: '⚡', name: 'Ultimate Learner', desc: 'Try all 5 modules including AI Chat', condition: (s) => s.writingCompleted >= 1 && s.listeningCompleted >= 1 && s.readingCompleted >= 1 && s.grammarChecked >= 1 && s.conversationsCompleted >= 1 },
 ];
 
+const StatCard = ({ icon: Icon, label, value, color, bg }) => (
+  <div className="glass-card p-4 flex items-center gap-3">
+    <div className={`w-10 h-10 ${bg} rounded-xl flex items-center justify-center shrink-0`}>
+      <Icon size={18} className={color} />
+    </div>
+    <div>
+      <p className={`text-xl font-bold ${color}`}>{value}</p>
+      <p className="text-xs text-slate-500">{label}</p>
+    </div>
+  </div>
+);
+
 export default function Profile() {
   const { user, fetchProfile } = useAuth();
   const [history, setHistory] = useState([]);
   const [chartData, setChartData] = useState([]);
   const [loading, setLoading] = useState(true);
   
+  // Edit Profile Modal State
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({ username: '', bio: '', avatarEmoji: '', avatarColor: '', weeklyGoal: 500 });
   
+  // Refs for exports
   const achievementRefs = useRef({});
 
   useEffect(() => {
@@ -51,42 +59,30 @@ export default function Profile() {
         username: user.username,
         bio: user.bio || 'English learner on LinguaQuest!',
         avatarEmoji: user.avatarEmoji || '👤',
-        avatarColor: user.avatarColor || 'from-primary-500 to-primary-700',
+        avatarColor: user.avatarColor || 'from-primary-500 to-accent-purple',
         weeklyGoal: user.weeklyGoal || 500
       });
-      
-      setLoading(true);
-      axios.get('/api/user/history')
-        .then(r => {
-          const activities = Array.isArray(r.data) ? r.data : [];
-          setHistory(activities);
-          generateChartData(activities);
-        })
-        .catch(err => {
-          console.error('History fetch error:', err);
-          setHistory([]);
-          generateChartData([]);
-        })
-        .finally(() => setLoading(false));
+      axios.get('/api/user/history').then(r => {
+        setHistory(r.data);
+        generateChartData(r.data);
+      }).catch(() => {}).finally(() => setLoading(false));
     }
   }, [user]);
 
-  const generateChartData = (activities = []) => {
+  const generateChartData = (activities) => {
     const last30Days = [...Array(30)].map((_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - (29 - i));
       return { date: d.toISOString().split('T')[0], xp: 0 };
     });
 
-    if (Array.isArray(activities)) {
-      activities.forEach(a => {
-        if (!a.completedAt) return;
-        const dateStr = new Date(a.completedAt).toISOString().split('T')[0];
-        const dayData = last30Days.find(d => d.date === dateStr);
-        if (dayData) dayData.xp += (a.xpEarned || 0);
-      });
-    }
+    activities.forEach(a => {
+      const dateStr = new Date(a.completedAt).toISOString().split('T')[0];
+      const dayData = last30Days.find(d => d.date === dateStr);
+      if (dayData) dayData.xp += a.xpEarned;
+    });
 
+    // Format dates for display
     const formatted = last30Days.map(d => ({
       name: new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
       xp: d.xp
@@ -97,307 +93,217 @@ export default function Profile() {
   const handleSaveProfile = async () => {
     try {
       await axios.put('/api/user/profile', editForm);
-      toast.success('Profile recalibrated! 🚀');
+      toast.success('Profile updated successfully!');
       setIsEditing(false);
       fetchProfile();
     } catch (err) {
-      toast.error('Recalibration failed.');
+      toast.error(err.response?.data?.message || 'Failed to update profile');
     }
   };
 
   const shareAchievement = (achievementId, name) => {
     const el = achievementRefs.current[achievementId];
     if (!el) return;
-    html2canvas(el, { backgroundColor: '#030014' }).then(canvas => {
+    
+    html2canvas(el, { backgroundColor: '#1e293b' }).then(canvas => {
       const link = document.createElement('a');
-      link.download = `LinguaQuest_${name}.png`;
+      link.download = `LinguaQuest_${name.replace(/\s+/g, '_')}.png`;
       link.href = canvas.toDataURL();
       link.click();
-      toast.success('Credential saved to local storage.');
+      toast.success('Achievement saved as image!');
     });
   };
 
   const copyPublicLink = () => {
     const url = `${window.location.origin}/user/${user.username}`;
     navigator.clipboard.writeText(url);
-    toast.success('Communication link copied.');
+    toast.success('Public link copied to clipboard!');
   };
 
-  if (!user || loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6">
-        <div className="relative">
-          <div className="w-16 h-16 border-4 border-primary-500/20 border-t-primary-500 rounded-full animate-spin" />
-          <div className="absolute inset-0 blur-xl bg-primary-500/20 animate-pulse" />
-        </div>
-        <p className="text-slate-500 font-black text-xs uppercase tracking-[0.3em] animate-pulse">Synchronizing Neural Profile</p>
-      </div>
-    );
-  }
+  if (!user) return null;
 
   const stats = user.stats || {};
   const totalActivities = (stats.writingCompleted || 0) + (stats.listeningCompleted || 0) + (stats.readingCompleted || 0) + (stats.grammarChecked || 0) + (stats.conversationsCompleted || 0);
-  const unlockedAchievements = ACHIEVEMENTS.filter(a => {
-    try {
-      return a.condition(stats, user);
-    } catch(e) {
-      return false;
-    }
-  });
+  const unlockedAchievements = ACHIEVEMENTS.filter(a => a.condition(stats, user));
+  const lockedAchievements = ACHIEVEMENTS.filter(a => !a.condition(stats, user));
 
   const radarData = [
-    { subject: 'Write', A: stats.writingCompleted || 0 },
-    { subject: 'Listen', A: stats.listeningCompleted || 0 },
-    { subject: 'Read', A: stats.readingCompleted || 0 },
-    { subject: 'Logic', A: stats.grammarChecked || 0 },
-    { subject: 'Chat', A: stats.conversationsCompleted || 0 },
+    { subject: 'Writing', A: stats.writingCompleted || 0, fullMark: Math.max(10, stats.writingCompleted || 0) },
+    { subject: 'Listening', A: stats.listeningCompleted || 0, fullMark: Math.max(10, stats.listeningCompleted || 0) },
+    { subject: 'Reading', A: stats.readingCompleted || 0, fullMark: Math.max(10, stats.readingCompleted || 0) },
+    { subject: 'Grammar', A: stats.grammarChecked || 0, fullMark: Math.max(10, stats.grammarChecked || 0) },
   ];
 
-  const COLORS = ['from-primary-500 to-primary-700', 'from-accent-indigo to-primary-600', 'from-accent-emerald to-primary-700', 'from-accent-amber to-primary-600', 'from-accent-rose to-primary-600'];
+  const COLORS = ['from-primary-500 to-accent-purple', 'from-blue-500 to-cyan-400', 'from-green-500 to-emerald-400', 'from-yellow-400 to-orange-500', 'from-pink-500 to-rose-400'];
 
   return (
-    <div className="max-w-6xl mx-auto space-y-10 pb-20">
-      {/* Premium Header */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="glass-card p-1 border-white/5 bg-gradient-to-br from-primary-500/10 to-transparent relative overflow-hidden"
-      >
-        <div className="p-6 sm:p-10 md:p-12 flex flex-col md:flex-row items-center gap-8 md:gap-10">
-           <div className="relative group">
-              <div className={`w-32 h-32 bg-gradient-to-br ${user.avatarColor || 'from-primary-500 to-primary-700'} rounded-[40px] flex items-center justify-center text-5xl shadow-glow relative z-10 group-hover:rotate-6 transition-transform duration-500`}>
-                {user.avatarEmoji || user.username[0].toUpperCase()}
-              </div>
-              <div className="absolute inset-0 bg-primary-500/20 rounded-[40px] blur-2xl group-hover:blur-3xl transition-all" />
-              <button 
-                onClick={() => setIsEditing(true)}
-                className="absolute -bottom-2 -right-2 w-10 h-10 bg-dark-900 border border-white/10 rounded-xl flex items-center justify-center text-primary-400 hover:text-white transition-colors z-20 shadow-xl"
-              >
-                <Settings size={18} />
-              </button>
-           </div>
+    <div className="max-w-4xl mx-auto space-y-8 animate-slide-up pb-20">
 
-           <div className="flex-1 text-center md:text-left space-y-6">
-              <div>
-                 <div className="flex items-center gap-3 mb-2 justify-center md:justify-start">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary-400">Verified Scholar</span>
-                    <div className="h-px w-8 bg-primary-500/30" />
-                 </div>
-                 <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold text-white tracking-tight">{user.username}</h1>
-                 <p className="text-slate-400 text-sm sm:text-base md:text-lg mt-2 font-medium italic">"{user.bio || 'Architect of own excellence.'}"</p>
-              </div>
-
-              <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                 <div className="glass-card px-4 py-2 flex items-center gap-2 border-white/10 bg-dark-950/50">
-                    <Star size={14} className="text-accent-amber" />
-                    <span className="text-xs font-black text-white uppercase tracking-widest">Level {user.level}</span>
-                 </div>
-                 <div className="glass-card px-4 py-2 flex items-center gap-2 border-white/10 bg-dark-950/50">
-                    <Zap size={14} className="text-primary-400" />
-                    <span className="text-xs font-black text-white uppercase tracking-widest">{user.xp} Total XP</span>
-                 </div>
-                 <div className="glass-card px-4 py-2 flex items-center gap-2 border-white/10 bg-dark-950/50">
-                    <Flame size={14} className="text-accent-rose" />
-                    <span className="text-xs font-black text-white uppercase tracking-widest">{user.streak} Day Streak</span>
-                 </div>
-              </div>
-           </div>
-
-           <div className="shrink-0 flex flex-col gap-3">
-              <button onClick={copyPublicLink} className="btn-primary py-3 px-6 text-[10px] font-black uppercase tracking-widest flex items-center gap-3">
-                 <LinkIcon size={14}/> Communication ID
+      {/* Profile Header */}
+      <div className="glass-card p-6 md:p-8 bg-gradient-to-br from-primary-500/10 to-accent-purple/10 border-primary-500/20 relative overflow-hidden">
+        <button onClick={() => setIsEditing(true)} className="absolute top-4 right-4 text-slate-400 hover:text-white bg-dark-700/50 p-2 rounded-lg transition-colors border border-white/5">
+          <Settings size={18} />
+        </button>
+        
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-6 relative z-10 text-center md:text-left">
+          <div className={`w-28 h-28 bg-gradient-to-br ${user.avatarColor || 'from-primary-500 to-accent-purple'} rounded-3xl flex items-center justify-center text-5xl font-bold shadow-xl shrink-0`}>
+            {user.avatarEmoji || user.username[0].toUpperCase()}
+          </div>
+          <div className="flex-1">
+            <h1 className="text-3xl font-display font-bold text-white mb-1">{user.username}</h1>
+            <p className="text-slate-300 italic mb-4">"{user.bio || 'English learner on LinguaQuest!'}"</p>
+            <div className="flex flex-wrap justify-center md:justify-start gap-2 mb-4">
+              <span className="level-badge text-sm py-1.5 px-3"><Star size={14} />Level {user.level}</span>
+              <span className="xp-badge text-sm py-1.5 px-3"><Zap size={14} />{user.xp} XP</span>
+              <span className="streak-badge text-sm py-1.5 px-3"><Flame size={14} />{user.streak}d Streak</span>
+            </div>
+            <div className="flex flex-wrap justify-center md:justify-start gap-3">
+              <button onClick={copyPublicLink} className="text-xs bg-slate-700/50 text-slate-300 hover:bg-slate-600 hover:text-white border border-white/10 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors">
+                <LinkIcon size={14} /> Copy Public Link
               </button>
-              <button className="btn-ghost py-3 px-6 text-[10px] font-black uppercase tracking-widest border-white/5 text-slate-500">
-                 Neural Export
-              </button>
-           </div>
+            </div>
+          </div>
         </div>
-      </motion.div>
-
-      {/* Analytics Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-         {/* Left: Summary & Radar */}
-         <div className="lg:col-span-1 space-y-8">
-            <div className="grid grid-cols-2 gap-4">
-               {[
-                 { icon: LayoutGrid, label: 'Objectives', value: totalActivities, color: 'text-primary-400', bg: 'bg-primary-500/10' },
-                 { icon: Coins, label: 'Treasury', value: user.coins, color: 'text-accent-amber', bg: 'bg-accent-amber/10' },
-                 { icon: BookOpen, label: 'Reading', value: stats.readingCompleted || 0, color: 'text-accent-emerald', bg: 'bg-accent-emerald/10' },
-                 { icon: MessageSquare, label: 'Conversations', value: stats.conversationsCompleted || 0, color: 'text-accent-indigo', bg: 'bg-accent-indigo/10' },
-               ].map((s, i) => (
-                 <div key={i} className="glass-card p-6 border-white/5 bg-dark-900/40 text-center space-y-2">
-                    <div className={`w-10 h-10 ${s.bg} rounded-xl flex items-center justify-center mx-auto mb-2`}>
-                       <s.icon size={18} className={s.color} />
-                    </div>
-                    <p className="text-2xl font-black text-white">{s.value}</p>
-                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{s.label}</p>
-                 </div>
-               ))}
-            </div>
-
-            <div className="glass-card p-8 border-white/5 bg-dark-900/40">
-               <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-8 flex items-center gap-2">
-                  <Activity size={14} className="text-primary-400" /> Capability Scan
-               </h3>
-               <div className="h-[220px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
-                      <PolarGrid stroke="rgba(255,255,255,0.05)" />
-                      <PolarAngleAxis dataKey="subject" tick={{ fill: '#64748b', fontSize: 10, fontWeight: 'bold' }} />
-                      <Radar name="Skills" dataKey="A" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.2} strokeWidth={2} />
-                    </RadarChart>
-                  </ResponsiveContainer>
-               </div>
-            </div>
-         </div>
-
-         {/* Right: Growth Chart */}
-         <div className="lg:col-span-2 glass-card p-6 sm:p-10 border-white/5 bg-dark-900/40 flex flex-col overflow-hidden">
-            <div className="flex justify-between items-center mb-10">
-               <h3 className="text-xl font-display font-bold text-white flex items-center gap-3">
-                  <TrendingUp className="text-accent-emerald" size={20}/> Growth Trajectory
-               </h3>
-               <div className="flex items-center gap-2 bg-dark-950 px-4 py-2 rounded-full border border-white/5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary-500 shadow-glow" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Target: {user.weeklyGoal || 500} XP / WEEK</span>
-               </div>
-            </div>
-            <div className="flex-1 min-h-[300px]">
-               <ResponsiveContainer width="100%" height="100%">
-                 <LineChart data={chartData}>
-                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
-                   <XAxis dataKey="name" stroke="#475569" fontSize={10} tickMargin={15} axisLine={false} tickLine={false} />
-                   <YAxis stroke="#475569" fontSize={10} axisLine={false} tickLine={false} tickFormatter={(v) => v > 0 ? v : ''} />
-                   <Tooltip 
-                     contentStyle={{ backgroundColor: '#0f172a', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '16px', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}
-                     itemStyle={{ color: '#8b5cf6', fontWeight: '900', fontSize: '12px', textTransform: 'uppercase' }}
-                   />
-                   <Line 
-                     type="monotone" 
-                     dataKey="xp" 
-                     name="XP Earned" 
-                     stroke="#8b5cf6" 
-                     strokeWidth={4} 
-                     dot={false} 
-                     activeDot={{ r: 6, fill: '#8b5cf6', strokeWidth: 0, shadowBlur: 10, shadowColor: '#8b5cf6' }} 
-                   />
-                 </LineChart>
-               </ResponsiveContainer>
-            </div>
-         </div>
       </div>
 
-      {/* Credentials Area */}
-      <div className="space-y-8">
-        <div className="flex items-center justify-between px-1">
-           <h2 className="text-2xl font-display font-bold text-white tracking-tight flex items-center gap-3">
-              <Award size={24} className="text-accent-amber" /> Neural Credentials
-           </h2>
-           <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{unlockedAchievements.length} Unlocked</span>
+      {/* Stats & Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Left Column: Quick Stats & Radar */}
+        <div className="lg:col-span-1 space-y-6">
+          <div className="grid grid-cols-2 gap-3">
+            <StatCard icon={Target} label="Total Activities" value={totalActivities} color="text-primary-400" bg="bg-primary-500/10" />
+            <StatCard icon={Zap} label="Total XP" value={user.xp} color="text-accent-yellow" bg="bg-accent-yellow/10" />
+            <StatCard icon={BookOpen} label="Reading" value={stats.readingCompleted || 0} color="text-green-400" bg="bg-green-500/10" />
+            <StatCard icon={PenTool} label="Writing" value={stats.writingCompleted || 0} color="text-blue-400" bg="bg-blue-500/10" />
+          </div>
+
+          <div className="glass-card p-5">
+            <h3 className="text-sm font-bold text-slate-300 mb-4 uppercase tracking-wider">Skill Radar</h3>
+            <div className="h-[200px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart cx="50%" cy="50%" outerRadius="65%" data={radarData}>
+                  <PolarGrid stroke="#334155" />
+                  <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 10 }} />
+                  <Radar name="Modules" dataKey="A" stroke="#6366f1" fill="#6366f1" fillOpacity={0.4} />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-           {ACHIEVEMENTS.map(a => {
-             const unlocked = unlockedAchievements.some(u => u.id === a.id);
-             return (
-               <motion.div 
-                 key={a.id}
-                 whileHover={unlocked ? { y: -5 } : {}}
-                 className="relative group"
-               >
-                  <div 
-                    ref={el => achievementRefs.current[a.id] = el}
-                    className={`glass-card p-8 border-white/5 text-center flex flex-col items-center h-full transition-all duration-500 ${unlocked ? 'bg-dark-900/40 hover:bg-white/5 border-accent-amber/20' : 'opacity-30 grayscale blur-[1px]'}`}
-                  >
-                     <div className={`w-16 h-16 bg-dark-950 rounded-2xl flex items-center justify-center text-3xl mb-6 border border-white/5 shadow-inner transition-transform duration-500 ${unlocked ? 'group-hover:rotate-6 group-hover:scale-110' : ''}`}>
-                        {a.icon}
-                     </div>
-                     <p className={`font-bold tracking-tight mb-1 ${unlocked ? 'text-white' : 'text-slate-500'}`}>{a.name}</p>
-                     <p className="text-[10px] text-slate-500 font-medium leading-relaxed">{a.desc}</p>
-                     
-                     {unlocked && (
-                        <div className="mt-6 pt-4 border-t border-white/5 w-full flex justify-center">
-                           <div className="flex items-center gap-1.5 bg-accent-amber/10 px-3 py-1 rounded-full border border-accent-amber/20">
-                              <Shield size={10} className="text-accent-amber" />
-                              <span className="text-[8px] font-black text-accent-amber uppercase tracking-widest">Authenticated</span>
-                           </div>
-                        </div>
-                     )}
-                  </div>
-                  {unlocked && (
-                     <button 
-                       onClick={() => shareAchievement(a.id, a.name)}
-                       className="absolute top-4 right-4 p-2 bg-dark-900 border border-white/10 rounded-xl text-slate-500 hover:text-primary-400 opacity-0 group-hover:opacity-100 transition-all shadow-xl"
-                     >
-                       <Share2 size={16} />
-                     </button>
-                  )}
-               </motion.div>
-             );
-           })}
+        {/* Right Column: Progress Chart */}
+        <div className="lg:col-span-2 glass-card p-6 flex flex-col">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-bold text-white flex items-center gap-2"><TrendingUp className="text-green-400" size={20}/> 30-Day XP Growth</h3>
+            <div className="text-xs bg-dark-700 border border-white/5 px-3 py-1 rounded-full text-slate-400">
+              Goal: <span className="text-white font-bold">{user.weeklyGoal || 500} XP / week</span>
+            </div>
+          </div>
+          <div className="flex-1 min-h-[250px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                <XAxis dataKey="name" stroke="#64748b" fontSize={10} tickMargin={10} minTickGap={20} />
+                <YAxis stroke="#64748b" fontSize={10} tickFormatter={(val) => val > 0 ? val : ''} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', borderRadius: '8px' }}
+                  itemStyle={{ color: '#818cf8', fontWeight: 'bold' }}
+                />
+                <Line type="monotone" dataKey="xp" name="XP Earned" stroke="#818cf8" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: '#6366f1' }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
         </div>
+      </div>
+
+      {/* Achievements */}
+      <div>
+        <h2 className="text-xl font-display font-bold text-white mb-4 flex items-center gap-2">
+          <Trophy size={20} className="text-accent-yellow" /> Achievements
+        </h2>
+
+        {unlockedAchievements.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+            {unlockedAchievements.map(a => (
+              <div key={a.id} className="relative group">
+                {/* Ref container for html2canvas to capture just the card without the share button */}
+                <div ref={el => achievementRefs.current[a.id] = el} className="glass-card p-4 border-accent-yellow/20 bg-accent-yellow/5 flex flex-col items-center text-center h-full">
+                  <span className="text-4xl mb-3">{a.icon}</span>
+                  <p className="font-bold text-white mb-1">{a.name}</p>
+                  <p className="text-xs text-slate-400">{a.desc}</p>
+                </div>
+                {/* Share Button Overlay */}
+                <button 
+                  onClick={() => shareAchievement(a.id, a.name)}
+                  className="absolute top-2 right-2 p-2 bg-dark-800/80 hover:bg-primary-500 text-slate-300 hover:text-white rounded-lg opacity-0 group-hover:opacity-100 transition-all border border-white/10"
+                  title="Save as Image"
+                >
+                  <Share2 size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {lockedAchievements.length > 0 && (
+          <div>
+            <p className="text-xs text-slate-500 mb-3 uppercase tracking-wider">Locked ({lockedAchievements.length})</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              {lockedAchievements.map(a => (
+                <div key={a.id} className="glass-card p-3 opacity-40 flex flex-col items-center text-center">
+                  <span className="text-2xl grayscale mb-2">{a.icon}</span>
+                  <p className="font-semibold text-slate-400 text-xs">{a.name}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Edit Profile Modal */}
-      <AnimatePresence>
-        {isEditing && (
-          <div className="fixed inset-0 bg-dark-950/80 backdrop-blur-xl flex items-center justify-center z-[100] p-6">
-            <motion.div 
-               initial={{ opacity: 0, scale: 0.95 }}
-               animate={{ opacity: 1, scale: 1 }}
-               exit={{ opacity: 0, scale: 0.95 }}
-               className="glass-card p-1 max-w-md w-full relative overflow-hidden"
-            >
-               <div className="p-10 bg-dark-900">
-                  <div className="flex items-center justify-between mb-8">
-                     <h3 className="text-2xl font-display font-bold text-white tracking-tight">Recalibrate Identity</h3>
-                     <button onClick={() => setIsEditing(false)} className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-500 hover:text-white transition-colors">
-                        <X size={20}/>
-                     </button>
-                  </div>
-                  
-                  <div className="space-y-6">
-                    <div className="space-y-2">
-                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Identity Tag</label>
-                       <input type="text" value={editForm.username} onChange={e => setEditForm({...editForm, username: e.target.value})} className="input-field" />
-                    </div>
-                    <div className="space-y-2">
-                       <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Status Message</label>
-                       <input type="text" value={editForm.bio} onChange={e => setEditForm({...editForm, bio: e.target.value})} className="input-field" placeholder="Targeting C2 Mastery..." maxLength={60} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Avatar Hex</label>
-                        <input type="text" value={editForm.avatarEmoji} onChange={e => setEditForm({...editForm, avatarEmoji: e.target.value})} className="input-field text-center text-xl" maxLength={2} />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">XP Protocol</label>
-                        <input type="number" value={editForm.weeklyGoal} onChange={e => setEditForm({...editForm, weeklyGoal: parseInt(e.target.value) || 0})} className="input-field" step="100" min="100" />
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Spectral Theme</label>
-                      <div className="flex gap-3">
-                        {COLORS.map(c => (
-                          <button 
-                            key={c} 
-                            onClick={() => setEditForm({...editForm, avatarColor: c})} 
-                            className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${c} ${editForm.avatarColor === c ? 'ring-2 ring-primary-500 ring-offset-4 ring-offset-dark-900 scale-110 shadow-glow' : 'opacity-40 hover:opacity-100'} transition-all`} 
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+      {isEditing && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-dark-800 border border-white/10 p-6 rounded-2xl w-full max-w-md shadow-2xl animate-slide-up">
+            <h3 className="text-xl font-bold text-white mb-4">Edit Profile</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs text-slate-400 mb-1 block">Username</label>
+                <input type="text" value={editForm.username} onChange={e => setEditForm({...editForm, username: e.target.value})} className="input-field" />
+              </div>
+              <div>
+                <label className="text-xs text-slate-400 mb-1 block">Bio</label>
+                <input type="text" value={editForm.bio} onChange={e => setEditForm({...editForm, bio: e.target.value})} className="input-field" placeholder="Tell us about your goals..." maxLength={60} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs text-slate-400 mb-1 block">Avatar Emoji</label>
+                  <input type="text" value={editForm.avatarEmoji} onChange={e => setEditForm({...editForm, avatarEmoji: e.target.value})} className="input-field text-center text-xl" maxLength={2} />
+                </div>
+                <div>
+                  <label className="text-xs text-slate-400 mb-1 block">Weekly XP Goal</label>
+                  <input type="number" value={editForm.weeklyGoal} onChange={e => setEditForm({...editForm, weeklyGoal: parseInt(e.target.value) || 0})} className="input-field" step="100" min="100" />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-slate-400 mb-2 block">Avatar Color</label>
+                <div className="flex gap-2">
+                  {COLORS.map(c => (
+                    <button key={c} onClick={() => setEditForm({...editForm, avatarColor: c})} className={`w-8 h-8 rounded-full bg-gradient-to-br ${c} ${editForm.avatarColor === c ? 'ring-2 ring-white scale-110' : 'opacity-50 hover:opacity-100'} transition-all`} />
+                  ))}
+                </div>
+              </div>
+            </div>
 
-                  <div className="flex gap-4 mt-12">
-                    <button onClick={() => setIsEditing(false)} className="flex-1 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-white/5 transition-colors border border-transparent hover:border-white/5">Abort</button>
-                    <button onClick={handleSaveProfile} className="flex-1 btn-primary py-4 text-[10px] font-black uppercase tracking-widest shadow-glow">Commit Changes</button>
-                  </div>
-               </div>
-            </motion.div>
+            <div className="flex gap-3 mt-8">
+              <button onClick={() => setIsEditing(false)} className="flex-1 py-2 rounded-xl text-slate-300 hover:bg-white/5 transition-colors">Cancel</button>
+              <button onClick={handleSaveProfile} className="flex-1 btn-primary py-2">Save Changes</button>
+            </div>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
+
     </div>
   );
 }

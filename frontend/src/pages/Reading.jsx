@@ -1,12 +1,10 @@
-// Premium Reading Nexus Overhaul - Lexical Narrative Edition
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { motion, AnimatePresence } from 'framer-motion';
 import { 
   BookOpen, RefreshCw, ChevronRight, Zap, CheckCircle, XCircle, 
-  Lock, Star, Trophy, ArrowLeft, Globe, Activity, Shield,
-  Target, Sparkles, Book, Cpu, Terminal
+  Info, Lock, Star, Clock, BarChart2, Layers, Map, Trophy,
+  Palette, Sparkles, Book
 } from 'lucide-react';
 import XPReward from '../components/XPReward';
 import { useAuth } from '../context/AuthContext';
@@ -20,119 +18,108 @@ function ReadingRoadmap({ library, onSelectBook, completedCount }) {
   const levels = ['beginner', 'elementary', 'intermediate', 'upper_intermediate', 'advanced', 'expert'];
   
   return (
-    <div className="max-w-7xl mx-auto animate-slide-up pb-32 space-y-16 px-6 md:px-8">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
-        <div className="max-w-2xl">
-           <div className="flex items-center gap-3 mb-4 justify-center md:justify-start">
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-accent-emerald">Lexical Perception Matrix</span>
-              <div className="h-px w-12 bg-accent-emerald/30" />
-           </div>
-           <h1 className="text-4xl md:text-6xl font-display font-black text-white tracking-tighter leading-none mb-4">
-             Reading <span className="shimmer-text">Nexus</span>
-           </h1>
-           <p className="text-slate-400 text-lg font-medium leading-relaxed">
-             Progressive narratives mapped for cognitive mastery and neural expansion.
-           </p>
+    <div className="max-w-4xl mx-auto animate-fade-in pb-20">
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/20">
+            <Map size={28} className="text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-display font-bold text-white">Reading Centre <span className="text-green-500 text-xs">v2.0</span></h1>
+            <p className="text-slate-400 text-sm">180 Progressive Stories</p>
+          </div>
         </div>
-        <div className="glass-card px-10 py-6 flex items-center gap-8 border-white/5 bg-dark-950/40 relative overflow-hidden group shadow-glow-sm">
-           <div className="absolute inset-0 bg-accent-emerald/5 group-hover:bg-accent-emerald/10 transition-colors" />
-           <div className="relative z-10 text-right">
-              <p className="text-[10px] text-slate-500 uppercase tracking-[0.2em] font-black mb-2">Global Mastery</p>
-              <p className="text-4xl font-display font-black text-white">{completedCount}<span className="text-accent-emerald/30 text-2xl mx-1">/</span>180</p>
-           </div>
-           <div className="w-16 h-16 bg-accent-emerald/10 rounded-2xl flex items-center justify-center border border-accent-emerald/20 shadow-inner relative z-10">
-              <Trophy size={32} className="text-accent-emerald animate-pulse" />
-           </div>
+        <div className="glass-card px-6 py-3 flex items-center gap-4 border-green-500/20 bg-green-500/5">
+          <div className="text-right">
+            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Total Mastery</p>
+            <p className="text-xl font-display font-black text-white">{completedCount} / 180</p>
+          </div>
+          <Trophy size={32} className="text-yellow-400" />
         </div>
       </div>
 
-      {/* Grid of Levels */}
-      <div className="space-y-24">
+      <div className="space-y-12">
         {levels.map((lvl) => {
           const section = library[lvl];
           if (!section) return null;
           
           return (
             <div key={lvl} className="relative">
-              {/* Sticky Level Header */}
-              <div className="flex items-center gap-6 mb-12 sticky top-0 z-20 py-6 bg-dark-950/60 backdrop-blur-2xl border-b border-white/5">
-                <div className="w-16 h-16 bg-dark-950 border border-white/10 rounded-[2rem] flex items-center justify-center text-3xl shadow-inner shrink-0 group">
-                   <span className="group-hover:scale-125 transition-transform duration-500">{TIER_ICONS[lvl]}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-3xl font-display font-black text-white tracking-tight uppercase tracking-[0.1em] truncate">{section.label}</h2>
-                  <div className="flex items-center gap-4 mt-3">
-                    <div className="flex-1 h-2 bg-dark-950 rounded-full overflow-hidden max-w-[300px] p-0.5 border border-white/5">
-                      <motion.div 
-                         initial={{ width: 0 }}
-                         animate={{ width: `${section.progress}%` }}
-                         className="h-full bg-accent-emerald rounded-full shadow-glow" 
-                      />
+              {/* Level Header */}
+              <div className="flex items-center gap-4 mb-6 sticky top-0 z-10 py-2 bg-dark-900/80 backdrop-blur-md">
+                <div className="text-3xl">{TIER_ICONS[lvl]}</div>
+                <div className="flex-1">
+                  <h2 className="text-xl font-display font-bold text-white">{section.label}</h2>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="flex-1 h-1.5 bg-dark-700 rounded-full overflow-hidden max-w-[200px]">
+                      <div className="h-full bg-green-500 transition-all duration-1000" style={{ width: `${section.progress}%` }} />
                     </div>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] shrink-0">{section.progress}% DECIPHERED</span>
+                    <span className="text-[10px] font-bold text-slate-500">{section.progress}% Complete</span>
                   </div>
                 </div>
               </div>
 
-              {/* Tiers within Level */}
-              <div className="space-y-16">
+              {/* Books Grid — use section.books directly, preserving server-side unlock status */}
+              <div className="space-y-8">
                 {['beginner', 'intermediate', 'advanced'].map(tier => {
                   const tierBooks = section.books.filter(b => b.tier === tier);
                   if (!tierBooks.length) return null;
                   
                   return (
-                    <div key={tier} className="space-y-8">
-                      <div className="flex items-center gap-4 px-2">
-                        <div className="w-2 h-2 rounded-full bg-accent-emerald shadow-glow" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
-                          {tier === 'beginner' ? 'Phase 1: Initiation' : tier === 'intermediate' ? 'Phase 2: Expansion' : 'Phase 3: Mastery'}
-                        </span>
-                        <div className="h-px flex-1 bg-white/5" />
+                    <div key={tier} className="space-y-3">
+                      <div className="flex items-center gap-2 opacity-50">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{tier} Phase</span>
+                        <div className="h-[1px] flex-1 bg-white/5" />
                       </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                         {tierBooks.map((book) => {
+                          // Use the isUnlocked value from the SERVER — don't recalculate in frontend
+                          // The server already handles: first book always unlocked, sequential unlock, etc.
                           const isLocked = !book.isUnlocked;
                           const isCompleted = book.isCompleted;
+                          const globalIndex = section.books.indexOf(book);
                           
                           return (
-                            <motion.button
+                            <button
                               key={book.id}
-                              whileHover={!isLocked ? { y: -8, scale: 1.02 } : {}}
                               disabled={isLocked}
                               onClick={() => !isLocked && onSelectBook(book)}
-                              className={`relative group p-8 rounded-[2.5rem] border transition-all duration-700 flex flex-col items-center text-center ${
+                              className={`relative group p-4 rounded-2xl border transition-all duration-300 flex flex-col items-center text-center ${
                                 isCompleted 
-                                ? 'bg-accent-emerald/5 border-accent-emerald/20 shadow-glow-sm' 
+                                ? 'bg-green-500/10 border-green-500/30 shadow-lg shadow-green-500/5' 
                                 : isLocked 
-                                ? 'bg-dark-950/40 border-white/5 opacity-40 grayscale cursor-not-allowed'
-                                : 'bg-dark-900/40 border-white/5 hover:border-accent-emerald/50 hover:bg-white/5 shadow-premium cursor-pointer'
+                                ? 'bg-dark-800/50 border-white/5 opacity-40 cursor-not-allowed'
+                                : 'bg-dark-700 border-white/10 hover:border-green-500/50 hover:scale-105 hover:shadow-xl hover:shadow-green-500/10 cursor-pointer'
                               }`}
                             >
-                              <div className="absolute -top-1 -right-1 z-10">
+                              {/* Badge */}
+                              <div className="absolute -top-2 -right-2 z-20">
                                 {isCompleted ? (
-                                  <div className="w-10 h-10 bg-accent-emerald rounded-2xl flex items-center justify-center shadow-glow border border-white/10">
-                                    <CheckCircle size={18} className="text-white" />
+                                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                                    <CheckCircle size={14} className="text-white" />
                                   </div>
                                 ) : isLocked ? (
-                                  <div className="w-10 h-10 bg-dark-900 border border-white/5 rounded-2xl flex items-center justify-center">
-                                    <Lock size={16} className="text-slate-600" />
+                                  <div className="w-6 h-6 bg-dark-800 border border-white/10 rounded-full flex items-center justify-center">
+                                    <Lock size={12} className="text-slate-500" />
                                   </div>
                                 ) : (
-                                  <div className="w-10 h-10 bg-accent-emerald rounded-2xl flex items-center justify-center animate-pulse shadow-glow border border-white/10">
-                                    <Zap size={18} className="text-white" />
+                                  <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center animate-pulse shadow-lg">
+                                    <Zap size={12} className="text-white" />
                                   </div>
                                 )}
                               </div>
 
-                              <div className="w-20 h-20 bg-dark-950 rounded-3xl flex items-center justify-center text-4xl mb-6 border border-white/5 shadow-inner group-hover:scale-110 group-hover:rotate-6 transition-all duration-700">
+                              <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">
                                 {book.emoji}
                               </div>
                               
-                              <h3 className="text-sm font-black text-white leading-tight tracking-tight line-clamp-2 min-h-[40px] group-hover:text-accent-emerald transition-colors uppercase">
+                              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mb-1">
+                                Module {globalIndex + 1}
+                              </div>
+                              <h3 className="text-xs font-bold text-white leading-tight line-clamp-2 min-h-[32px]">
                                 {book.title}
                               </h3>
-                            </motion.button>
+                            </button>
                           );
                         })}
                       </div>
@@ -148,81 +135,229 @@ function ReadingRoadmap({ library, onSelectBook, completedCount }) {
   );
 }
 
-export default function Reading() {
-  const { user, fetchProfile } = useAuth();
-  const [library, setLibrary] = useState({});
-  const [completedCount, setCompletedCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [selectedBook, setSelectedBook] = useState(null);
+function ReadingExercise({ exercise, onBack, onComplete }) {
+  const [quizMode, setQuizMode] = useState(false);
+  const [answers, setAnswers] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [reward, setReward] = useState(null);
+  const [startTime] = useState(Date.now());
+  const { fetchProfile } = useAuth();
 
-  useEffect(() => {
-    fetchLibrary();
-  }, []);
-
-  const fetchLibrary = async () => {
+  const handleSubmit = async () => {
+    if (Object.keys(answers).length < exercise.questions.length) {
+      return toast.error("Please answer all questions!");
+    }
+    setLoading(true);
     try {
-      const res = await axios.get('/api/reading/library');
-      setLibrary(res.data.library);
-      setCompletedCount(res.data.completedCount);
-    } catch { toast.error("Lexical uplink failed."); }
+      const { data } = await axios.post('/api/reading/submit', {
+        answers: exercise.questions.map((_, i) => answers[i]),
+        questions: exercise.questions,
+        bookId: exercise.book.id,
+        timeSpent: Math.floor((Date.now() - startTime) / 1000)
+      });
+      setResult(data);
+      setReward({ xp: data.xpEarned, coins: data.coinsEarned, score: data.score });
+      await fetchProfile();
+      if (data.score >= 70) {
+        toast.success("Lesson Mastered! Next one unlocked.", { icon: '🔥' });
+      }
+    } catch { toast.error("Failed to submit"); }
     finally { setLoading(false); }
   };
 
-  if (loading) return (
-    <div className="flex flex-col items-center justify-center h-[75vh] gap-12">
-      <div className="relative">
-        <div className="w-32 h-32 border-[8px] border-white/5 rounded-full" />
-        <div className="w-32 h-32 border-[8px] border-accent-emerald border-t-transparent rounded-full animate-spin absolute top-0 left-0" />
-        <BookOpen size={48} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-accent-emerald animate-pulse" />
-      </div>
-      <div className="text-center space-y-4">
-         <p className="text-3xl font-display font-black text-white tracking-tighter uppercase">Mapping Lexical Datastream</p>
-         <p className="text-slate-500 font-black text-xs uppercase tracking-[0.3em]">Neural engine hand-picking your next textual challenge...</p>
-      </div>
-    </div>
-  );
-
   return (
-    <div className="min-h-screen max-w-[1600px] mx-auto">
-      {!selectedBook ? (
-        <ReadingRoadmap 
-          library={library} 
-          onSelectBook={setSelectedBook} 
-          completedCount={completedCount}
-        />
-      ) : (
-        <div className="px-8 animate-slide-up">
-          <div className="flex items-center gap-6 mb-12">
-            <button onClick={() => setSelectedBook(null)} className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-slate-500 hover:text-white transition-all border border-white/5 hover:bg-white/10">
-              <ArrowLeft size={24} />
-            </button>
-            <div>
-               <h2 className="text-2xl font-display font-black text-white tracking-tight uppercase">Redirecting to Analysis Core</h2>
-               <div className="flex items-center gap-2 mt-1">
-                  <div className="w-2 h-2 rounded-full bg-accent-emerald shadow-glow animate-pulse" />
-                  <span className="text-[10px] font-black text-accent-emerald uppercase tracking-[0.3em]">Mission Initializing: {selectedBook.title}</span>
-               </div>
+    <div className="max-w-3xl mx-auto animate-slide-up pb-20">
+      {reward && <XPReward {...reward} onClose={() => setReward(null)} />}
+      
+      <div className="flex items-center justify-between mb-6">
+        <button onClick={onBack} className="btn-ghost text-sm py-2 px-3 flex items-center gap-1">
+          <ChevronRight size={14} className="rotate-180" /> Back to Roadmap
+        </button>
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">{exercise.book.emoji}</span>
+          <h2 className="text-xl font-display font-bold text-white">{exercise.book.title}</h2>
+        </div>
+      </div>
+
+      {!quizMode ? (
+        <div className="space-y-6">
+          {/* Illustration placeholder */}
+          <div className="glass-card p-2 border-white/5 bg-gradient-to-br from-dark-800 to-dark-900 rounded-3xl overflow-hidden shadow-2xl">
+            <div className="aspect-video bg-dark-700 rounded-2xl flex flex-col items-center justify-center p-8 text-center relative group overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-500/10 to-blue-500/10 opacity-50 group-hover:opacity-70 transition-opacity" />
+              <div className="relative z-10">
+                <Palette size={48} className="text-green-400 mb-4 mx-auto animate-bounce" />
+                <p className="text-slate-300 italic text-sm max-w-sm">"{exercise.illustrationPrompt || 'An engaging illustration for this story'}"</p>
+                <div className="mt-4 flex items-center justify-center gap-2 text-[10px] text-slate-500 uppercase font-bold tracking-widest">
+                  <Sparkles size={12} className="text-yellow-500" /> AI Story
+                </div>
+              </div>
             </div>
           </div>
-          
-          <div className="glass-card p-24 text-center border-white/5 bg-dark-900/40 space-y-12 shadow-premium">
-             <div className="w-32 h-32 bg-dark-950 rounded-[3rem] flex items-center justify-center text-6xl mx-auto border border-white/10 shadow-inner">
-                {selectedBook.emoji}
-             </div>
-             <div className="space-y-4">
-                <h2 className="text-4xl md:text-6xl font-display font-black text-white uppercase tracking-tighter">{selectedBook.title}</h2>
-                <p className="text-slate-500 text-lg font-medium">Neural engine is preparing the textual environment...</p>
-             </div>
-             <div className="w-64 h-1.5 bg-dark-950 rounded-full mx-auto overflow-hidden border border-white/5">
-                <motion.div 
-                   animate={{ x: ['-100%', '100%'] }} 
-                   transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                   className="w-1/2 h-full bg-accent-emerald shadow-glow" 
-                />
-             </div>
+
+          <div className="glass-card p-8 border-green-500/10 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-green-500" />
+            <p className="text-slate-200 leading-[2] text-lg whitespace-pre-wrap font-body">
+              {exercise.passage}
+            </p>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="glass-card p-6 border-blue-500/10">
+              <h3 className="text-xs font-bold text-blue-400 uppercase mb-4 flex items-center gap-2">
+                <Book size={14} /> Key Vocabulary
+              </h3>
+              <div className="space-y-3">
+                {(exercise.vocabulary || []).map((v, i) => (
+                  <div key={i} className="flex flex-col">
+                    <span className="text-white font-bold text-sm">{v.word}</span>
+                    <span className="text-slate-400 text-xs">{v.definition}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="glass-card p-6 border-purple-500/10 flex flex-col justify-center items-center text-center">
+              <p className="text-slate-400 text-sm mb-6 italic">"Finished reading? Let's test your understanding!"</p>
+              <button 
+                onClick={() => setQuizMode(true)}
+                className="btn-primary w-full py-4 flex items-center justify-center gap-3 text-lg"
+              >
+                Start Quiz <ChevronRight size={20} />
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="glass-card p-4 flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+               <span className="text-2xl">{exercise.book.emoji}</span>
+               <div>
+                 <p className="text-[10px] text-slate-500 uppercase font-bold">Quiz Mode</p>
+                 <p className="text-white font-bold">{exercise.book.title}</p>
+               </div>
+            </div>
+            <span className="text-xs text-slate-400">{Object.keys(answers).length} / {exercise.questions.length} Answered</span>
+          </div>
+
+          {exercise.questions.map((q, qi) => (
+            <div key={qi} className="glass-card p-6 animate-fade-in" style={{ animationDelay: `${qi * 100}ms` }}>
+              <p className="font-bold text-white mb-6 text-lg">Q{qi + 1}. {q.question}</p>
+              <div className="space-y-3">
+                {q.options.map((opt, oi) => {
+                  const letter = ['A', 'B', 'C', 'D'][oi];
+                  const isSelected = answers[qi] === oi;
+                  const isCorrect = result && oi === q.correct;
+                  const isWrong = result && isSelected && oi !== q.correct;
+                  
+                  return (
+                    <button
+                      key={oi}
+                      disabled={loading || !!result}
+                      onClick={() => setAnswers(p => ({ ...p, [qi]: oi }))}
+                      className={`w-full text-left p-4 rounded-2xl border-2 transition-all flex items-center gap-4 ${
+                        isCorrect ? 'border-green-500 bg-green-500/10 text-green-400' :
+                        isWrong ? 'border-red-500 bg-red-500/10 text-red-400' :
+                        isSelected ? 'border-green-500 bg-green-500/5 text-white' :
+                        'border-white/5 bg-white/5 text-slate-300 hover:border-white/20'
+                      }`}
+                    >
+                      <span className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold shrink-0 ${
+                        isSelected ? 'bg-green-500 text-white' : 'bg-dark-600 text-slate-500'
+                      }`}>{letter}</span>
+                      <span className="flex-1 font-medium">{opt}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {result && q.explanation && (
+                <div className="mt-4 p-4 bg-dark-800 rounded-xl border border-white/5">
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    <span className="text-green-400 font-bold">Explanation:</span> {q.explanation}
+                  </p>
+                </div>
+              )}
+            </div>
+          ))}
+
+          {!result ? (
+            <button 
+              onClick={handleSubmit}
+              disabled={loading || Object.keys(answers).length < exercise.questions.length}
+              className="btn-primary w-full py-4 text-xl mt-8 disabled:opacity-50"
+            >
+              {loading ? "Grading..." : "Submit Answers"}
+            </button>
+          ) : (
+            <div className="glass-card p-8 bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-500/30 text-center mt-8">
+              <div className="text-5xl font-black text-white mb-2">{result.score}%</div>
+              <p className="text-slate-300 mb-6">{result.score >= 70 ? "Excellent! Next lesson unlocked 🔥" : "Keep practicing!"}</p>
+              <button onClick={onBack} className="btn-primary px-10">Continue Roadmap</button>
+            </div>
+          )}
         </div>
       )}
     </div>
+  );
+}
+
+export default function Reading() {
+  const [phase, setPhase] = useState('roadmap');
+  const [library, setLibrary] = useState({});
+  const [completedCount, setCompletedCount] = useState(0);
+  const [exercise, setExercise] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+
+  const fetchLibrary = async () => {
+    try {
+      const { data } = await axios.get('/api/reading/books');
+      setLibrary(data.library || {});
+      setCompletedCount(data.completedCount || 0);
+    } catch { toast.error("Failed to load library"); }
+  };
+
+  useEffect(() => { fetchLibrary(); }, []);
+  useEffect(() => { if (user) fetchLibrary(); }, [user]);
+
+  const handleSelectBook = async (book) => {
+    setLoading(true);
+    try {
+      const { data } = await axios.post('/api/reading/book-passage', { bookId: book.id });
+      setExercise(data);
+      setPhase('exercise');
+    } catch { toast.error("Failed to load story. Please try again."); }
+    finally { setLoading(false); }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh] gap-6">
+        <div className="relative">
+          <div className="w-20 h-20 border-4 border-green-500/20 rounded-full" />
+          <div className="w-20 h-20 border-4 border-green-500 border-t-transparent rounded-full animate-spin absolute top-0 left-0" />
+          <Palette size={32} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-green-500" />
+        </div>
+        <p className="text-slate-400 animate-pulse font-display font-bold">Generating your story...</p>
+      </div>
+    );
+  }
+
+  if (phase === 'exercise' && exercise) {
+    return (
+      <ReadingExercise 
+        exercise={exercise} 
+        onBack={() => { setPhase('roadmap'); fetchLibrary(); }} 
+      />
+    );
+  }
+
+  return (
+    <ReadingRoadmap 
+      library={library} 
+      onSelectBook={handleSelectBook} 
+      completedCount={completedCount} 
+    />
   );
 }

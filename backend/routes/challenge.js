@@ -3,24 +3,22 @@ import auth from '../middleware/auth.js';
 import { DailyChallenge, ChallengeSubmission } from '../models/DailyChallenge.js';
 import User from '../models/User.js';
 import Activity from '../models/Activity.js';
-import { generateJSON } from '../middleware/ai.js';
+import { generateJSON } from '../middleware/puter.js';
 
 const router = express.Router();
 
 const getTodayString = () => {
-  // We want a consistent date string based on IST (UTC+5:30)
-  // This ensures all users see the same challenge for the same day.
-  const now = new Date();
-  const istOffset = 330 * 60 * 1000; // 5 hours 30 mins in milliseconds
-  const istDate = new Date(now.getTime() + istOffset);
-  return istDate.toISOString().split('T')[0];
+  const d = new Date();
+  // Shift UTC to IST (UTC+5:30)
+  d.setMinutes(d.getMinutes() + 330);
+  return d.toISOString().split('T')[0];
 };
 
 // GET today's challenge
 router.get('/daily', auth, async (req, res) => {
   try {
     const today = getTodayString();
-    console.log(`[DailyChallenge] Fetching for ${today}`);
+    console.log('Fetching Daily Challenge for:', today);
     
     // Check if user already submitted
     const submission = await ChallengeSubmission.findOne({ userId: req.user._id, dateString: today });
@@ -30,55 +28,29 @@ router.get('/daily', auth, async (req, res) => {
     
     // If no challenge exists for today, GENERATE IT!
     if (!challenge) {
-      // Pick a hidden topic to force AI variety
-      const topics = [
-        "Mixed Tenses", "Conditional Sentences", "Relative Clauses", "Passive Voice", 
-        "Prepositional Phrases", "Phrasal Verbs", "Articles & Quantifiers", 
-        "Reported Speech", "Gerunds vs Infinitives", "Modal Verbs", "Complex Sentence Structures",
-        "Subjunctive Mood", "Inversion in English", "Causative Verbs", "Advanced Adjectives & Adverbs",
-        "Conjunctions & Transition Words", "Noun Clauses", "Participial Phrases", "Idiomatic Expressions"
-      ];
-      const hiddenTopic = topics[today.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % topics.length];
-      const randomDailySeed = Math.random().toString(36).substring(7);
-      
-      console.log(`[DailyChallenge] Generating NEW random grammar challenge for ${today}. Hidden Topic: ${hiddenTopic}`);
+      console.log('Generating new Daily Challenge for', today, 'using Groq Middleware');
       
       const prompt = `
-        Create a 10-question Daily Challenge Quiz for English learners for the date: ${today}.
-        PRIMARY FOCUS: ${hiddenTopic} (but mix in other grammar topics too).
-        DAILY SEED: ${randomDailySeed}
-        
-        Requirements:
-        1. Mix various grammar topics (tenses, prepositions, articles, etc.) to keep it diverse.
-        2. Difficulty: Intermediate to Advanced (B2-C1).
-        3. Return a JSON object with a "questions" key containing an array of EXACTLY 10 objects.
-        4. Each question MUST be unique, creative, and specifically generated for this seed. Avoid "generic" or "common" textbook examples. Use realistic and modern English scenarios.
-        
+        Create a 10-question Daily Challenge Quiz for English learners.
+        Mix Grammar (tenses, prepositions), Vocabulary (synonyms, definitions), and Idioms.
+        Difficulty: Intermediate (B1-B2).
+        Return a JSON object with a "questions" key containing an array of 10 objects.
         Each question object format:
         {
-          "question": "What is the correct form of 'to be' in: He _____ happy yesterday?",
-          "options": ["is", "was", "were", "be"],
+          "question": "Which sentence is correct?",
+          "options": ["He go to school", "He goes to school", "He going to school", "He gone to school"],
           "correct": 1,
-          "explanation": "We use 'was' for singular third-person (He/She/It) in the past tense."
+          "explanation": "Third person singular 'he' requires 'goes'."
         }
-        DO NOT use single-letter placeholders for options. Use real English content.
       `;
       
       const result = await generateJSON(prompt);
-      let questions = [];
+      const questions = Array.isArray(result) ? result : (result.questions || []);
       
-      if (result && Array.isArray(result.questions)) {
-        questions = result.questions;
-      } else if (Array.isArray(result)) {
-        questions = result;
+      if (!Array.isArray(questions) || questions.length < 5) {
+        console.error('Invalid result from AI:', result);
+        throw new Error('AI failed to generate a valid question array');
       }
-
-      if (questions.length < 10) {
-        throw new Error(`AI generated insufficient questions (${questions.length}/10)`);
-      }
-
-      // Slice to exactly 10 if more were returned
-      questions = questions.slice(0, 10);
 
       challenge = new DailyChallenge({
         dateString: today,
@@ -88,8 +60,12 @@ router.get('/daily', auth, async (req, res) => {
       console.log('Successfully saved new challenge for', today);
     }
     
+    // We now return the full question data (including correct and explanation) 
+    // to support immediate feedback in the frontend.
+    let responseData = challenge.toObject();
+
     res.json({
-      challenge,
+      challenge: responseData,
       submission
     });
   } catch (err) {

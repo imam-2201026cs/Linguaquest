@@ -1,6 +1,6 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
-import { generateJSON } from '../middleware/ai.js';
+import { generateJSON } from '../middleware/puter.js';
 import Activity from '../models/Activity.js';
 import User from '../models/User.js';
 import { updateStreak } from '../middleware/streak.js';
@@ -96,7 +96,7 @@ router.get('/books', auth, async (req, res) => {
     const completed = user?.completedReadingLessons || [];
 
     const levels = ['beginner', 'elementary', 'intermediate', 'upper_intermediate', 'advanced', 'expert'];
-    const levelLabels = { beginner: 'Beginner', elementary: 'Elementary', intermediate: 'Intermediate', upper_intermediate: 'Upper Intermediate', advanced: 'Advanced', expert: 'Expert' };
+    const levelLabels = { beginner: 'A1 Beginner', elementary: 'A2 Elementary', intermediate: 'B1 Intermediate', upper_intermediate: 'B2 Upper', advanced: 'C1 Advanced', expert: 'C2 Expert' };
 
     const library = {};
     levels.forEach(lvl => {
@@ -166,13 +166,14 @@ Return ONLY JSON:
   "passage": "<engaging story/text with 3 paragraphs>",
   "illustrationPrompt": "<a cartoon-style description for an image of this scene>",
   "questions": [
-    {"id": 1, "question": "Question text here?", "options": ["Real Option 1", "Real Option 2", "Real Option 3", "Real Option 4"], "correct": 0, "explanation": "Detailed explanation why the option is correct."}
+    {"id": 1, "question": "<question>", "options": ["A","B","C","D"], "correct": 0, "explanation": "<why>"},
+    {"id": 2, "question": "<question>", "options": ["A","B","C","D"], "correct": 1, "explanation": "<why>"},
+    {"id": 3, "question": "<question>", "options": ["A","B","C","D"], "correct": 2, "explanation": "<why>"},
+    {"id": 4, "question": "<question>", "options": ["A","B","C","D"], "correct": 3, "explanation": "<why>"}
   ],
-  "vocabulary": [{"word": "example", "definition": "a representative form", "level": "A1"}],
-  "summary": "Short summary of the text"
-}
-
-CRITICAL: Provide EXACTLY 4 questions. Every option MUST be a meaningful phrase or word from the text. DO NOT use "A", "B", "C", "D" as options.`;
+  "vocabulary": [{"word": "<word>", "definition": "<def>", "level": "A1"}],
+  "summary": "<short summary>"
+}`;
 
     const exercise = await generateJSON(prompt);
     res.json({ ...exercise, book });

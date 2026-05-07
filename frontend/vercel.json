@@ -1,12 +1,7 @@
 {
-  "cleanUrls": true,
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "http://localhost:5000/api/:path*"
-    },
-    {
-      "source": "/((?!api/|assets/|static/|favicon.ico|manifest.json|logo192.png|logo512.png|service-worker.js).*)",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ]

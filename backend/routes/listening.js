@@ -1,6 +1,6 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
-import { generateJSON } from '../middleware/ai.js';
+import { generateJSON } from '../middleware/puter.js';
 import Activity from '../models/Activity.js';
 import User from '../models/User.js';
 import { updateStreak } from '../middleware/streak.js';
@@ -131,7 +131,6 @@ router.get('/videos', auth, async (req, res) => {
 
     const library = {};
     const tiers = ['beginner', 'elementary', 'intermediate', 'upper_intermediate', 'advanced', 'expert'];
-    const levelLabels = { beginner: 'Beginner', elementary: 'Elementary', intermediate: 'Intermediate', upper_intermediate: 'Upper Intermediate', advanced: 'Advanced', expert: 'Expert' };
     
     let stopUnlocking = false;
 
@@ -152,12 +151,12 @@ router.get('/videos', auth, async (req, res) => {
       library[tier] = {
         videos: tierVideos,
         label: {
-          beginner: 'Beginner',
-          elementary: 'Elementary',
-          intermediate: 'Intermediate',
-          upper_intermediate: 'Upper Intermediate',
-          advanced: 'Advanced',
-          expert: 'Expert'
+          beginner: '🟢 Beginner (A1)',
+          elementary: '🟡 Elementary (A2)',
+          intermediate: '🟠 Intermediate (B1)',
+          upper_intermediate: '🔴 Upper Intermediate (B2)',
+          advanced: '🔥 Advanced (C1)',
+          expert: '💎 Expert (C2)'
         }[tier],
         progress: Math.round((videos.filter(v => completed.includes(v.id)).length / videos.length) * 100)
       };
@@ -183,15 +182,18 @@ Questions should be appropriate for ${tier.replace('_', ' ')} level English lear
 Return ONLY valid JSON with no markdown:
 {
   "questions": [
-    {"id": 1, "question": "Example question about the main topic?", "options": ["Real Choice 1", "Real Choice 2", "Real Choice 3", "Real Choice 4"], "correct": 0, "explanation": "Explain why Choice 1 is correct based on the video content."}
+    {"id": 1, "question": "<question about main topic>", "options": ["<A>","<B>","<C>","<D>"], "correct": 0, "explanation": "<why correct>"},
+    {"id": 2, "question": "<question about key idea>", "options": ["<A>","<B>","<C>","<D>"], "correct": 1, "explanation": "<explanation>"},
+    {"id": 3, "question": "<vocabulary question>", "options": ["<A>","<B>","<C>","<D>"], "correct": 2, "explanation": "<explanation>"},
+    {"id": 4, "question": "<inference question>", "options": ["<A>","<B>","<C>","<D>"], "correct": 3, "explanation": "<explanation>"},
+    {"id": 5, "question": "<opinion or critical thinking question>", "options": ["<A>","<B>","<C>","<D>"], "correct": 0, "explanation": "<explanation>"}
   ],
   "vocabulary": [
-    {"word": "example", "definition": "representative form", "example": "This is an example sentence."}
+    {"word": "<key word>", "definition": "<clear definition>", "example": "<example sentence>"}
   ],
-  "keyPoints": ["Main point 1", "Main point 2", "Main point 3"],
-  "discussionQuestion": "An open-ended question about the video topic."
-}
-CRITICAL: Include exactly 5 questions. EVERY option must be a real phrase or sentence. DO NOT use "A", "B", "C", "D" as option content.`;
+  "keyPoints": ["<main point 1>", "<main point 2>", "<main point 3>"],
+  "discussionQuestion": "<one open-ended discussion question about the video topic>"
+}`;
 
     const result = await generateJSON(prompt);
     res.json(result);

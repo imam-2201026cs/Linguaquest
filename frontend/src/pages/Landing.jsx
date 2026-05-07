@@ -1,75 +1,52 @@
-// Premium Landing Overhaul - Cinematic Experience
 import { Link } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Zap, Trophy, BookOpen, Headphones, PenTool, CheckSquare, 
-  ArrowRight, Star, Play, X, ChevronLeft, ChevronRight as ChevronRightIcon, 
-  MessageCircle, Brain, Target, ShieldCheck, Sparkles, Globe, 
-  BarChart3, Activity, Command, Cpu, Terminal
-} from 'lucide-react';
+import { Zap, Trophy, BookOpen, Headphones, PenTool, CheckSquare, ArrowRight, Star, Play, X, ChevronLeft, ChevronRight as ChevronRightIcon, MessageCircle, Brain, Target } from 'lucide-react';
 
 /* ── Data ── */
 const features = [
-  { icon: MessageCircle, title: 'AI Mock Interviews', desc: 'Simulate high-stakes vocal interaction with real-time feedback and resume-specific scenarios.', color: 'from-primary-500 to-accent-indigo' },
-  { icon: Brain,        title: 'Neural Vocab Lab',  desc: 'Master new words with our spaced-repetition logic tailored to your specific cognitive patterns.', color: 'from-accent-rose to-primary-500' },
-  { icon: Target,       title: 'Daily Operations',     desc: 'Test your knowledge daily with AI-generated tactical challenges across all difficulty levels.', color: 'from-accent-amber to-accent-gold' },
-  { icon: PenTool,      title: 'Writing Matrix',    desc: 'Get instant high-fidelity feedback with detailed scoring, logical corrections, and highlights.', color: 'from-primary-400 to-accent-indigo'     },
-  { icon: CheckSquare,  title: 'Logic Kernel',      desc: 'Master grammar, idioms, and vocabulary with targeted practice tests designed for efficiency.', color: 'from-accent-amber to-primary-600' },
-  { icon: Headphones,   title: 'Audio Sync',  desc: 'Train your neural pathways with AI-generated audio passages and complex comprehension.', color: 'from-primary-600 to-accent-rose'   },
+  { icon: MessageCircle, title: 'AI Mock Interviews', desc: 'Practice real-world roleplay and upload your resume for personalized professional career interviews.', color: 'from-indigo-500 to-purple-400' },
+  { icon: Brain,        title: 'Vocabulary Builder',  desc: 'Master new words with our spaced-repetition flashcard system tailored to your interactions.', color: 'from-pink-500 to-rose-400' },
+  { icon: Target,       title: 'Daily Challenge',     desc: 'Test your knowledge daily with 10-question AI generated quizzes across all difficulty levels.', color: 'from-yellow-500 to-orange-400' },
+  { icon: PenTool,      title: 'AI Writing Coach',    desc: 'Get instant AI feedback with detailed scoring, corrections, and sentence-level highlights.', color: 'from-blue-500 to-cyan-400'     },
+  { icon: CheckSquare,  title: 'Verbal Ability',      desc: 'Master grammar, idioms, and vocabulary with 30-question targeted practice tests.', color: 'from-amber-500 to-orange-400' },
+  { icon: Headphones,   title: 'Listening Practice',  desc: 'Train your ear with AI-generated passages and comprehension questions.',                      color: 'from-purple-500 to-pink-400'   },
+  { icon: BookOpen,     title: 'Smart Reading',       desc: 'Build comprehension with adaptive reading exercises across all levels.',                       color: 'from-green-500 to-emerald-400' },
 ];
 
 const rawStats = [
-  { target: 50, suffix: 'K+', divisor: 1, label: 'Elite Operatives'      },
-  { target: 12, suffix: 'M+', divisor: 1, label: 'Syncs Completed' },
-  { target: 4.9,   suffix: '★',  divisor: 1,    label: 'Global Rating'         },
-  { target: 99,    suffix: '%',  divisor: 1,    label: 'Fluency Threshold'   },
+  { target: 50000, suffix: 'K+', divisor: 1000, label: 'Learners'      },
+  { target: 1000,  suffix: 'K+', divisor: 1,    label: 'Exercises Done' },
+  { target: 4.9,   suffix: '★',  divisor: 1,    label: 'Rating'         },
+  { target: 98,    suffix: '%',  divisor: 1,    label: 'Success Rate'   },
 ];
 
 const testimonials = [
-  { name: 'Dr. Sarah Vance', role: 'Language Researcher', avatar: 'SV', stars: 5, text: 'LinguaQuest has redefined the boundaries of AI-assisted learning. The feedback loops are unprecedented in their precision.' },
-  { name: 'Marcus Thorne', role: 'Lead Developer', avatar: 'MT', stars: 5, text: 'The gamification logic is addictive, but it\'s the actual linguistic growth that kept me here. My professional fluency soared.' },
-  { name: 'Elena Rossi', role: 'Business Strategist', avatar: 'ER', stars: 5, text: 'A masterclass in modern UI and AI integration. It doesn\'t just teach English; it synchronizes your mind with the language.' },
+  { name: 'Priya S.',    avatar: 'P', stars: 5, text: 'LinguaQuest transformed my English in just 3 weeks! The AI feedback is incredibly detailed.' },
+  { name: 'Ali K.',      avatar: 'A', stars: 5, text: 'The gamification keeps me coming back every single day. I\'ve hit a 21-day streak!' },
+  { name: 'Chen W.',     avatar: 'C', stars: 5, text: 'Best free English tool I\'ve ever used. The writing coach alone is worth it.' },
+  { name: 'Fatima R.',   avatar: 'F', stars: 5, text: 'My IELTS score jumped from 6.0 to 7.5 after two months of daily practice here.' },
+  { name: 'Marco T.',    avatar: 'M', stars: 4, text: 'The sentence-level highlighting showed me mistakes I didn\'t even know I was making.' },
 ];
 
 const QUIZ = [
   { q: 'She __ to school every day.', opts: ['go', 'goes', 'going', 'gone'], correct: 1 },
-  { q: 'Which sentence is logically correct?', opts: ['He don\'t like it.', 'He doesn\'t likes it.', 'He doesn\'t like it.', 'He not like it.'], correct: 2 },
-  { q: 'Choose the most precise synonym for "profound".', opts: ['Shallow', 'Deep', 'Light', 'Obvious'], correct: 1 },
+  { q: 'Which sentence is correct?', opts: ['He don\'t like it.', 'He doesn\'t likes it.', 'He doesn\'t like it.', 'He not like it.'], correct: 2 },
+  { q: 'Choose the best synonym for "happy".', opts: ['Sad', 'Elated', 'Tired', 'Angry'], correct: 1 },
 ];
 
-const LEVEL_MAP = { 0: 'A1 Initiate', 1: 'A2 Associate', 2: 'B1 Specialist', 3: 'B2 Operative' };
+const LEVEL_MAP = { 0: 'A1 Beginner', 1: 'A2 Elementary', 2: 'B1 Intermediate', 3: 'B2 Upper-Intermediate' };
 
 const MODULE_PREVIEW = [
-  { label: 'Interviews', icon: '🗣️', score: 92, badge: 'SYNCED', color: 'from-primary-600 to-accent-indigo' },
-  { label: 'Writing', icon: '✍️', score: 87, badge: 'ANALYZED', color: 'from-primary-500 to-primary-700' },
-  { label: 'Vocabulary', icon: '🧠', score: 98, badge: 'MASTERED', color: 'from-accent-rose to-primary-600' },
-  { label: 'Daily Quiz', icon: '🎯', score: 100, badge: 'PERFECT', color: 'from-accent-amber to-accent-gold' },
+  { label: 'Interviews', icon: '🗣️', score: 92, badge: '+100 XP', color: 'from-indigo-600 to-purple-500' },
+  { label: 'Writing', icon: '✍️', score: 87, badge: '+40 XP', color: 'from-blue-600 to-cyan-500' },
+  { label: 'Vocabulary', icon: '🧠', score: 98, badge: '+25 XP', color: 'from-pink-600 to-rose-500' },
+  { label: 'Daily Quiz', icon: '🎯', score: 100, badge: '+200 XP', color: 'from-yellow-500 to-orange-400' },
+  { label: 'Verbal Test', icon: '⚡', score: 85, badge: '+150 XP', color: 'from-amber-600 to-orange-500' },
+  { label: 'Reading', icon: '📖', score: 95, badge: '+50 XP', color: 'from-green-600 to-emerald-500' },
 ];
 
-/* ── Components ── */
-
-function SectionHeader({ title, subtitle, centered = true, tag = "CORE CAPABILITIES" }) {
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      className={`mb-20 ${centered ? 'text-center' : ''}`}
-    >
-      <div className={`flex items-center gap-3 mb-6 ${centered ? 'justify-center' : ''}`}>
-         <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary-400">{tag}</span>
-         <div className="h-px w-10 bg-primary-500/30" />
-      </div>
-      <h2 className="text-4xl sm:text-5xl md:text-7xl font-display font-black text-white mb-6 tracking-tighter leading-none">
-        {title}
-      </h2>
-      {subtitle && <p className="text-slate-400 text-lg sm:text-xl md:text-2xl max-w-3xl mx-auto leading-relaxed font-medium">{subtitle}</p>}
-    </motion.div>
-  );
-}
-
-function AnimatedStat({ target, suffix, label }) {
+/* ── Animated counter ── */
+function AnimatedStat({ target, suffix, divisor, label }) {
   const [count, setCount] = useState(0);
   const ref = useRef(null);
   const started = useRef(false);
@@ -78,7 +55,7 @@ function AnimatedStat({ target, suffix, label }) {
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting && !started.current) {
         started.current = true;
-        const duration = 2500;
+        const duration = 1800;
         const steps = 60;
         const increment = target / steps;
         let current = 0;
@@ -93,311 +70,338 @@ function AnimatedStat({ target, suffix, label }) {
     return () => observer.disconnect();
   }, [target]);
 
+  const display = divisor > 1
+    ? (count / divisor).toFixed(count >= target ? 0 : 1)
+    : count >= target ? target : count.toFixed(target % 1 !== 0 ? 1 : 0);
+
   return (
-    <div ref={ref} className="text-center group p-8">
-      <div className="text-4xl md:text-6xl font-display font-black text-white mb-3 group-hover:text-primary-400 transition-colors tracking-tighter">
-        {count.toFixed(target % 1 !== 0 ? 1 : 0)}{suffix}
+    <div ref={ref} className="glass-card p-4 text-center">
+      <div className="text-2xl font-display font-bold text-white">{display}{suffix}</div>
+      <div className="text-xs text-slate-400 mt-1">{label}</div>
+    </div>
+  );
+}
+
+/* ── Testimonials carousel ── */
+function Testimonials() {
+  const [idx, setIdx] = useState(0);
+  const prev = () => setIdx(i => (i - 1 + testimonials.length) % testimonials.length);
+  const next = () => setIdx(i => (i + 1) % testimonials.length);
+
+  useEffect(() => {
+    const id = setInterval(next, 4000);
+    return () => clearInterval(id);
+  }, []);
+
+  const t = testimonials[idx];
+  return (
+    <section className="relative z-10 max-w-3xl mx-auto px-6 pb-20">
+      <h2 className="text-3xl font-display font-bold text-white text-center mb-10">What Learners Say</h2>
+      <div className="glass-card p-8 text-center relative">
+        <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-accent-purple rounded-full flex items-center justify-center text-xl font-bold text-white mx-auto mb-4">
+          {t.avatar}
+        </div>
+        <div className="flex justify-center gap-1 mb-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Star key={i} size={14} className={i < t.stars ? 'text-yellow-400 fill-yellow-400' : 'text-slate-600'} />
+          ))}
+        </div>
+        <p className="text-slate-300 italic mb-4 leading-relaxed">"{t.text}"</p>
+        <p className="text-sm font-semibold text-white">{t.name}</p>
+        <div className="flex justify-center gap-2 mt-6">
+          <button onClick={prev} className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all"><ChevronLeft size={16} className="text-slate-400" /></button>
+          <div className="flex gap-1 items-center">
+            {testimonials.map((_, i) => (
+              <button key={i} onClick={() => setIdx(i)}
+                className={`w-2 h-2 rounded-full transition-all ${i === idx ? 'bg-primary-400 w-4' : 'bg-white/20'}`} />
+            ))}
+          </div>
+          <button onClick={next} className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all"><ChevronRightIcon size={16} className="text-slate-400" /></button>
+        </div>
       </div>
-      <div className="text-[10px] uppercase tracking-[0.3em] text-slate-500 font-black group-hover:text-slate-400 transition-colors">{label}</div>
+    </section>
+  );
+}
+
+/* ── Level quiz teaser ── */
+function QuizTeaser() {
+  const [step, setStep] = useState(0);
+  const [score, setScore] = useState(0);
+  const [done, setDone] = useState(false);
+  const [chosen, setChosen] = useState(null);
+
+  const answer = (i) => {
+    if (chosen !== null) return;
+    setChosen(i);
+    const correct = i === QUIZ[step].correct;
+    if (correct) setScore(s => s + 1);
+    setTimeout(() => {
+      if (step + 1 >= QUIZ.length) { setDone(true); }
+      else { setStep(s => s + 1); setChosen(null); }
+    }, 800);
+  };
+
+  const reset = () => { setStep(0); setScore(0); setDone(false); setChosen(null); };
+
+  return (
+    <section className="relative z-10 max-w-2xl mx-auto px-6 pb-20">
+      <h2 className="text-3xl font-display font-bold text-white text-center mb-3">What's Your English Level?</h2>
+      <p className="text-slate-400 text-center mb-8 text-sm">Answer 3 quick questions to find out</p>
+      <div className="glass-card p-6">
+        {!done ? (
+          <>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs text-slate-500">Question {step + 1} of {QUIZ.length}</span>
+              <div className="flex gap-1">
+                {QUIZ.map((_, i) => <div key={i} className={`w-6 h-1.5 rounded-full ${i <= step ? 'bg-primary-500' : 'bg-white/10'}`} />)}
+              </div>
+            </div>
+            <p className="text-white font-semibold mb-4">{QUIZ[step].q}</p>
+            <div className="grid grid-cols-2 gap-3">
+              {QUIZ[step].opts.map((opt, i) => {
+                let cls = 'p-3 rounded-xl border text-sm text-left transition-all cursor-pointer ';
+                if (chosen === null) cls += 'border-white/10 hover:border-primary-500/50 text-slate-300';
+                else if (i === QUIZ[step].correct) cls += 'border-green-500 bg-green-500/10 text-green-300';
+                else if (i === chosen) cls += 'border-red-500 bg-red-500/10 text-red-300';
+                else cls += 'border-white/5 text-slate-600';
+                return <button key={i} onClick={() => answer(i)} className={cls}>{opt}</button>;
+              })}
+            </div>
+          </>
+        ) : (
+          <div className="text-center py-4">
+            <div className="text-5xl mb-3">🎯</div>
+            <p className="text-white font-display font-bold text-xl mb-1">Your Level: {LEVEL_MAP[score]}</p>
+            <p className="text-slate-400 text-sm mb-6">You got {score}/{QUIZ.length} correct</p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link to="/register" className="btn-primary flex items-center justify-center gap-2">Start Learning at Your Level <ArrowRight size={16} /></Link>
+              <button onClick={reset} className="btn-ghost text-sm">Retake Quiz</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+/* ── Live demo mockup ── */
+function LiveDemo() {
+  const [active, setActive] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setActive(i => (i + 1) % MODULE_PREVIEW.length), 2200);
+    return () => clearInterval(id);
+  }, []);
+
+  const m = MODULE_PREVIEW[active];
+  return (
+    <section className="relative z-10 max-w-7xl mx-auto px-6 pb-20">
+      <h2 className="text-3xl font-display font-bold text-white text-center mb-3">See It in Action</h2>
+      <p className="text-slate-400 text-center text-sm mb-10">Watch the modules cycle — this is what you'll see inside</p>
+      <div className="glass-card p-6 max-w-md mx-auto">
+        <div className="flex gap-2 mb-4">
+          {MODULE_PREVIEW.map((mod, i) => (
+            <button key={mod.label} onClick={() => setActive(i)}
+              className={`flex-1 text-xs py-1.5 rounded-lg font-medium transition-all ${i === active ? 'bg-primary-500 text-white' : 'bg-white/5 text-slate-500'}`}>
+              {mod.icon}
+            </button>
+          ))}
+        </div>
+        <div className={`bg-gradient-to-br ${m.color} rounded-xl p-5 text-white transition-all duration-500`}>
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-lg font-bold">{m.icon} {m.label}</span>
+            <span className="text-xs bg-white/20 px-2 py-1 rounded-full">{m.badge}</span>
+          </div>
+          <div className="h-2 bg-white/20 rounded-full overflow-hidden mb-2">
+            <div className="h-full bg-white rounded-full transition-all duration-700" style={{ width: `${m.score}%` }} />
+          </div>
+          <div className="flex justify-between text-xs opacity-80">
+            <span>Score</span><span>{m.score}%</span>
+          </div>
+        </div>
+        <p className="text-xs text-slate-500 text-center mt-4">✨ AI analyses your responses in real-time</p>
+      </div>
+    </section>
+  );
+}
+
+/* ── Video demo modal ── */
+function VideoDemoButton() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button onClick={() => setOpen(true)}
+        className="inline-flex items-center gap-2 border border-white/15 text-slate-300 hover:text-white hover:border-white/30 bg-white/5 hover:bg-white/10 rounded-xl px-6 py-3 text-sm font-medium transition-all">
+        <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center">
+          <Play size={10} className="text-white ml-0.5" />
+        </div>
+        Watch Demo
+      </button>
+      {open && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setOpen(false)}>
+          <div className="glass-card p-8 max-w-lg w-full text-center relative" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setOpen(false)} className="absolute top-3 right-3 text-slate-400 hover:text-white"><X size={18} /></button>
+            <div className="text-5xl mb-4">🎬</div>
+            <h3 className="text-white font-display font-bold text-xl mb-2">Demo Coming Soon</h3>
+            <p className="text-slate-400 text-sm mb-6">A full walkthrough video is being recorded. In the meantime, sign up for free and explore yourself!</p>
+            <Link to="/register" onClick={() => setOpen(false)} className="btn-primary inline-flex items-center gap-2">
+              Try It Free <ArrowRight size={16} />
+            </Link>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+/* ── Floating particles ── */
+function Particles() {
+  const particles = Array.from({ length: 18 }, (_, i) => ({
+    id: i,
+    size: Math.random() * 4 + 2,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    delay: Math.random() * 6,
+    duration: Math.random() * 8 + 6,
+  }));
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+      {particles.map(p => (
+        <div key={p.id}
+          style={{
+            position: 'absolute', left: `${p.x}%`, top: `${p.y}%`,
+            width: p.size, height: p.size, borderRadius: '50%',
+            background: p.id % 3 === 0 ? 'rgba(99,102,241,0.5)' : p.id % 3 === 1 ? 'rgba(168,85,247,0.4)' : 'rgba(251,191,36,0.3)',
+            animation: `floatParticle ${p.duration}s ${p.delay}s infinite ease-in-out alternate`,
+          }}
+        />
+      ))}
+      <style>{`
+        @keyframes floatParticle {
+          0%   { transform: translateY(0px) translateX(0px) scale(1); opacity:0.4; }
+          50%  { transform: translateY(-30px) translateX(15px) scale(1.3); opacity:0.8; }
+          100% { transform: translateY(-55px) translateX(-10px) scale(0.8); opacity:0.2; }
+        }
+      `}</style>
     </div>
   );
 }
 
 /* ── Main Landing ── */
 export default function Landing() {
-  const [activeMod, setActiveMod] = useState(0);
-
-  useEffect(() => {
-    const id = setInterval(() => setActiveMod(i => (i + 1) % MODULE_PREVIEW.length), 4000);
-    return () => clearInterval(id);
-  }, []);
-
   return (
-    <div className="min-h-screen bg-dark-950 overflow-x-hidden selection:bg-primary-500/30 font-sans">
-      
-      {/* Dynamic Background Mesh */}
+    <div className="min-h-screen bg-dark-900 overflow-x-hidden">
+      <Particles />
+
+      {/* Ambient blobs */}
       <div className="fixed inset-0 pointer-events-none z-0">
-         <div className="absolute top-[-10%] left-[-10%] w-[60%] h-[60%] bg-primary-600/10 rounded-full blur-[150px] opacity-40 animate-pulse" />
-         <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-accent-indigo/10 rounded-full blur-[150px] opacity-30 animate-pulse" style={{ animationDelay: '2s' }} />
-         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03] mix-blend-overlay" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-accent-purple/10 rounded-full blur-3xl" />
+        <div className="absolute top-2/3 left-1/2 w-64 h-64 bg-cyan-500/5 rounded-full blur-3xl" />
       </div>
 
-      {/* Navigation */}
-      <nav className="relative z-50 flex items-center justify-between px-8 md:px-16 py-10 max-w-[1600px] mx-auto">
-        <div className="flex items-center gap-4 group cursor-pointer">
-          <div className="w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center font-bold text-white shadow-glow group-hover:scale-110 transition-transform duration-500 border border-white/10">
-            <Sparkles size={28} />
-          </div>
-          <span className="font-display font-black text-3xl text-white tracking-tighter uppercase">Lingua<span className="shimmer-text">Quest</span></span>
+      {/* Nav */}
+      <nav className="relative z-10 flex items-center justify-between p-6 max-w-7xl mx-auto">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-purple rounded-xl flex items-center justify-center font-bold text-white shadow-lg shadow-primary-500/30">LQ</div>
+          <span className="font-display font-bold text-xl text-white">LinguaQuest</span>
         </div>
-        <div className="flex items-center gap-6 md:gap-10">
-          <Link to="/login" className="text-slate-400 hover:text-white font-black text-xs uppercase tracking-widest transition-colors hidden md:block">Login Protocol</Link>
-          <Link to="/register" className="glass-card px-8 py-4 bg-white/5 hover:bg-primary-500 text-white text-xs font-black uppercase tracking-widest border border-white/10 hover:border-primary-400 transition-all shadow-premium group">
-            Initiate Quest <ArrowRight size={14} className="inline-block ml-2 group-hover:translate-x-1 transition-transform" />
-          </Link>
+        <div className="flex items-center gap-3">
+          <Link to="/login" className="btn-ghost text-sm py-2 px-4">Login</Link>
+          <Link to="/register" className="btn-primary text-sm py-2 px-4">Get Started Free</Link>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative z-10 max-w-[1400px] mx-auto px-8 pt-24 pb-40 text-center">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-3 bg-white/5 border border-white/10 rounded-full px-8 py-3 mb-12 text-[10px] font-black text-primary-400 shadow-premium backdrop-blur-xl uppercase tracking-[0.2em]"
-        >
-          <Cpu size={14} className="animate-pulse" /> Neural Processing: Active • High Fidelity Mode
-        </motion.div>
-        
-        <motion.h1 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.2 }}
-          className="font-display text-6xl sm:text-8xl md:text-[11rem] font-black text-white leading-[0.85] mb-12 tracking-tighter"
-        >
-          SYNC YOUR<br />
-          <span className="shimmer-text">POTENTIAL</span>
-        </motion.h1>
-        
-        <motion.p 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.4 }}
-          className="text-xl md:text-3xl text-slate-400 max-w-4xl mx-auto mb-16 font-medium leading-relaxed"
-        >
-          Master the global language through immersive AI operations, neural feedback loops, and tactical linguistic challenges.
-        </motion.p>
-        
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 0.6 }}
-          className="flex flex-col sm:flex-row gap-8 justify-center items-center"
-        >
-          <Link to="/register" className="btn-primary text-sm font-black uppercase tracking-widest px-12 py-6 group shadow-premium scale-110">
-            Join the Hierarchy <ArrowRight size={18} className="inline-block ml-3 group-hover:translate-x-2 transition-transform" />
-          </Link>
-          <button className="flex items-center gap-4 text-white font-black text-xs uppercase tracking-[0.3em] group hover:text-primary-400 transition-colors">
-            <div className="w-14 h-14 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-primary-500/10 transition-all">
-               <Play size={20} className="fill-white group-hover:fill-primary-400" />
-            </div>
-            Watch Intelligence Demo
-          </button>
-        </motion.div>
+      {/* Free badge */}
+      <div className="relative z-10 flex justify-center pt-2 pb-0">
+        <span className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-bold px-4 py-1.5 rounded-full">
+          🎉 100% Free — No credit card required. Ever.
+        </span>
+      </div>
 
-        {/* Stats Grid */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 1 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-12 max-w-6xl mx-auto mt-40 pt-20 border-t border-white/5"
-        >
+      {/* Hero */}
+      <section className="relative z-10 max-w-7xl mx-auto px-6 py-16 text-center">
+        <div className="inline-flex items-center gap-2 bg-primary-500/10 border border-primary-500/20 rounded-full px-4 py-2 mb-8 text-sm text-primary-400 font-medium">
+          <Zap size={14} /> Powered by Gemini AI
+        </div>
+        <h1 className="font-display text-5xl md:text-7xl font-bold text-white leading-tight mb-6">
+          Master English<br />
+          <span className="shimmer-text">Like a Quest</span>
+        </h1>
+        <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 font-body leading-relaxed">
+          Level up your English with immersive AI roleplay, personalized mock interviews, and daily gamified challenges — all designed to keep you motivated.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+          <Link to="/register" className="btn-primary flex items-center justify-center gap-2 text-base py-4 px-8">
+            Start Your Quest <ArrowRight size={18} />
+          </Link>
+          <VideoDemoButton />
+        </div>
+
+        {/* Animated stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto mb-4">
           {rawStats.map(s => <AnimatedStat key={s.label} {...s} />)}
-        </motion.div>
+        </div>
       </section>
 
-      {/* Features Showcase */}
-      <section className="py-40 relative z-10">
-        <SectionHeader 
-          title="Architected for Mastery" 
-          subtitle="Every module is engineered to synchronize your cognitive pathways with linguistic excellence."
-          tag="TACTICAL CAPABILITIES"
-        />
-        <div className="max-w-[1400px] mx-auto px-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {features.map(({ icon: Icon, title, desc, color }, i) => (
-            <motion.div 
-              key={title}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="glass-card p-12 group hover:scale-[1.03] transition-all duration-700 relative overflow-hidden bg-dark-900/20 border-white/5"
-            >
-              <div className="absolute top-0 right-0 w-48 h-48 bg-primary-500/5 rounded-full -mr-24 -mt-24 group-hover:scale-150 transition-transform duration-1000" />
-              <div className={`w-20 h-20 bg-gradient-to-br ${color} rounded-3xl flex items-center justify-center mb-10 shadow-premium group-hover:rotate-12 transition-transform duration-500`}>
-                <Icon size={32} className="text-white" />
-              </div>
-              <h3 className="text-3xl font-display font-black text-white mb-6 tracking-tight uppercase">{title}</h3>
-              <p className="text-slate-500 text-lg leading-relaxed font-medium group-hover:text-slate-400 transition-colors">{desc}</p>
-            </motion.div>
+      {/* Live Demo Preview */}
+      <LiveDemo />
+
+      {/* How it works */}
+      <section className="relative z-10 max-w-7xl mx-auto px-6 pb-20">
+        <h2 className="text-3xl font-display font-bold text-white text-center mb-12">How It Works</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+          {[
+            { step: '01', icon: '📝', title: 'Sign Up Free',   desc: 'Create your account in 30 seconds — no card needed.' },
+            { step: '02', icon: '🎯', title: 'Practice Daily', desc: 'Complete AI-powered exercises across writing, reading, listening and grammar.' },
+            { step: '03', icon: '🏆', title: 'Level Up',       desc: 'Earn XP, climb the leaderboard, and watch your English soar.' },
+          ].map(({ step, icon, title, desc }, i) => (
+            <div key={step} className="glass-card p-6 text-center relative group hover:scale-[1.02] transition-all duration-300">
+              <div className="text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">{icon}</div>
+              <div className="absolute -top-3 -right-3 w-8 h-8 bg-gradient-to-br from-primary-500 to-accent-purple rounded-full flex items-center justify-center text-xs font-bold text-white">{step}</div>
+              <h3 className="font-display font-bold text-white text-lg mb-2">{title}</h3>
+              <p className="text-slate-400 text-sm">{desc}</p>
+              {i < 2 && <div className="hidden md:block absolute top-1/2 -right-4 text-slate-600 text-xl z-10">→</div>}
+            </div>
           ))}
         </div>
       </section>
 
-      {/* Intelligence Visualization */}
-      <section className="py-40 relative z-10 bg-dark-900/10">
-        <div className="max-w-[1400px] mx-auto px-8">
-           <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
-              <div className="space-y-12">
-                 <SectionHeader 
-                   title="Neural Loop Analysis" 
-                   subtitle="Experience real-time intelligence that adapts to your unique linguistic signature."
-                   centered={false}
-                   tag="INTELLIGENCE CORE"
-                 />
-                 <div className="space-y-8">
-                    {MODULE_PREVIEW.map((mod, i) => (
-                       <button 
-                         key={mod.label} 
-                         onClick={() => setActiveMod(i)}
-                         className={`w-full flex items-center justify-between p-8 rounded-[2rem] border transition-all duration-500 ${activeMod === i ? 'bg-primary-500/10 border-primary-500/30' : 'bg-white/2 bg-transparent border-white/5 hover:border-white/10'}`}
-                       >
-                          <div className="flex items-center gap-6">
-                             <div className={`w-12 h-12 rounded-xl bg-dark-950 flex items-center justify-center text-2xl shadow-inner`}>{mod.icon}</div>
-                             <span className={`text-xl font-black uppercase tracking-widest ${activeMod === i ? 'text-white' : 'text-slate-500'}`}>{mod.label}</span>
-                          </div>
-                          <div className={`px-4 py-1.5 rounded-full text-[10px] font-black tracking-[0.2em] ${activeMod === i ? 'bg-primary-500 text-white' : 'bg-white/5 text-slate-700'}`}>
-                             {mod.badge}
-                          </div>
-                       </button>
-                    ))}
-                 </div>
+      {/* Features */}
+      <section className="relative z-10 max-w-7xl mx-auto px-6 pb-20">
+        <h2 className="text-3xl md:text-4xl font-display font-bold text-white text-center mb-12">Everything You Need to Excel</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {features.map(({ icon: Icon, title, desc, color }) => (
+            <div key={title} className="glass-card p-6 hover:border-white/10 hover:scale-[1.02] transition-all duration-300 group">
+              <div className={`w-12 h-12 bg-gradient-to-br ${color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                <Icon size={22} className="text-white" />
               </div>
-
-              <div className="relative group">
-                 <div className="absolute inset-0 bg-primary-500/20 blur-[120px] rounded-full group-hover:scale-110 transition-transform duration-1000" />
-                 <div className="glass-card p-2 bg-gradient-to-br from-primary-500/20 to-transparent border-white/5 overflow-hidden shadow-premium">
-                    <div className="bg-dark-950/80 backdrop-blur-3xl rounded-[2.8rem] p-12 aspect-square flex flex-col justify-between">
-                       <div className="flex items-center justify-between mb-12">
-                          <div className="flex items-center gap-4">
-                             <div className="w-4 h-4 bg-primary-500 rounded-full animate-pulse shadow-glow" />
-                             <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em]">Neural Interface v2.0</span>
-                          </div>
-                          <Terminal size={20} className="text-primary-500" />
-                       </div>
-
-                       <div className="flex-1 flex flex-col items-center justify-center text-center space-y-10">
-                          <AnimatePresence mode="wait">
-                             <motion.div 
-                               key={activeMod}
-                               initial={{ opacity: 0, scale: 0.9 }}
-                               animate={{ opacity: 1, scale: 1 }}
-                               exit={{ opacity: 0, scale: 1.1 }}
-                               className="space-y-8"
-                             >
-                                <div className={`w-32 h-32 md:w-48 md:h-48 rounded-full border-[10px] border-white/5 flex items-center justify-center relative mx-auto`}>
-                                   <svg className="absolute inset-0 w-full h-full -rotate-90 scale-[1.1]" viewBox="0 0 160 160">
-                                      <motion.circle 
-                                        initial={{ strokeDasharray: "0, 440" }}
-                                        animate={{ strokeDasharray: `${(MODULE_PREVIEW[activeMod].score / 100) * 440}, 440` }}
-                                        transition={{ duration: 1.5, ease: "circOut" }}
-                                        cx="80" cy="80" r="70" fill="none" stroke="currentColor" strokeWidth="10" 
-                                        className="text-primary-500 shadow-glow" strokeLinecap="round" 
-                                      />
-                                   </svg>
-                                   <span className="text-5xl md:text-7xl font-display font-black text-white">{MODULE_PREVIEW[activeMod].score}%</span>
-                                </div>
-                                <h4 className="text-2xl font-display font-black text-white uppercase tracking-[0.4em]">{MODULE_PREVIEW[activeMod].label} SYNC</h4>
-                             </motion.div>
-                          </AnimatePresence>
-                       </div>
-
-                       <div className="grid grid-cols-2 gap-6 mt-12">
-                          <div className="p-6 rounded-2xl bg-white/2 border border-white/5">
-                             <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-2">Fluency Threshold</p>
-                             <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                                <motion.div animate={{ width: '85%' }} className="h-full bg-primary-500 shadow-glow" />
-                             </div>
-                          </div>
-                          <div className="p-6 rounded-2xl bg-white/2 border border-white/5">
-                             <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-2">Cognitive Load</p>
-                             <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                                <motion.div animate={{ width: '40%' }} className="h-full bg-accent-emerald shadow-glow" />
-                             </div>
-                          </div>
-                       </div>
-                    </div>
-                 </div>
-              </div>
-           </div>
+              <h3 className="font-display font-bold text-white text-lg mb-2">{title}</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">{desc}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* Trust & Testimonials */}
-      <section className="py-40 relative z-10 border-y border-white/5">
-         <SectionHeader 
-           title="The Elite Opinion" 
-           subtitle="Join a global community of specialists achieving peak linguistic performance."
-           tag="SYNC LOGS"
-         />
-         <div className="max-w-[1400px] mx-auto px-8 grid grid-cols-1 md:grid-cols-3 gap-10">
-            {testimonials.map((t, i) => (
-               <motion.div 
-                 key={t.name}
-                 initial={{ opacity: 0, y: 20 }}
-                 whileInView={{ opacity: 1, y: 0 }}
-                 viewport={{ once: true }}
-                 transition={{ delay: i * 0.1 }}
-                 className="glass-card p-12 bg-dark-900/10 border-white/5 flex flex-col justify-between hover:bg-dark-900/30 transition-all duration-700"
-               >
-                  <div className="space-y-8">
-                     <div className="flex gap-2">
-                        {[...Array(t.stars)].map((_, j) => <Star key={j} size={16} className="text-accent-amber fill-accent-amber drop-shadow-glow" />)}
-                     </div>
-                     <p className="text-xl text-slate-300 italic leading-relaxed font-medium">"{t.text}"</p>
-                  </div>
-                  <div className="flex items-center gap-6 mt-12 pt-8 border-t border-white/5">
-                     <div className="w-16 h-16 rounded-2xl bg-primary-500 flex items-center justify-center font-black text-white text-xl shadow-premium">{t.avatar}</div>
-                     <div>
-                        <h4 className="text-white font-black text-lg uppercase tracking-widest">{t.name}</h4>
-                        <p className="text-primary-400 font-black text-[10px] uppercase tracking-[0.2em] mt-1">{t.role}</p>
-                     </div>
-                  </div>
-               </motion.div>
-            ))}
-         </div>
+      {/* Quiz teaser */}
+      <QuizTeaser />
+
+      {/* Testimonials */}
+      <Testimonials />
+
+      {/* CTA */}
+      <section className="relative z-10 max-w-7xl mx-auto px-6 pb-20">
+        <div className="glass-card p-8 md:p-12 bg-gradient-to-br from-primary-500/10 to-accent-purple/10 border-primary-500/20 text-center">
+          <Trophy size={48} className="text-accent-yellow mx-auto mb-4" />
+          <h2 className="text-3xl font-display font-bold text-white mb-4">Learn. Earn. Compete.</h2>
+          <p className="text-slate-400 max-w-lg mx-auto mb-8">Earn XP for every exercise, maintain daily streaks, collect coins, unlock achievements and climb the global leaderboard.</p>
+          <Link to="/register" className="btn-primary inline-flex items-center gap-2 text-base py-3 px-8">
+            Join Free <ArrowRight size={18} />
+          </Link>
+        </div>
       </section>
 
-      {/* Global Reach Bar */}
-      <section className="py-24 bg-dark-950 overflow-hidden">
-         <div className="flex whitespace-nowrap gap-24 animate-scroll opacity-20 hover:opacity-50 transition-opacity">
-            {[...Array(10)].map((_, i) => (
-               <div key={i} className="flex items-center gap-24 font-display font-black text-6xl text-white tracking-tighter uppercase">
-                  <span>Elite Hierarchy</span>
-                  <div className="w-4 h-4 bg-primary-500 rounded-full" />
-                  <span>Neural Mastery</span>
-                  <div className="w-4 h-4 bg-primary-500 rounded-full" />
-                  <span>Global Synchronization</span>
-                  <div className="w-4 h-4 bg-primary-500 rounded-full" />
-               </div>
-            ))}
-         </div>
-      </section>
-
-      {/* CTA Final Protocol */}
-      <section className="py-60 relative z-10 px-8">
-         <motion.div 
-           initial={{ opacity: 0, scale: 0.95 }}
-           whileInView={{ opacity: 1, scale: 1 }}
-           viewport={{ once: true }}
-           className="max-w-6xl mx-auto glass-card p-24 text-center relative overflow-hidden bg-gradient-to-br from-primary-600/10 to-accent-indigo/10 border-white/10"
-         >
-           <div className="absolute inset-0 bg-mesh opacity-10" />
-           <div className="relative z-10 space-y-12">
-             <Trophy size={100} className="text-accent-amber mx-auto drop-shadow-glow animate-bounce" />
-             <h2 className="text-5xl sm:text-7xl md:text-9xl font-display font-black text-white tracking-tighter uppercase leading-none">Ready for<br /><span className="shimmer-text">Synchronization?</span></h2>
-             <p className="text-xl md:text-3xl text-slate-400 max-w-3xl mx-auto font-medium">Join 50,000+ operatives already optimizing their linguistic performance. The quest begins now.</p>
-             <Link to="/register" className="btn-primary py-8 px-16 text-xs font-black uppercase tracking-[0.4em] group shadow-premium inline-flex items-center gap-6 scale-125 hover:scale-[1.3] transition-transform">
-               Initiate Deployment 
-               <ArrowRight size={20} className="group-hover:translate-x-3 transition-transform" />
-             </Link>
-           </div>
-         </motion.div>
-      </section>
-
-      {/* Footer System */}
-      <footer className="py-24 border-t border-white/5 relative z-10">
-         <div className="max-w-[1600px] mx-auto px-16 flex flex-col md:flex-row items-center justify-between gap-12">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-primary-500 rounded-2xl flex items-center justify-center font-black text-white text-lg shadow-premium">LQ</div>
-              <span className="font-display font-black text-2xl text-white tracking-tight uppercase">LinguaQuest</span>
-            </div>
-            <p className="text-slate-600 text-[10px] font-black tracking-[0.4em] uppercase">© 2026 ARCHITECTED FOR EXCELLENCE • ALL SYSTEMS OPERATIONAL</p>
-            <div className="flex gap-12 text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
-              <a href="#" className="hover:text-primary-400 transition-colors">Privacy</a>
-              <a href="#" className="hover:text-primary-400 transition-colors">Protocol</a>
-              <a href="#" className="hover:text-primary-400 transition-colors">Intelligence</a>
-            </div>
-         </div>
+      <footer className="relative z-10 text-center py-8 text-slate-600 text-sm border-t border-white/5">
+        © 2025 LinguaQuest — AI-Powered English Learning
       </footer>
     </div>
   );

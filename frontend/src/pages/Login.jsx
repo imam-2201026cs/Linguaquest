@@ -1,32 +1,29 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, Mail, Lock, Eye, EyeOff, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Zap, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-function FloatingShapes() {
+/* ── Floating label field ── */
+function FloatField({ icon: Icon, label, type = 'text', value, onChange, required, children }) {
+  const [focused, setFocused] = useState(false);
+  const floated = focused || value.length > 0;
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      <motion.div 
-        animate={{ 
-          y: [0, -20, 0],
-          rotate: [0, 10, 0],
-          scale: [1, 1.1, 1]
-        }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-[15%] left-[10%] w-96 h-96 bg-primary-500/10 rounded-full blur-[100px]" 
-      />
-      <motion.div 
-        animate={{ 
-          y: [0, 30, 0],
-          rotate: [0, -15, 0],
-          scale: [1, 1.05, 1]
-        }}
-        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-        className="absolute bottom-[20%] right-[10%] w-[500px] h-[500px] bg-accent-indigo/10 rounded-full blur-[120px]" 
-      />
-      <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(5,1,29,0)_0%,rgba(3,0,20,1)_100%)]" />
+    <div className="relative mt-1">
+      <div className="relative">
+        <Icon size={16} className={`absolute left-3.5 top-3.5 transition-colors ${focused ? 'text-primary-400' : 'text-slate-500'}`} />
+        <input
+          type={type} value={value} onChange={onChange}
+          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
+          required={required}
+          placeholder=" "
+          className={`input-field pl-10 pt-5 pb-2 peer ${children ? 'pr-10' : ''}`}
+        />
+        <label className={`absolute left-10 pointer-events-none transition-all duration-200 ${floated ? 'top-1.5 text-[10px] text-primary-400' : 'top-3.5 text-sm text-slate-500'}`}>
+          {label}
+        </label>
+      </div>
+      {children}
     </div>
   );
 }
@@ -39,6 +36,7 @@ export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  // Pre-fill email if remembered
   useEffect(() => {
     const saved = localStorage.getItem('lq_saved_email');
     if (saved) setForm(f => ({ ...f, email: saved }));
@@ -66,107 +64,69 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-950 flex items-center justify-center p-6 relative overflow-hidden selection:bg-primary-500/30">
-      <FloatingShapes />
+    <div className="min-h-screen bg-dark-900 flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl pointer-events-none" />
 
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="relative z-10 w-full max-w-md"
-      >
-        <div className="text-center mb-10">
-          <Link to="/" className="inline-flex items-center gap-3 mb-8 group">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center font-bold text-white shadow-glow group-hover:rotate-12 transition-transform duration-500">
-              <Sparkles size={24} />
-            </div>
-            <span className="font-display font-bold text-2xl text-white tracking-tight">LinguaQuest</span>
+      <div className="relative z-10 w-full max-w-md">
+        <div className="text-center mb-8">
+          <Link to="/" className="inline-flex items-center gap-2 mb-6">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-accent-purple rounded-xl flex items-center justify-center font-bold text-white">LQ</div>
+            <span className="font-display font-bold text-xl text-white">LinguaQuest</span>
           </Link>
-          <h1 className="text-4xl font-display font-bold text-white mb-3 tracking-tight">Welcome Back</h1>
-          <p className="text-slate-400 font-medium tracking-wide">Continue your mission to English mastery.</p>
+          <h1 className="text-3xl font-display font-bold text-white mb-2">Welcome Back!</h1>
+          <p className="text-slate-400">Continue your English journey</p>
         </div>
 
-        <div className="glass-card p-6 sm:p-10 border-white/5 bg-dark-900/40 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full -mr-16 -mt-16" />
-          
-          <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Email Protocol</label>
-              <div className="relative">
-                <Mail size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" />
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={e => setForm(p => ({ ...p, email: e.target.value }))}
-                  className="input-field pl-14"
-                  placeholder="name@example.com"
-                  required
-                />
+        <div className="glass-card p-8">
+          {/* OAuth placeholder */}
+          <button type="button" onClick={() => toast('Google sign-in coming soon!')}
+            className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-all mb-4 text-sm font-medium">
+            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.5 6.5 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 16 18.9 13 24 13c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.5 6.5 29.5 4 24 4 16.4 4 9.8 8.4 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.4 35.4 26.8 36 24 36c-5.3 0-9.7-3.3-11.3-8H6.4C9.8 35.6 16.4 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.3-2.3 4.2-4.2 5.6l6.2 5.2C37.1 40.5 44 35 44 24c0-1.3-.1-2.6-.4-3.9z"/></svg>
+            Continue with Google
+          </button>
+
+          <div className="flex items-center gap-3 mb-5">
+            <div className="flex-1 h-px bg-white/10" />
+            <span className="text-xs text-slate-500">or with email</span>
+            <div className="flex-1 h-px bg-white/10" />
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <FloatField icon={Mail} label="Email" type="email" value={form.email}
+              onChange={e => setForm(p => ({ ...p, email: e.target.value }))} required />
+
+            <FloatField icon={Lock} label="Password" type={showPw ? 'text' : 'password'}
+              value={form.password}
+              onChange={e => setForm(p => ({ ...p, password: e.target.value }))} required>
+              <button type="button" onClick={() => setShowPw(p => !p)}
+                className="absolute right-3.5 top-3.5 text-slate-500 hover:text-slate-300">
+                {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </FloatField>
+
+            {/* Remember me */}
+            <label className="flex items-center gap-3 cursor-pointer select-none group">
+              <div
+                onClick={() => setRememberMe(v => !v)}
+                className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${rememberMe ? 'bg-primary-500 border-primary-500' : 'border-white/20 group-hover:border-primary-500/50'}`}>
+                {rememberMe && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
               </div>
-            </div>
+              <span className="text-sm text-slate-400 group-hover:text-slate-300 transition-colors">Remember me</span>
+            </label>
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Secure Key</label>
-              <div className="relative">
-                <Lock size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-500" />
-                <input
-                  type={showPw ? 'text' : 'password'}
-                  value={form.password}
-                  onChange={e => setForm(p => ({ ...p, password: e.target.value }))}
-                  className="input-field pl-14 pr-14"
-                  placeholder="••••••••"
-                  required
-                />
-                <button 
-                  type="button" 
-                  onClick={() => setShowPw(!showPw)}
-                  className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
-                >
-                  {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between px-1">
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <div 
-                  onClick={() => setRememberMe(!rememberMe)}
-                  className={`w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all duration-300 ${rememberMe ? 'bg-primary-500 border-primary-500' : 'border-white/10 group-hover:border-primary-500/30'}`}
-                >
-                  {rememberMe && <ShieldCheck size={12} className="text-white" />}
-                </div>
-                <span className="text-xs font-bold text-slate-400 group-hover:text-slate-300 transition-colors">Remember Session</span>
-              </label>
-              <Link to="/register" className="text-xs font-bold text-primary-400 hover:text-primary-300 transition-colors">Forgot Access?</Link>
-            </div>
-
-            <button 
-              type="submit" 
-              className="btn-primary w-full py-5 text-base flex items-center justify-center gap-3 shadow-glow"
-              disabled={loading}
-            >
-              {loading ? (
-                <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  Enter Training Grounds <ArrowRight size={20} />
-                </>
-              )}
+            <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2 py-3" disabled={loading}>
+              {loading
+                ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                : <><Zap size={16} /> Login</>}
             </button>
           </form>
 
-          <div className="mt-10 pt-8 border-t border-white/5 text-center">
-            <p className="text-slate-400 text-sm font-medium">
-              New recruit?{' '}
-              <Link to="/register" className="text-white font-black hover:text-primary-400 transition-colors ml-1 uppercase tracking-wider text-xs">Create Account</Link>
-            </p>
-          </div>
+          <p className="text-center text-slate-400 text-sm mt-6">
+            New to LinguaQuest?{' '}
+            <Link to="/register" className="text-primary-400 hover:text-primary-300 font-medium">Create account</Link>
+          </p>
         </div>
-
-        <p className="text-center mt-10 text-slate-600 text-[10px] font-black uppercase tracking-[0.2em] leading-relaxed">
-          Artisan Crafted for Excellence<br />
-          © 2025 LinguaQuest Systems
-        </p>
-      </motion.div>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
-import { generateJSON } from '../middleware/ai.js';
+import { generateJSON } from '../middleware/puter.js';
 import Activity from '../models/Activity.js';
 import User from '../models/User.js';
 import { updateStreak } from '../middleware/streak.js';
@@ -78,22 +78,22 @@ router.post('/quiz/generate', auth, async (req, res) => {
     const { level = 'intermediate' } = req.body;
 
     const prompt = `Create a grammar quiz for ${level} English learners.
-    
-    Return ONLY JSON:
+
+Return ONLY JSON:
+{
+  "questions": [
     {
-      "questions": [
-        {
-          "id": 1,
-          "question": "Choose the correct sentence?",
-          "options": ["The cat is sitting on the table.", "The cat are sitting on the table.", "The cat sitting on the table.", "The cat is sit on the table."],
-          "correct": 0,
-          "explanation": "Subject-verb agreement: 'The cat' is singular, so it takes 'is'.",
-          "hint": "Check the verb form.",
-          "topic": "Subject-Verb Agreement"
-        }
-      ]
+      "id": 1,
+      "question": "<fill in the blank or choose correct sentence>",
+      "options": ["<A>", "<B>", "<C>", "<D>"],
+      "correct": 0,
+      "explanation": "<grammar rule explanation>",
+      "hint": "<a helpful hint without giving away the exact answer>",
+      "topic": "<Tense/Articles/Prepositions/etc>"
     }
-    Include exactly 5 unique, high-quality questions covering different grammar topics. Return ONLY the JSON. DO NOT use placeholders.`;
+  ]
+}
+Include exactly 5 questions covering different grammar topics. Return ONLY the JSON.`;
 
     const quiz = await generateJSON(prompt);
     res.json(quiz);

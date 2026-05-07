@@ -1,82 +1,108 @@
-// Premium Listening Nexus Overhaul - Auditory Intelligence Edition
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-import toast from 'react-hot-toast';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Play, CheckCircle, Lock, ArrowLeft, Headphones, 
-  Youtube, Music, Activity, Target, Shield, Clock, 
-  Search, Volume2, Languages, Sparkles, Trophy, ChevronRight,
-  RefreshCw, X, Zap, Cpu, Terminal, BarChart2, ShieldCheck, ZapOff
-} from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import XPReward from '../components/XPReward';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import axios from "axios";
+import toast from "react-hot-toast";
 
-const TIER_ICONS = { 
-  beginner: '🌱', elementary: '🏰', intermediate: '🔍', 
-  upper_intermediate: '🌍', advanced: '🎩', expert: '💎' 
-};
+// ALL video IDs verified from YouTube search results May 2025
+// Video Library is now fetched from backend for structured progression tracking.
 
 export default function Listening() {
-  const { user, fetchProfile } = useAuth();
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("videos");
-  const [videoLibrary, setVideoLibrary] = useState({});
-  const [selectedVideo, setSelectedVideo] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [userLevel, setUserLevel]           = useState(1);
+  const [activeTab, setActiveTab]           = useState("videos");
+  const [selectedVideo, setSelectedVideo]   = useState(null);
+  const [questions, setQuestions]           = useState([]);
+  const [answers, setAnswers]               = useState({});
+  const [result, setResult]                 = useState(null);
+  const [loading, setLoading]               = useState(false);
+  const [vocabulary, setVocabulary]         = useState([]);
+  const [videoLibrary, setVideoLibrary]     = useState({});
   const [completedCount, setCompletedCount] = useState(0);
 
-  // Passage mode state
-  const [topic, setTopic] = useState("");
-  const [passageLoading, setPassageLoading] = useState(false);
-  const [passage, setPassage] = useState("");
-  const [passageQuestions, setPassageQuestions] = useState([]);
-  const [passageAnswers, setPassageAnswers] = useState({});
-  const [passageResult, setPassageResult] = useState(null);
+  // AI Passage mode
+  const [topic, setTopic]                         = useState("");
+  const [passage, setPassage]                     = useState("");
+  const [passageQuestions, setPassageQuestions]   = useState([]);
+  const [passageAnswers, setPassageAnswers]       = useState({});
+  const [passageResult, setPassageResult]         = useState(null);
+  const [passageLoading, setPassageLoading]       = useState(false);
+
+  const fetchLibrary = async () => {
+    try {
+      const res = await axios.get("/api/listening/videos");
+      setVideoLibrary(res.data.library || {});
+      setCompletedCount(res.data.completedCount || 0);
+    } catch (err) { 
+      console.error("Failed to fetch library", err); 
+      toast.error("Could not load video library");
+    }
+  };
 
   useEffect(() => {
     fetchLibrary();
   }, []);
 
-  const fetchLibrary = async () => {
-    try {
-      const res = await axios.get("/api/listening/library");
-      setVideoLibrary(res.data.library);
-      setCompletedCount(res.data.completedCount);
-    } catch (err) {
-      toast.error("Lexical uplink failed.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const isUnlocked = (minLevel) => userLevel >= minLevel;
 
   const handleSelectVideo = (video) => {
     setSelectedVideo(video);
+    setQuestions([]);
+    setAnswers({});
+    setResult(null);
+    setVocabulary([]);
   };
 
-  const handleCompleteVideo = async (xp) => {
+  const handleGenerateQuestions = async () => {
+    if (!selectedVideo) return;
+    setLoading(true);
     try {
-      await axios.post("/api/listening/complete", { videoId: selectedVideo.id, xpEarned: xp });
-      toast.success("Mission success! XP synchronized.");
-      fetchLibrary();
-      fetchProfile();
-      setSelectedVideo(null);
-    } catch (err) {
-      toast.error("Telemetry report failed.");
+      const res = await axios.post("/api/listening/video-questions", {
+        title: selectedVideo.title, 
+        topic: selectedVideo.topic, 
+        videoId: selectedVideo.id,
+        description: selectedVideo.topic, // Fallback for description
+        level: userLevel 
+      });
+      setQuestions(res.data.questions || []);
+      setVocabulary(res.data.vocabulary || []);
+    } catch (err) { 
+      console.error(err);
+      toast.error("Failed to generate questions.");
     }
+    setLoading(false);
   };
 
-  const generatePassage = async () => {
+  const handleSubmitAnswers = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.post("/api/listening/submit", { 
+        questions, 
+        answers: Object.keys(answers).map(i => ["A","B","C","D"].indexOf(answers[i])),
+        topic: selectedVideo.title,
+        videoId: selectedVideo.id,
+        mode: "video"
+      });
+      setResult({ ...res.data, feedback: res.data.score >= 70 ? "Great job! Lesson completed." : "Good effort! Try again to unlock the next lesson." });
+      if (res.data.score >= 70) {
+        toast.success("🎉 Lesson Mastered! Next lesson unlocked.", { icon: "🔥", duration: 4000 });
+        fetchLibrary(); 
+      }
+    } catch (err) { 
+      console.error(err);
+      toast.error("Failed to submit answers.");
+    }
+    setLoading(false);
+  };
+
+  const handleGeneratePassage = async () => {
     if (!topic.trim()) return;
     setPassageLoading(true);
     setPassage(""); setPassageQuestions([]); setPassageAnswers({}); setPassageResult(null);
     try {
-      const res = await axios.post("/api/listening/generate-passage", { topic, level: user?.level || 1 });
+      const res = await axios.post("/api/listening/generate-passage", { topic, level: userLevel });
       setPassage(res.data.passage || "");
       setPassageQuestions(res.data.questions || []);
     } catch (err) { 
-      toast.error("Neural passage generation failed.");
+      console.error(err);
+      toast.error("Failed to generate AI passage.");
     }
     setPassageLoading(false);
   };
@@ -90,319 +116,327 @@ export default function Listening() {
         topic: topic,
         mode: "passage"
       });
-      setPassageResult({ ...res.data, feedback: res.data.score >= 70 ? "Comprehension verified." : "Signal noise detected. Re-analyze." });
-      fetchProfile();
+      setPassageResult({ ...res.data, feedback: res.data.score >= 70 ? "Excellent comprehension!" : "Keep practicing! AI passages help build focus." });
     } catch (err) { 
-      toast.error("Analysis failed.");
+      console.error(err);
+      toast.error("Failed to submit answers.");
     }
     setPassageLoading(false);
   };
 
-  if (loading) return (
-    <div className="flex flex-col items-center justify-center h-[75vh] gap-12">
-      <div className="relative">
-        <div className="w-32 h-32 border-[8px] border-white/5 rounded-full" />
-        <div className="w-32 h-32 border-[8px] border-primary-500 border-t-transparent rounded-full animate-spin absolute top-0 left-0" />
-        <Headphones size={48} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary-500 animate-pulse" />
-      </div>
-      <div className="text-center space-y-4">
-         <p className="text-3xl font-display font-black text-white tracking-tighter uppercase">Decrypting Audio Streams</p>
-         <p className="text-slate-500 font-black text-xs uppercase tracking-[0.3em]">Neural engine mapping auditory frequencies...</p>
-      </div>
-    </div>
-  );
-
   return (
-    <div className="max-w-7xl mx-auto space-y-12 animate-slide-up pb-32 px-6">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-10">
-        <div className="max-w-2xl">
-           <div className="flex items-center gap-3 mb-4">
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-primary-400">Auditory Intelligence Matrix</span>
-              <div className="h-px w-12 bg-primary-500/30" />
-           </div>
-           <h1 className="text-4xl md:text-6xl font-display font-black text-white tracking-tighter leading-none mb-4">
-             Listening <span className="shimmer-text">Nexus</span>
-           </h1>
-           <p className="text-slate-400 text-lg font-medium leading-relaxed">
-             High-fidelity audio analysis with real-time neural comprehension mapping.
-           </p>
-        </div>
+    <div style={{ maxWidth: 920, margin: "0 auto", padding: "24px 16px", fontFamily: "sans-serif" }}>
+      <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 4 }}>🎬 Listening</h1>
+      <p style={{ color: "#6b7280", marginBottom: 24 }}>
+        Watch real YouTube videos or practice with AI-generated passages.
+      </p>
 
-        <div className="flex p-2 bg-dark-950/60 rounded-[2.5rem] border border-white/5 gap-2 backdrop-blur-3xl shadow-premium">
-           {[["videos", Youtube, "Videos"], ["passages", Music, "AI Passages"]].map(([key, Icon, label]) => (
-             <button 
-               key={key} 
-               onClick={() => setActiveTab(key)}
-               className={`flex items-center gap-3 px-8 py-4 rounded-3xl text-[10px] font-black uppercase tracking-[0.3em] transition-all duration-700 ${activeTab === key ? 'bg-primary-500 text-white shadow-glow scale-105' : 'text-slate-500 hover:text-slate-200 hover:bg-white/5'}`}
-             >
-               <Icon size={18}/> {label}
-             </button>
-           ))}
-        </div>
+      {/* TABS */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 28 }}>
+        {[["videos", "📹 Video Library"], ["passages", "🎧 AI Passages"]].map(([key, label]) => (
+          <button key={key} onClick={() => setActiveTab(key)} style={{
+            padding: "8px 20px", borderRadius: 8, border: "none", cursor: "pointer",
+            fontWeight: 600, fontSize: 14,
+            background: activeTab === key ? "#6366f1" : "#f3f4f6",
+            color: activeTab === key ? "#fff" : "#374151",
+          }}>
+            {label}
+          </button>
+        ))}
       </div>
 
-      {/* VIDEO LIBRARY ROADMAP */}
+      {/* CURRICULUM ROADMAP */}
       {activeTab === "videos" && !selectedVideo && (
-        <div className="space-y-16 animate-slide-up">
-          <div className="glass-card p-12 border-white/5 bg-dark-900/40 relative overflow-hidden group shadow-premium">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/5 rounded-full -mr-32 -mt-32 group-hover:scale-150 transition-transform duration-1000 blur-3xl" />
-            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-12">
-               <div className="space-y-6 text-center lg:text-left max-w-2xl">
-                  <div className="inline-flex items-center gap-3 bg-primary-500/10 px-6 py-2 rounded-full text-[10px] font-black text-primary-400 uppercase tracking-[0.3em] border border-primary-500/20 shadow-glow-sm">
-                     <Activity size={16} className="animate-pulse" /> Decryption Active
-                  </div>
-                  <h2 className="text-4xl md:text-5xl font-display font-black text-white tracking-tighter uppercase">{completedCount} Missions Deciphered</h2>
-                  <p className="text-slate-400 text-xl font-medium leading-relaxed">Progressing through curated authentic audio missions from A1 to C2 Mastery.</p>
-               </div>
-               <div className="text-center lg:text-right bg-dark-950/60 p-10 rounded-[3rem] border border-white/5 shadow-inner min-w-[240px]">
-                  <p className="text-6xl md:text-7xl font-display font-black text-white tracking-tighter">{Math.min(100, Math.round((completedCount/90)*100))}%</p>
-                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] mt-4">Sync Proficiency</p>
-               </div>
+        <div style={{ paddingBottom: 40 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, background: "rgba(99,102,241,0.1)", padding: "12px 20px", borderRadius: 12, border: "1px solid rgba(99,102,241,0.2)" }}>
+            <div>
+              <div style={{ fontSize: 13, color: "#818cf8", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>Your Path</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: "#fff" }}>{completedCount} Lessons Mastered</div>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: 24, fontWeight: 800, color: "#818cf8" }}>{Math.min(100, Math.round((completedCount/90)*100))}%</div>
+              <div style={{ fontSize: 11, color: "#94a3b8" }}>Overall Progress</div>
             </div>
           </div>
 
-          <div className="space-y-24">
-            {Object.entries(videoLibrary).map(([levelKey, levelData]) => (
-              <div key={levelKey} className="relative">
-                <div className="flex items-center gap-6 mb-12 sticky top-0 z-20 py-6 bg-dark-950/60 backdrop-blur-2xl border-b border-white/5">
-                  <div className="w-16 h-16 bg-primary-500/10 border border-primary-500/20 rounded-[2rem] flex items-center justify-center text-3xl shadow-glow-sm shrink-0 group">
-                     <span className="group-hover:scale-125 transition-transform duration-500">{TIER_ICONS[levelKey.toLowerCase()] || '🎧'}</span>
+          {Object.entries(videoLibrary).map(([levelKey, levelData]) => {
+            return (
+              <div key={levelKey} style={{ marginBottom: 40 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 16 }}>
+                  <div>
+                    <h2 style={{ fontSize: 20, fontWeight: 800, margin: 0, color: "#fff" }}>{levelData.label}</h2>
+                    <p style={{ fontSize: 13, color: "#94a3b8", margin: "4px 0 0 0" }}>{levelData.videos.length} Progressive Lessons</p>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h2 className="text-3xl font-display font-black text-white tracking-tight uppercase tracking-[0.1em] truncate">{levelData.label}</h2>
-                    <div className="flex items-center gap-4 mt-3">
-                      <div className="flex-1 h-2 bg-dark-950 rounded-full overflow-hidden max-w-[300px] p-0.5 border border-white/5">
-                        <motion.div 
-                           initial={{ width: 0 }}
-                           animate={{ width: `${levelData.progress}%` }}
-                           className={`h-full ${levelData.progress === 100 ? 'bg-accent-emerald shadow-glow-emerald' : 'bg-primary-500 shadow-glow'} rounded-full`} 
-                        />
-                      </div>
-                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] shrink-0">{levelData.progress}% MAPPED</span>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: levelData.progress === 100 ? "#22c55e" : "#818cf8" }}>
+                      {levelData.progress}% Complete
+                    </div>
+                    <div style={{ width: 120, height: 6, background: "rgba(255,255,255,0.05)", borderRadius: 10, marginTop: 6, overflow: "hidden" }}>
+                      <div style={{ width: `${levelData.progress}%`, height: "100%", background: levelData.progress === 100 ? "#22c55e" : "#6366f1", transition: "width 0.5s ease" }} />
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>
                   {levelData.videos.map((video, idx) => (
-                    <motion.button
+                    <button
                       key={video.id}
-                      whileHover={video.unlocked ? { y: -10, scale: 1.02 } : {}}
                       onClick={() => video.unlocked && handleSelectVideo(video)}
                       disabled={!video.unlocked}
-                      className={`relative group rounded-[3rem] overflow-hidden border transition-all duration-700 flex flex-col text-left shadow-premium ${
-                        video.completed 
-                        ? 'bg-accent-emerald/5 border-accent-emerald/20' 
-                        : video.unlocked 
-                        ? 'bg-dark-900/40 border-white/5 hover:border-primary-500/50 hover:bg-white/5'
-                        : 'bg-dark-950/40 border-white/5 opacity-40 grayscale cursor-not-allowed'
-                      }`}
+                      style={{
+                        padding: 0, border: "none", textAlign: "left",
+                        borderRadius: 16, overflow: "hidden",
+                        border: video.completed ? "2px solid #22c55e" : video.unlocked ? "2px solid rgba(99,102,241,0.3)" : "2px solid rgba(255,255,255,0.05)",
+                        cursor: video.unlocked ? "pointer" : "not-allowed",
+                        background: video.completed ? "rgba(34, 197, 94, 0.05)" : video.unlocked ? "rgba(255,255,255,0.02)" : "rgba(255,255,255,0.01)",
+                        display: "block", width: "100%",
+                        position: "relative", transition: "all 0.2s",
+                        opacity: video.unlocked ? 1 : 0.6
+                      }}
+                      className={video.unlocked ? "video-card-mobile" : ""}
                     >
-                      <div className="relative aspect-video bg-black overflow-hidden group">
+                      <div style={{ position: "relative", background: "#000", height: 140 }}>
                         <img
                           src={`https://img.youtube.com/vi/${video.youtubeId}/mqdefault.jpg`}
                           alt={video.title}
-                          className={`w-full h-full object-cover transition-transform duration-1000 ${video.unlocked ? 'group-hover:scale-110 group-hover:rotate-1' : 'opacity-20'}`}
+                          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", opacity: video.unlocked ? 1 : 0.3 }}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-dark-900 via-dark-900/40 to-transparent opacity-80" />
-                        
-                        {video.completed ? (
-                          <div className="absolute top-4 right-4 w-10 h-10 bg-accent-emerald rounded-2xl flex items-center justify-center shadow-glow z-10 border border-white/10">
-                            <CheckCircle size={20} className="text-white" />
-                          </div>
-                        ) : !video.unlocked ? (
-                          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-dark-950/60 backdrop-blur-sm">
-                            <Lock size={32} className="text-slate-600" />
-                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Encrypted</span>
-                          </div>
-                        ) : (
-                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 scale-90 group-hover:scale-100">
-                             <div className="w-16 h-16 bg-primary-500 rounded-full flex items-center justify-center shadow-glow border-4 border-white/20">
-                                <Play size={28} className="text-white ml-1.5" />
-                             </div>
+                        {video.completed && (
+                          <div style={{ position: "absolute", top: 8, right: 8, background: "#22c55e", color: "#fff", borderRadius: "50%", width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, boxShadow: "0 2px 8px rgba(0,0,0,0.3)" }}>
+                            ✓
                           </div>
                         )}
-                        
-                        {video.unlocked && (
-                           <div className="absolute bottom-4 left-4 flex gap-3">
-                              <span className="bg-dark-950/90 backdrop-blur-md px-3 py-1 rounded-xl text-[10px] font-black text-white uppercase tracking-[0.2em] border border-white/10 shadow-inner">
-                                {video.duration}
-                              </span>
-                           </div>
+                        {!video.unlocked && (
+                          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                            <span style={{ fontSize: 24 }}>🔒</span>
+                            <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 700, textTransform: "uppercase" }}>Complete Previous Lesson</span>
+                          </div>
+                        )}
+                        {video.unlocked && !video.completed && (
+                          <div style={{ position: "absolute", bottom: 8, left: 8, background: "#6366f1", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 4, textTransform: "uppercase" }}>
+                            Start Lesson {idx + 1}
+                          </div>
                         )}
                       </div>
-
-                      <div className="p-8 md:p-10 space-y-6">
-                        <h4 className="text-xl md:text-2xl font-display font-black text-white tracking-tighter group-hover:text-primary-400 transition-colors line-clamp-2 min-h-[64px] uppercase">
-                          {video.title}
-                        </h4>
-                        <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                           <span className="text-[10px] font-black text-slate-600 uppercase tracking-[0.3em]">Sequence 0{idx + 1}</span>
-                           <span className={`text-[10px] font-black uppercase tracking-[0.3em] ${video.completed ? 'text-accent-emerald' : 'text-primary-400 animate-pulse'}`}>
-                             {video.completed ? 'Synchronized' : 'Analyze Signal'}
-                           </span>
+                      <div style={{ padding: "14px" }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: video.unlocked ? "#fff" : "#64748b", lineHeight: 1.4, marginBottom: 4 }}>
+                          {idx + 1}. {video.title}
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 10 }}>
+                          <span style={{ fontSize: 11, color: "#64748b" }}>{video.duration}</span>
+                          <span style={{ fontSize: 10, background: "rgba(255,255,255,0.05)", borderRadius: 4, padding: "2px 6px", color: "#94a3b8" }}>{video.topic}</span>
                         </div>
                       </div>
-                    </motion.button>
+                    </button>
                   ))}
                 </div>
               </div>
-            ))}
+            );
+          })}
+        </div>
+      )}
+
+      {/* VIDEO PLAYER */}
+      {activeTab === "videos" && selectedVideo && (
+        <div>
+          <button
+            onClick={() => { setSelectedVideo(null); setQuestions([]); setAnswers({}); setResult(null); }}
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "8px 16px", cursor: "pointer", fontSize: 13, marginBottom: 16, color: "#fff", display: "flex", alignItems: "center", gap: 6 }}>
+            ← Back to Library
+          </button>
+
+          <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 20, color: "#fff" }}>▶️ {selectedVideo.title}</h3>
+
+          <div style={{ position: "relative", paddingBottom: "56.25%", height: 0, borderRadius: 12, overflow: "hidden", marginBottom: 20 }}>
+            <iframe
+              src={`https://www.youtube.com/embed/${selectedVideo.youtubeId}?rel=0`}
+              title={selectedVideo.title}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }}
+            />
           </div>
+
+          {questions.length === 0 && (
+            <p style={{ color: "#94a3b8", fontSize: 13, marginBottom: 16 }}>
+              💡 <b>To Complete:</b> Pass the quiz with <b>70% or higher</b> to unlock the next lesson!
+            </p>
+          )}
+
+          {questions.length === 0 ? (
+            <button onClick={handleGenerateQuestions} disabled={loading}
+              style={{ background: "#6366f1", color: "#fff", border: "none", borderRadius: 8, padding: "10px 24px", fontWeight: 600, cursor: "pointer", fontSize: 14, opacity: loading ? 0.7 : 1 }}>
+              {loading ? "Generating questions..." : "🧠 Test Me on This Video"}
+            </button>
+          ) : (
+            <div>
+              {vocabulary.length > 0 && (
+                <div style={{ marginBottom: 24, padding: 16, background: "rgba(99,102,241,0.05)", borderRadius: 12, border: "1px solid rgba(99,102,241,0.1)" }}>
+                  <div style={{ fontWeight: 700, marginBottom: 12, fontSize: 15, color: "#818cf8", display: "flex", alignItems: "center", gap: 8 }}>
+                    <span>📚</span> Key Vocabulary
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+                    {vocabulary.map((v, i) => (
+                      <div key={i} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, padding: "8px 12px" }}>
+                        <span style={{ fontWeight: 700, color: "#fff", fontSize: 13 }}>{typeof v === 'string' ? v : v.word}:</span>
+                        <span style={{ color: "#94a3b8", fontSize: 12, marginLeft: 6 }}>{typeof v === 'string' ? '' : v.definition}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {questions.map((q, i) => (
+                <div key={i} style={{ marginBottom: 16, background: "rgba(255,255,255,0.03)", borderRadius: 12, padding: 16, border: "1px solid rgba(255,255,255,0.05)" }}>
+                  <div style={{ fontWeight: 600, marginBottom: 12, fontSize: 14, color: "#f1f5f9" }}>Q{i + 1}: {q.question}</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {q.options.map((opt, j) => {
+                      const letter = ["A","B","C","D"][j];
+                      const isSelected = answers[i] === letter;
+                      const isCorrect  = result && j === q.correct; // Backend uses index 'correct'
+                      const isWrong    = result && isSelected && j !== q.correct;
+                      return (
+                        <button key={j}
+                          onClick={() => !result && setAnswers(p => ({ ...p, [i]: letter }))}
+                          style={{
+                            textAlign: "left", padding: "10px 14px", borderRadius: 10,
+                            cursor: result ? "default" : "pointer", fontSize: 13,
+                            border: `2px solid ${isCorrect ? "#22c55e" : isWrong ? "#ef4444" : isSelected ? "#6366f1" : "rgba(255,255,255,0.1)"}`,
+                            background: isCorrect ? "rgba(34, 197, 94, 0.1)" : isWrong ? "rgba(239, 68, 68, 0.1)" : isSelected ? "rgba(99, 102, 241, 0.1)" : "rgba(255,255,255,0.02)",
+                            color: isCorrect ? "#4ade80" : isWrong ? "#f87171" : isSelected ? "#818cf8" : "#94a3b8",
+                            fontWeight: isSelected ? 600 : 400,
+                            transition: "all 0.2s"
+                          }}>
+                          <span style={{ marginRight: 8, opacity: 0.7 }}>{letter}.</span> {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+
+              {!result && (
+                <button onClick={handleSubmitAnswers}
+                  disabled={loading || Object.keys(answers).length < questions.length}
+                  className="btn-primary"
+                  style={{ padding: "10px 24px", fontSize: 14, opacity: Object.keys(answers).length < questions.length ? 0.5 : 1 }}>
+                  {loading ? "Checking..." : "Submit Answers"}
+                </button>
+              )}
+
+              {result && (
+                <div style={{ marginTop: 16, background: "rgba(34, 197, 94, 0.1)", border: "1px solid rgba(34, 197, 94, 0.2)", borderRadius: 12, padding: 20 }}>
+                  <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 6, color: "#4ade80" }}>
+                    ✅ Score: {result.score}/{result.total} ({Math.round((result.score / result.total) * 100)}%)
+                  </div>
+                  <div style={{ color: "#94a3b8", fontSize: 14, marginBottom: 16 }}>{result.feedback}</div>
+                  <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+                    <span className="xp-badge">+{result.xpEarned} XP</span>
+                    <span className="streak-badge">+{result.coinsEarned} Coins</span>
+                  </div>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <button onClick={() => { setQuestions([]); setAnswers({}); setResult(null); setVocabulary([]); }}
+                      className="btn-primary"
+                      style={{ padding: "8px 16px", fontSize: 13 }}>
+                      Try Again
+                    </button>
+                    <button onClick={() => { setSelectedVideo(null); setQuestions([]); setAnswers({}); setResult(null); }}
+                      className="btn-ghost"
+                      style={{ padding: "8px 16px", fontSize: 13 }}>
+                      Back to Library
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
       {/* AI PASSAGES TAB */}
       {activeTab === "passages" && (
-        <div className="max-w-5xl mx-auto space-y-16 animate-slide-up">
-           {!passage ? (
-             <div className="glass-card p-16 md:p-24 border-white/5 bg-dark-900/40 text-center space-y-12 shadow-premium relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-primary-500/5 rounded-full -mr-48 -mt-48 blur-3xl" />
-                <div className="w-24 h-24 bg-primary-500/10 rounded-[2.5rem] flex items-center justify-center mx-auto border border-primary-500/20 shadow-glow relative z-10">
-                   <Sparkles size={48} className="text-primary-400 animate-pulse" />
-                </div>
-                <div className="max-w-2xl mx-auto space-y-6 relative z-10">
-                   <h2 className="text-4xl md:text-5xl font-display font-black text-white tracking-tighter uppercase">Neural Passage Core</h2>
-                   <p className="text-slate-400 text-xl font-medium leading-relaxed">Input a scenario or topic to synthesize a high-fidelity auditory training environment.</p>
-                </div>
-                
-                <div className="relative group max-w-2xl mx-auto z-10">
-                   <div className="absolute -inset-1 bg-gradient-to-r from-primary-500 to-accent-emerald rounded-[2.5rem] blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
-                   <input 
-                      type="text"
-                      value={topic}
-                      onChange={(e) => setTopic(e.target.value)}
-                      placeholder="e.g. A corporate strategy briefing in London..."
-                      className="relative w-full bg-dark-950 border border-white/10 rounded-[2.2rem] px-10 py-7 text-white placeholder:text-slate-700 focus:outline-none focus:border-primary-500/50 transition-all text-xl shadow-inner font-medium"
-                   />
-                   <button 
-                      onClick={generatePassage}
-                      disabled={passageLoading || !topic.trim()}
-                      className="absolute right-3 top-3 bottom-3 bg-primary-500 hover:bg-primary-600 disabled:opacity-50 disabled:grayscale transition-all px-12 rounded-[1.8rem] text-white font-black uppercase tracking-[0.3em] text-[10px] flex items-center gap-4 shadow-glow hover:scale-[1.02]"
-                   >
-                      {passageLoading ? <RefreshCw size={20} className="animate-spin" /> : <Zap size={20} />}
-                      {passageLoading ? 'Synthesizing...' : 'Execute'}
-                   </button>
-                </div>
-             </div>
-           ) : (
-             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-16 pb-32">
-                <div className="glass-card p-12 border-white/5 bg-dark-900/40 space-y-10 shadow-premium relative">
-                   <div className="flex items-center justify-between border-b border-white/5 pb-8">
-                      <div className="flex items-center gap-6">
-                         <div className="w-16 h-16 bg-primary-500/10 rounded-[2rem] flex items-center justify-center border border-primary-500/20 shadow-glow-sm">
-                            <Volume2 size={32} className="text-primary-400" />
-                         </div>
-                         <div>
-                            <h3 className="text-2xl font-display font-black text-white tracking-tighter uppercase">Auditory Datastream</h3>
-                            <div className="flex items-center gap-3 mt-1">
-                               <div className="w-2 h-2 rounded-full bg-primary-500 shadow-glow animate-pulse" />
-                               <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Signal: {topic}</span>
-                            </div>
-                         </div>
-                      </div>
-                      <button onClick={() => setPassage("")} className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-slate-500 hover:text-white transition-all border border-white/5 hover:bg-white/10">
-                         <RefreshCw size={24} />
-                      </button>
-                   </div>
+        <div className="glass-card" style={{ padding: 24, border: "1px solid rgba(255,255,255,0.1)" }}>
+          <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16, color: "#fff" }}>🎧 AI-Generated Listening Passages</h2>
+          <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+            <input
+              value={topic}
+              onChange={e => setTopic(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && handleGeneratePassage()}
+              placeholder="Enter a topic (e.g. climate change, space, food)"
+              className="input-field"
+              style={{ flex: 1, padding: "10px 14px", borderRadius: 8, fontSize: 14 }}
+            />
+            <button onClick={handleGeneratePassage} disabled={passageLoading || !topic.trim()}
+              className="btn-primary"
+              style={{ padding: "10px 24px", fontSize: 14, opacity: !topic.trim() ? 0.5 : 1 }}>
+              {passageLoading ? "Generating..." : "Generate"}
+            </button>
+          </div>
 
-                   <div className="bg-dark-950/80 p-12 rounded-[3rem] border border-white/5 relative group shadow-inner">
-                      <p className="text-2xl md:text-3xl text-slate-300 font-medium leading-[1.8] italic text-center max-w-4xl mx-auto">
-                         "{passage}"
-                      </p>
-                   </div>
-                </div>
+          {passage && (
+            <div style={{ background: "rgba(30, 41, 59, 0.5)", borderRadius: 12, padding: 16, border: "1px solid rgba(255,255,255,0.1)", marginBottom: 16 }}>
+              <div style={{ fontWeight: 600, marginBottom: 8, fontSize: 14, color: "#94a3b8" }}>📖 Passage</div>
+              <p style={{ fontSize: 15, lineHeight: 1.75, color: "#38bdf8", fontWeight: 500 }}>{passage}</p>
+            </div>
+          )}
 
-                <div className="space-y-10">
-                   <div className="flex items-center gap-6 px-4">
-                      <div className="w-3 h-3 rounded-full bg-primary-500 shadow-glow" />
-                      <h3 className="text-2xl font-display font-black text-white tracking-tighter uppercase tracking-[0.2em]">Neural Comprehension Scan</h3>
-                      <div className="h-px flex-1 bg-white/5" />
-                   </div>
-                   
-                   <div className="grid gap-8">
-                      {passageQuestions.map((q, qIdx) => (
-                         <motion.div 
-                            key={qIdx} 
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: qIdx * 0.1 }}
-                            className="glass-card p-12 border-white/5 bg-dark-900/40 space-y-10 shadow-premium"
-                         >
-                            <div className="space-y-4">
-                               <p className="text-[10px] font-black text-primary-400 uppercase tracking-[0.4em]">Question Module 0{qIdx + 1}</p>
-                               <p className="text-2xl md:text-3xl font-display font-black text-white tracking-tight leading-tight">
-                                  {q.question}
-                                </p>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                               {q.options.map((opt, oIdx) => (
-                                  <button
-                                     key={oIdx}
-                                     onClick={() => setPassageAnswers(prev => ({ ...prev, [qIdx]: opt }))}
-                                     className={`p-8 rounded-[2.5rem] border text-left transition-all duration-500 font-bold text-lg flex items-center gap-6 group/opt ${
-                                        passageAnswers[qIdx] === opt 
-                                        ? 'bg-primary-500 border-primary-500 text-white shadow-glow scale-[1.02]' 
-                                        : 'bg-dark-950 border-white/5 text-slate-500 hover:border-primary-500/40 hover:bg-white/5'
-                                     }`}
-                                  >
-                                     <div className={`w-12 h-12 rounded-2xl border border-current flex items-center justify-center text-sm font-black shrink-0 transition-all ${passageAnswers[qIdx] === opt ? 'bg-white/10' : 'group-hover/opt:bg-primary-500/10'}`}>
-                                        {["A","B","C","D"][oIdx]}
-                                     </div>
-                                     <span className="flex-1 tracking-tight">{opt}</span>
-                                  </button>
-                               ))}
-                            </div>
-                         </motion.div>
-                      ))}
-                   </div>
-                   
-                   <div className="flex justify-center pt-12 pb-20">
-                      <button 
-                         onClick={handleSubmitPassageAnswers}
-                         disabled={Object.keys(passageAnswers).length < passageQuestions.length || passageLoading}
-                         className="btn-primary py-8 px-24 text-[10px] font-black uppercase tracking-[0.5em] shadow-glow flex items-center gap-6 hover:scale-105 transition-transform"
-                      >
-                         {passageLoading ? <RefreshCw size={24} className="animate-spin" /> : <ShieldCheck size={24} />}
-                         Verify Comprehension Rate
-                      </button>
-                   </div>
-                </div>
-             </motion.div>
-           )}
+          {passageQuestions.map((q, i) => (
+            <div key={i} style={{ marginBottom: 16, background: "rgba(255,255,255,0.03)", borderRadius: 12, padding: 14, border: "1px solid rgba(255,255,255,0.05)" }}>
+              <div style={{ fontWeight: 600, marginBottom: 10, fontSize: 14, color: "#f1f5f9" }}>Q{i + 1}: {q.question}</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {q.options.map((opt, j) => {
+                  const letter = ["A","B","C","D"][j];
+                  const isSelected = passageAnswers[i] === letter;
+                  const isCorrect  = passageResult && j === q.correct; // Backend uses index
+                  const isWrong    = passageResult && isSelected && j !== q.correct;
+                  return (
+                    <button key={j}
+                      onClick={() => !passageResult && setPassageAnswers(p => ({ ...p, [i]: letter }))}
+                      style={{
+                        textAlign: "left", padding: "10px 14px", borderRadius: 10,
+                        cursor: passageResult ? "default" : "pointer", fontSize: 13,
+                        border: `2px solid ${isCorrect ? "#22c55e" : isWrong ? "#ef4444" : isSelected ? "#6366f1" : "rgba(255,255,255,0.1)"}`,
+                        background: isCorrect ? "rgba(34, 197, 94, 0.1)" : isWrong ? "rgba(239, 68, 68, 0.1)" : isSelected ? "rgba(99, 102, 241, 0.1)" : "rgba(255,255,255,0.02)",
+                        color: isCorrect ? "#4ade80" : isWrong ? "#f87171" : isSelected ? "#818cf8" : "#94a3b8",
+                        fontWeight: isSelected ? 600 : 400,
+                        transition: "all 0.2s"
+                      }}>
+                      <span style={{ marginRight: 8, opacity: 0.7 }}>{letter}.</span> {opt}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
 
-           <AnimatePresence>
-              {passageResult && (
-                <motion.div 
-                   initial={{ opacity: 0 }}
-                   animate={{ opacity: 1 }}
-                   exit={{ opacity: 0 }}
-                   className="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-dark-950/95 backdrop-blur-3xl"
-                >
-                   <motion.div 
-                      initial={{ scale: 0.9, y: 20 }}
-                      animate={{ scale: 1, y: 0 }}
-                      className="glass-card max-w-xl w-full p-16 border-white/10 bg-dark-900 shadow-3xl text-center space-y-12"
-                   >
-                      <div className={`w-32 h-32 rounded-[2.5rem] flex items-center justify-center mx-auto border-4 shadow-glow-sm ${passageResult.score >= 70 ? 'border-accent-emerald text-accent-emerald bg-accent-emerald/10 shadow-accent-emerald/20' : 'border-accent-rose text-accent-rose bg-accent-rose/10 shadow-accent-rose/20'}`}>
-                         {passageResult.score >= 70 ? <Trophy size={64} className="animate-bounce-slow" /> : <ZapOff size={64} />}
-                      </div>
-                      <div className="space-y-4">
-                         <div className="text-[10px] font-black text-slate-600 uppercase tracking-[0.4em]">Analysis Completed</div>
-                         <h2 className="text-7xl font-display font-black text-white tracking-tighter">{passageResult.score}%</h2>
-                         <p className="text-slate-400 text-xl font-medium">{passageResult.feedback}</p>
-                      </div>
-                      <button 
-                         onClick={() => { setPassageResult(null); setPassage(""); }}
-                         className="btn-primary w-full py-6 text-[10px] font-black uppercase tracking-[0.4em] shadow-glow"
-                      >
-                         Acknowledge Mission Report
-                      </button>
-                   </motion.div>
-                </motion.div>
-              )}
-           </AnimatePresence>
+          {passageQuestions.length > 0 && !passageResult && (
+            <button onClick={handleSubmitPassageAnswers}
+              disabled={passageLoading || Object.keys(passageAnswers).length < passageQuestions.length}
+              className="btn-primary"
+              style={{ padding: "10px 24px", fontSize: 14, opacity: Object.keys(passageAnswers).length < passageQuestions.length ? 0.5 : 1 }}>
+              {passageLoading ? "Checking..." : "Submit Answers"}
+            </button>
+          )}
+
+          {passageResult && (
+            <div style={{ marginTop: 16, background: "rgba(34, 197, 94, 0.1)", border: "1px solid rgba(34, 197, 94, 0.2)", borderRadius: 12, padding: 20 }}>
+              <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 6, color: "#4ade80" }}>
+                ✅ Score: {passageResult.score}/{passageResult.total} ({Math.round((passageResult.score / passageResult.total) * 100)}%)
+              </div>
+              <div style={{ color: "#94a3b8", fontSize: 14, marginBottom: 16 }}>{passageResult.feedback}</div>
+              <div style={{ display: "flex", gap: 10 }}>
+                <span className="xp-badge">+{passageResult.xpEarned} XP</span>
+                <span className="streak-badge">+{passageResult.coinsEarned} Coins</span>
+              </div>
+              <button
+                onClick={() => { setPassage(""); setPassageQuestions([]); setPassageAnswers({}); setPassageResult(null); setTopic(""); }}
+                className="btn-primary"
+                style={{ marginTop: 20, padding: "8px 20px", fontSize: 13 }}>
+                Try Another Topic
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -2,12 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import TinderCard from 'react-tinder-card';
 import toast from 'react-hot-toast';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Brain, ArrowLeft, ArrowRight, BookA, Repeat, CheckCircle, 
-  RefreshCcw, Sparkles, Search, Zap, Volume2, Globe, Heart, 
-  Briefcase, Info, X, ChevronRight, Activity, Shield, Target, Award
-} from 'lucide-react';
+import { Brain, ArrowLeft, ArrowRight, BookA, Repeat, CheckCircle, RefreshCcw, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import XPReward from '../components/XPReward';
 
@@ -42,7 +37,7 @@ export default function Vocabulary() {
         setAllWords(data);
       }
     } catch (err) {
-      toast.error('Neural library sync failed.');
+      toast.error('Failed to load vocabulary');
     } finally {
       setLoading(false);
     }
@@ -54,12 +49,13 @@ export default function Vocabulary() {
     
     try {
       const { data } = await axios.post('/api/vocabulary/review', { wordId, knewIt });
+      
       setCurrentIndex(prev => prev - 1);
       
       if (knewIt) {
-        toast.success(`Pattern Verified. Next review: ${data.vocab.interval}d`, { id: 'swipe-toast' });
+        toast.success(`Got it! Next review in ${data.vocab.interval} days.`, { id: 'swipe-toast', duration: 1500 });
       } else {
-        toast('Reinforcement required.', { icon: '🔄', id: 'swipe-toast' });
+        toast('Learning... Will see this again soon.', { icon: '🔄', id: 'swipe-toast', duration: 1500 });
       }
       
       if (currentIndex === 0) {
@@ -68,7 +64,7 @@ export default function Vocabulary() {
         fetchProfile();
       }
     } catch {
-      toast.error('Review sync error.');
+      toast.error('Failed to save review');
     }
   };
 
@@ -79,49 +75,42 @@ export default function Vocabulary() {
 
   if (loading && queue.length === 0 && allWords.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-[70vh] gap-8 animate-fade-in">
-        <div className="relative">
-          <div className="w-24 h-24 border-[6px] border-white/5 rounded-full" />
-          <div className="w-24 h-24 border-[6px] border-primary-500 border-t-transparent rounded-full animate-spin absolute top-0 left-0" />
-          <Brain size={32} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary-500 animate-pulse" />
-        </div>
-        <div className="text-center space-y-2">
-           <p className="text-2xl font-display font-bold text-white tracking-tight">Syncing Neural Lexicon</p>
-           <p className="text-slate-500 font-medium">Retrieving spaced-repetition patterns...</p>
-        </div>
+      <div className="flex-1 flex items-center justify-center min-h-[60vh]">
+        <div className="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto min-h-[85vh] flex flex-col pt-4 pb-12 animate-slide-up select-none space-y-8">
+    <div className="max-w-md mx-auto min-h-[80vh] flex flex-col pt-4 pb-12 overflow-hidden animate-slide-up select-none">
       {reward && <XPReward {...reward} onClose={() => setReward(null)} />}
       
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 px-4">
-        <div>
-           <div className="flex items-center gap-3 mb-2">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary-400">Cognitive Retention</span>
-              <div className="h-px w-8 bg-primary-500/30" />
-           </div>
-           <h1 className="text-3xl md:text-4xl font-display font-bold text-white tracking-tight">Vocabulary <span className="shimmer-text">Nexus</span></h1>
-           <p className="text-slate-500 text-sm font-medium">Spaced-repetition protocol for high-fidelity memory mapping.</p>
+      <div className="flex items-center justify-between mb-4 px-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+            <Brain size={20} className="text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl font-display font-bold text-white leading-tight">Vocab Builder</h1>
+            <p className="text-xs text-slate-400">Master new words daily</p>
+          </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex p-1.5 bg-dark-900/50 rounded-[24px] border border-white/5 gap-1.5 backdrop-blur-xl mx-4">
+      <div className="flex gap-1 bg-dark-800 p-1 rounded-xl mb-6 mx-4">
         <button 
           onClick={() => setActiveTab('review')}
-          className={`flex-1 flex items-center justify-center gap-3 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${activeTab === 'review' ? 'bg-primary-500 text-white shadow-glow' : 'text-slate-500 hover:text-slate-200'}`}
+          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'review' ? 'bg-primary-500 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
         >
-          <Repeat size={14} /> Neural Review
+          <Repeat size={16} /> Review
         </button>
         <button 
           onClick={() => setActiveTab('library')}
-          className={`flex-1 flex items-center justify-center gap-3 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${activeTab === 'library' ? 'bg-primary-500 text-white shadow-glow' : 'text-slate-500 hover:text-slate-200'}`}
+          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'library' ? 'bg-primary-500 text-white shadow-lg' : 'text-slate-500 hover:text-slate-300'}`}
         >
-          <BookA size={14} /> Pattern Library
+          <BookA size={16} /> Library
         </button>
       </div>
 
@@ -130,199 +119,152 @@ export default function Vocabulary() {
         {activeTab === 'review' ? (
           <>
             {queue.length === 0 ? (
-              <div className="flex-1 flex flex-col items-center justify-center text-center space-y-8 animate-slide-up">
-                <div className="w-24 h-24 bg-dark-950 rounded-[32px] flex items-center justify-center border border-white/5 shadow-inner group overflow-hidden relative">
-                   <div className="absolute inset-0 bg-accent-emerald/10" />
-                   <CheckCircle size={40} className="text-accent-emerald shadow-glow relative z-10" />
+              <div className="flex-1 flex flex-col items-center justify-center text-center animate-slide-up">
+                <div className="w-20 h-20 bg-dark-700/50 rounded-full flex items-center justify-center mb-6 border border-white/5 shadow-xl">
+                  <CheckCircle size={32} className="text-green-400" />
                 </div>
-                <div className="space-y-3">
-                   <h2 className="text-3xl font-display font-bold text-white tracking-tight">Lexicon Optimized</h2>
-                   <p className="text-slate-400 text-lg font-medium max-w-[280px] leading-relaxed mx-auto">
-                      All daily spaced-repetition patterns have been successfully reinforced.
-                   </p>
-                </div>
-                <button onClick={fetchData} className="btn-ghost px-8 py-3 rounded-2xl flex items-center gap-3 text-[10px] font-black uppercase tracking-widest border-white/5">
-                   <RefreshCcw size={14} /> Re-Sync
+                {stats?.total === 0 ? (
+                  <>
+                    <h2 className="text-2xl font-display font-bold text-white mb-2">No words yet!</h2>
+                    <p className="text-slate-400 mb-8 max-w-[240px]">Start learning words in Reading, Listening, or Roleplay modules to see them here.</p>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-2xl font-display font-bold text-white mb-2">You're all caught up! 🌟</h2>
+                    <p className="text-slate-400 mb-8 max-w-[240px]">You've reviewed all your words for today. Check your Library to see all saved words!</p>
+                  </>
+                )}
+                <button onClick={fetchData} className="btn-ghost flex items-center gap-2">
+                  <RefreshCcw size={16} /> Refresh
                 </button>
               </div>
             ) : (
-              <div className="flex-1 flex flex-col space-y-6">
-                <div className="flex items-center justify-between px-2">
-                   <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{currentIndex + 1} Patterns Pending</p>
-                   <div className="flex items-center gap-4">
-                      <div className="w-32 h-1.5 bg-dark-950 rounded-full overflow-hidden p-0.5 border border-white/5">
-                        <motion.div 
-                          className="h-full bg-primary-500 rounded-full shadow-glow" 
-                          animate={{ width: `${((queue.length - 1 - currentIndex) / queue.length) * 100}%` }} 
-                        />
-                      </div>
-                   </div>
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                    {currentIndex + 1} cards left
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-20 h-1.5 bg-dark-700 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-primary-500 transition-all duration-500" 
+                        style={{ width: `${((queue.length - 1 - currentIndex) / queue.length) * 100}%` }} 
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Flashcard Area */}
-                <div className="relative flex-1 flex flex-col justify-center items-center perspective-2000 py-10">
-                  <AnimatePresence>
+                <div className="relative flex-1 flex flex-col justify-center items-center perspective-1000">
                   {queue.map((item, index) => (
-                    index === currentIndex && (
                     <TinderCard
-                      className="absolute w-full max-w-[380px] z-50"
+                      className="absolute w-full max-w-[340px]"
                       key={item._id}
                       onSwipe={(dir) => handleSwipe(dir, item._id)}
                       preventSwipe={['up', 'down']}
                       swipeRequirementType="position"
-                      swipeThreshold={100}
+                      swipeThreshold={80}
                     >
-                      <motion.div 
-                        initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                        animate={{ scale: 1, opacity: 1, y: 0 }}
-                        onClick={() => setFlipped(!flipped)}
+                      <div 
+                        onClick={() => index === currentIndex && setFlipped(!flipped)}
                         className={`
-                          w-full h-[450px] rounded-[40px] border border-white/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5)]
-                          flex flex-col cursor-pointer transition-all duration-700 transform-style-3d relative
-                          ${flipped ? 'rotate-y-180' : ''}
+                          w-full h-[400px] bg-dark-800 rounded-3xl border border-white/10 shadow-2xl
+                          flex flex-col cursor-pointer transition-all duration-300 transform-style-3d
+                          ${index === currentIndex ? 'scale-100 opacity-100 z-10' : 'scale-95 opacity-0 -translate-y-4 pointer-events-none'}
+                          ${flipped && index === currentIndex ? 'rotate-y-180' : ''}
                         `}
                       >
                         {/* FRONT */}
-                        <div className="absolute inset-0 w-full h-full backface-hidden p-12 flex flex-col items-center justify-center text-center bg-gradient-to-b from-dark-900 to-dark-950 rounded-[40px] shadow-inner">
-                          <div className="absolute top-8 left-8 flex items-center gap-2">
-                             <div className="w-2 h-2 rounded-full bg-primary-500 shadow-glow animate-pulse" />
-                             <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Active Scan</span>
-                          </div>
+                        <div className="absolute inset-0 w-full h-full backface-hidden p-8 flex flex-col items-center justify-center text-center bg-gradient-to-b from-dark-800 to-dark-900 rounded-3xl">
                           {item.status === 'new' && (
-                            <div className="absolute top-8 right-8 bg-accent-amber/10 border border-accent-amber/20 px-3 py-1 rounded-xl flex items-center gap-1.5">
-                               <Sparkles size={10} className="text-accent-amber" />
-                               <span className="text-[9px] font-black text-accent-amber uppercase tracking-widest">Initial Sync</span>
-                            </div>
+                            <span className="absolute top-4 left-4 flex items-center gap-1 text-[10px] font-bold text-accent-yellow bg-accent-yellow/10 px-2 py-0.5 rounded">
+                              <Sparkles size={10} /> NEW
+                            </span>
                           )}
-                          <h2 className="text-4xl md:text-5xl font-display font-bold text-white tracking-tight mb-4">{item.word}</h2>
-                          <div className="mt-8 px-6 py-2 rounded-full bg-white/5 border border-white/5 text-[9px] font-black text-slate-500 uppercase tracking-widest group-hover:bg-white/10 transition-colors">
-                             Decipher Meaning
-                          </div>
+                          <h2 className="text-4xl font-display font-bold text-white mb-2">{item.word}</h2>
+                          <p className="text-slate-500 text-xs mt-4">Tap to reveal meaning</p>
                         </div>
 
                         {/* BACK */}
-                        <div className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 p-12 flex flex-col bg-dark-900 border border-primary-500/20 rounded-[40px] overflow-hidden">
-                           <div className="absolute inset-0 bg-primary-500/5" />
-                           <div className="relative z-10 flex flex-col h-full">
-                              <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
-                                 <h2 className="text-2xl font-display font-bold text-white tracking-tight">{item.word}</h2>
-                                 <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center text-slate-500">
-                                    <Volume2 size={16} />
-                                 </div>
+                        <div className="absolute inset-0 w-full h-full backface-hidden rotate-y-180 p-8 flex flex-col bg-dark-900 border border-primary-500/20 rounded-3xl overflow-y-auto custom-scrollbar">
+                          <h2 className="text-2xl font-display font-bold text-white mb-4 border-b border-white/5 pb-2">{item.word}</h2>
+                          <div className="space-y-4 flex-1">
+                            <div>
+                              <p className="text-[10px] font-bold text-slate-500 uppercase mb-1">Meaning</p>
+                              <p className="text-slate-200 text-sm leading-relaxed">{item.definition}</p>
+                            </div>
+                            {item.example && (
+                              <div>
+                                <p className="text-[10px] font-bold text-slate-500 uppercase mb-1">Example</p>
+                                <p className="text-slate-300 text-sm italic border-l-2 border-primary-500/30 pl-3">"{item.example}"</p>
                               </div>
-                              <div className="space-y-8 flex-1 overflow-y-auto custom-scrollbar pr-2">
-                                <div className="space-y-2">
-                                  <p className="text-[9px] font-black text-primary-400 uppercase tracking-[0.2em]">Neural Definition</p>
-                                  <p className="text-slate-200 text-base leading-relaxed font-medium">{item.definition}</p>
-                                </div>
-                                {item.example && (
-                                  <div className="space-y-3">
-                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">Contextual Application</p>
-                                    <div className="p-4 bg-dark-950/80 rounded-2xl border border-white/5 italic">
-                                       <p className="text-slate-300 text-sm leading-relaxed font-medium">"{item.example}"</p>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                              <div className="pt-6 border-t border-white/5 mt-auto flex items-center justify-between">
-                                 <div className="flex items-center gap-2">
-                                    <ArrowLeft size={12} className="text-accent-rose" />
-                                    <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Reinforce</span>
-                                 </div>
-                                 <div className="flex items-center gap-2">
-                                    <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Verify</span>
-                                    <ArrowRight size={12} className="text-accent-emerald" />
-                                 </div>
-                              </div>
-                           </div>
+                            )}
+                          </div>
+                          <p className="text-[10px] text-center text-slate-600 mt-4 italic">Swipe left if wrong • Swipe right if correct</p>
                         </div>
-                      </motion.div>
+                      </div>
                     </TinderCard>
-                    )
                   ))}
-                  </AnimatePresence>
-
-                  {/* Behind Cards (Visual Stack) */}
-                  {currentIndex > 0 && (
-                     <div className="absolute w-full max-w-[380px] h-[450px] bg-dark-900/50 border border-white/5 rounded-[40px] scale-95 -translate-y-4 -z-10" />
-                  )}
-                  {currentIndex > 1 && (
-                     <div className="absolute w-full max-w-[380px] h-[450px] bg-dark-900/30 border border-white/5 rounded-[40px] scale-90 -translate-y-8 -z-20" />
-                  )}
                 </div>
 
                 {/* Controls */}
-                <div className="flex items-center justify-center gap-12 pt-6">
-                  <motion.button 
-                    whileTap={{ scale: 0.9 }}
+                <div className="flex items-center justify-center gap-12 mt-8 mb-4">
+                  <button 
                     onClick={() => handleSwipe('left', queue[currentIndex]._id)}
-                    className="w-16 h-16 rounded-[24px] bg-dark-950 border border-accent-rose/20 text-accent-rose flex items-center justify-center hover:bg-accent-rose hover:text-white transition-all shadow-glow-sm"
+                    className="w-12 h-12 rounded-full bg-dark-800 border border-red-500/30 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-lg active:scale-90"
                   >
-                    <X size={24} />
-                  </motion.button>
-                  <motion.button 
-                    whileTap={{ scale: 0.9 }}
+                    <ArrowLeft size={20} />
+                  </button>
+                  <button 
                     onClick={() => handleSwipe('right', queue[currentIndex]._id)}
-                    className="w-16 h-16 rounded-[24px] bg-dark-950 border border-accent-emerald/20 text-accent-emerald flex items-center justify-center hover:bg-accent-emerald hover:text-white transition-all shadow-glow-sm"
+                    className="w-12 h-12 rounded-full bg-dark-800 border border-green-500/30 text-green-500 flex items-center justify-center hover:bg-green-500 hover:text-white transition-all shadow-lg active:scale-90"
                   >
-                    <CheckCircle size={24} />
-                  </motion.button>
+                    <ArrowRight size={20} />
+                  </button>
                 </div>
-              </div>
+              </>
             )}
           </>
         ) : (
-          <div className="flex-1 flex flex-col space-y-6 animate-slide-up">
+          <div className="flex-1 flex flex-col min-h-0">
             {/* Search */}
-            <div className="relative mx-2">
+            <div className="relative mb-4">
               <input 
                 type="text" 
-                placeholder="Query Lexical Database..."
+                placeholder="Search your vocabulary..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-dark-950 border border-white/5 rounded-2xl py-4 pl-12 pr-6 text-sm text-white focus:outline-none focus:border-primary-500/50 transition-all shadow-inner placeholder-slate-700 font-medium"
+                className="w-full bg-dark-800 border border-white/5 rounded-xl py-3 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-primary-500/50 transition-all shadow-inner"
               />
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-700" />
+              <BookA size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
             </div>
 
             {/* List */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 space-y-4">
+            <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
               {filteredWords.length === 0 ? (
-                <div className="text-center py-20">
-                  <p className="text-slate-600 font-medium italic">No matching neural patterns found.</p>
+                <div className="text-center py-12">
+                  <p className="text-slate-500 text-sm">No words found.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-3">
                   {filteredWords.map(w => (
-                    <motion.div 
-                      key={w._id} 
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="glass-card p-6 border-white/5 bg-dark-900/40 hover:border-primary-500/30 transition-all group relative overflow-hidden"
-                    >
-                      <div className="absolute top-0 right-0 w-24 h-24 bg-primary-500/5 rounded-full -mr-12 -mt-12 group-hover:scale-150 transition-transform duration-700" />
-                      <div className="relative z-10 flex items-start justify-between mb-3">
-                        <div>
-                           <h3 className="text-xl font-display font-bold text-white group-hover:text-primary-400 transition-colors tracking-tight">{w.word}</h3>
-                           <p className="text-[9px] text-slate-600 uppercase font-black tracking-widest mt-1">Source: <span className="text-primary-500/80">{w.source}</span></p>
-                        </div>
-                        <span className={`text-[9px] px-3 py-1 rounded-xl font-black uppercase tracking-widest ${
-                          w.status === 'graduated' ? 'bg-accent-emerald/10 text-accent-emerald border border-accent-emerald/20' : 
-                          w.status === 'learning' ? 'bg-primary-500/10 text-primary-400 border border-primary-500/20' : 
-                          'bg-accent-amber/10 text-accent-amber border border-accent-amber/20'
+                    <div key={w._id} className="glass-card p-4 hover:border-primary-500/30 transition-all group">
+                      <div className="flex items-start justify-between mb-1">
+                        <h3 className="font-bold text-white group-hover:text-primary-400 transition-colors">{w.word}</h3>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold uppercase ${
+                          w.status === 'graduated' ? 'bg-green-500/10 text-green-400' : 
+                          w.status === 'learning' ? 'bg-blue-500/10 text-blue-400' : 
+                          'bg-accent-yellow/10 text-accent-yellow'
                         }`}>
                           {w.status}
                         </span>
                       </div>
-                      <p className="text-sm text-slate-400 line-clamp-2 leading-relaxed font-medium mb-4 relative z-10 italic">"{w.definition}"</p>
-                      <div className="flex items-center justify-between text-[9px] font-black text-slate-600 uppercase tracking-[0.2em] relative z-10">
-                        <div className="flex items-center gap-2">
-                           <Target size={10} className="text-primary-500" />
-                           <span>Pattern Sync: 100%</span>
-                        </div>
-                        <span>Added {new Date(w.createdAt).toLocaleDateString()}</span>
+                      <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed mb-2">{w.definition}</p>
+                      <div className="flex items-center justify-between mt-auto">
+                        <span className="text-[10px] text-slate-600 italic">Source: {w.source}</span>
+                        <span className="text-[10px] text-slate-600">Added {new Date(w.createdAt).toLocaleDateString()}</span>
                       </div>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
               )}

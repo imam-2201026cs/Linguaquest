@@ -13,6 +13,18 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true
         }
       }
+    },
+    build: {
+      // Ensure sw.js is copied to dist root (it's in public/ so Vite handles it)
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom', 'react-router-dom'],
+            charts: ['recharts'],
+            motion: ['framer-motion'],
+          }
+        }
+      }
     }
   }
 })

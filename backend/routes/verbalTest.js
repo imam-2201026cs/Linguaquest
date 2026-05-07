@@ -1,13 +1,12 @@
 import express from 'express';
 import auth from '../middleware/auth.js';
-import { generateJSON } from '../middleware/ai.js';
+import { generateJSON } from '../middleware/puter.js';
 
 const router = express.Router();
 
 const TOPICS = [
   "Antonyms", "Synonyms", "Spelling Errors", "One Word Substitution", "Verbs", "Adverbs", "Tenses",
   "Subject-Verb Agreement", "Idioms & Phrases", "Agreement", "Articles", "Error Detection",
-  "Preposition", "Conjunction",
   "Fill in the Blanks", "Sentence Correction", "Rearrangement", "Vocabulary", "Unseen Passage",
   "Narration (Direct & Indirect Speech)", "Active & Passive Voice"
 ];
@@ -18,50 +17,40 @@ router.post('/generate', auth, async (req, res) => {
   try {
     let promptTopic = topic === 'Mixed' ? `a mixture of these topics: ${TOPICS.join(', ')}` : topic;
     
-    let patternInstruction = "";
-    if (topic === "Error Detection") {
-      patternInstruction = `
-      CRITICAL: For Error Detection, you MUST follow this EXACT format:
-      1. Divide the 'question' into 4 parts with (1), (2), (3), (4) labels and slashes. End with "/ No Error (5)".
-      2. The 'options' array MUST BE EXACTLY: ["Part (1)", "Part (2)", "Part (3)", "Part (4)", "No Error (5)"]
-      3. The 'correct' index must be the 0-based index of the part containing the error (0 to 4).
-      4. EXPLANATION: Provide a detailed explanation of why that specific part is grammatically incorrect.
-      `;
-    }
-
-    const seed = Math.random().toString(36).substring(7);
+    // We'll ask for 30 questions. To handle potential JSON size limits, 
+    // we'll instruct the AI to be concise but thorough.
     const prompt = `
-      Generate a professional 30-question English Verbal Ability Test for: "${promptTopic}".
-      PATTERN: Competitive Exams.
-      SEED: ${seed}.
-      ${patternInstruction}
-
-      Requirements:
-      1. EXACTLY 30 questions in a flat array called "questions".
-      2. 4 distinct options per question.
-      3. NO "A)", "B)" labels in options.
-      4. NO single-letter placeholders.
-      5. Provide clear, detailed explanations for every question.
-      6. Return ONLY a JSON object with a "questions" key.
+      Generate a high-quality 30-question English Verbal Ability Test for the topic: "${promptTopic}".
+      Return a JSON object with a "questions" key containing an array of 30 objects.
+      Each question object format:
+      {
+        "question": "The question text",
+        "options": ["Option A", "Option B", "Option C", "Option D"],
+        "correct": 1, // Index of correct option (0-3)
+        "explanation": "A concise explanation of why the answer is correct."
+      }
+      Difficulty: Intermediate to Advanced (B2-C1).
+      Ensure variety and accuracy.
     `;
 
-    console.log(`[VerbalTest] Generating 30 questions for ${topic} with Gemini 1.5 Flash...`);
     const result = await generateJSON(prompt);
+    let questions = result.questions || [];
 
-    if (!result || !Array.isArray(result.questions)) {
-      throw new Error('Invalid response format from AI');
+    // If result is an array directly
+    if (Array.isArray(result)) questions = result;
+
+    if (!Array.isArray(questions) || questions.length === 0) {
+      throw new Error('AI failed to generate a valid question array');
     }
 
-    res.json({
+    res.json({ 
       topic,
-      questions: result.questions.slice(0, 30)
+      count: questions.length,
+      questions 
     });
   } catch (err) {
     console.error('Verbal Test Generation Error:', err);
-    res.status(500).json({ 
-      message: 'Failed to generate test questions', 
-      error: err.message
-    });
+    res.status(500).json({ message: 'Failed to generate test questions', error: err.message });
   }
 });
 
